@@ -1,0 +1,13 @@
+# Django
+Django==5.2.14
+django-filter==26.1
+
+# Image Processing
+Pillow==12.3.0
+
+# Configuration
+python-decouple==3.8
+
+# Code Quality / Formatting
+black
+flake8==6.1.0
