@@ -1,0 +1,3 @@
+[flake8]
+exclude = .git,*/migrations/*,*/static/CACHE/*,settings.py,tests.py,__init__.py
+ignore = F401

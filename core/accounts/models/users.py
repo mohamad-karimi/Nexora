@@ -51,14 +51,16 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     Defines the custom user model and its fields.
     Users are created and managed by CustomUserManager.
     """
+
     class Role(models.TextChoices):
         """
         This class for set the roles in the site
         """
+
         CUSTOMER = "customer", "Customer"
         VENDOR = "vendor", "Vendor"
         ADMIN = "admin", "Admin"
-    
+
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(null=True, unique=True)
     role = models.CharField(

@@ -27,7 +27,10 @@ class Migration(migrations.Migration):
                 ("first_name", models.CharField(max_length=120)),
                 ("last_name", models.CharField(max_length=120)),
                 ("display_name", models.CharField(max_length=50)),
-                ("avatar", models.ImageField(blank=True, null=True, upload_to="")),
+                (
+                    "avatar",
+                    models.ImageField(blank=True, null=True, upload_to=""),
+                ),
                 ("phone", models.CharField(max_length=20)),
                 ("address", models.TextField()),
                 ("description", models.TextField()),
