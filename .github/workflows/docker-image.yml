@@ -1,0 +1,29 @@
+name: Nexorea
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Create .env
+        run: |
+          echo "DEBUG=${{ secrets.DEBUG }}" >> .env
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+    
+      - name: Start Docker Compose
+        run: docker compose up -d --build
+            
+      - name: Run tests and flake8
+        run: docker exec backend sh -c "flake8"
