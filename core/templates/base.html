@@ -92,9 +92,9 @@
                                 </div>
                                 <div class="detail-extralink mb-30">
                                     <div class="detail-qty border radius">
-                                        <a href="index.html#" class="qty-down"><i class="fi-rs-angle-small-down"></i></a>
+                                        <a href="{% url 'website:home' %}#" class="qty-down"><i class="fi-rs-angle-small-down"></i></a>
                                         <span class="qty-val">1</span>
-                                        <a href="index.html#" class="qty-up"><i class="fi-rs-angle-small-up"></i></a>
+                                        <a href="{% url 'website:home' %}#" class="qty-up"><i class="fi-rs-angle-small-up"></i></a>
                                     </div>
                                     <div class="product-extra-link2">
                                         <button type="submit" class="button button-add-to-cart"><i class="fi-rs-shopping-cart"></i>Add to cart</button>
@@ -125,8 +125,8 @@
                         <div class="header-info">
                             <ul>
                                 <li><a href="https://nest-frontend-v6.vercel.app/page-about.htlm">About Us</a></li>
-                                <li><a href="page-account.html">My Account</a></li>
-                                <li><a href="shop-wishlist.html">Wishlist</a></li>
+                                <li><a href="{% url 'accounts:account' %}">My Account</a></li>
+                                <li><a href="{% url 'shop:wishlist' %}">Wishlist</a></li>
                                 <li><a href="https://nest-frontend-v6.vercel.app/shop-order.html">Order Tracking</a></li>
                             </ul>
                         </div>
@@ -147,30 +147,30 @@
                             <ul>
                                 <li>Need help? Call Us: <strong class="text-brand"> + 1800 900</strong></li>
                                 <li>
-                                    <a class="language-dropdown-active" href="index.html#">English <i class="fi-rs-angle-small-down"></i></a>
+                                    <a class="language-dropdown-active" href="{% url 'website:home' %}#">English <i class="fi-rs-angle-small-down"></i></a>
                                     <ul class="language-dropdown">
                                         <li>
-                                            <a href="index.html#"><img src="{% static 'imgs/theme/flag-fr.png' %}" alt="" />Français</a>
+                                            <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/flag-fr.png' %}" alt="" />Français</a>
                                         </li>
                                         <li>
-                                            <a href="index.html#"><img src="{% static 'imgs/theme/flag-dt.png' %}" alt="" />Deutsch</a>
+                                            <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/flag-dt.png' %}" alt="" />Deutsch</a>
                                         </li>
                                         <li>
-                                            <a href="index.html#"><img src="{% static 'imgs/theme/flag-ru.png' %}" alt="" />Pусский</a>
+                                            <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/flag-ru.png' %}" alt="" />Pусский</a>
                                         </li>
                                     </ul>
                                 </li>
                                 <li>
-                                    <a class="language-dropdown-active" href="index.html#">USD <i class="fi-rs-angle-small-down"></i></a>
+                                    <a class="language-dropdown-active" href="{% url 'website:home' %}#">USD <i class="fi-rs-angle-small-down"></i></a>
                                     <ul class="language-dropdown">
                                         <li>
-                                            <a href="index.html#"><img src="{% static 'imgs/theme/flag-fr.png' %}" alt="" />INR</a>
+                                            <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/flag-fr.png' %}" alt="" />INR</a>
                                         </li>
                                         <li>
-                                            <a href="index.html#"><img src="{% static 'imgs/theme/flag-dt.png' %}" alt="" />MBP</a>
+                                            <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/flag-dt.png' %}" alt="" />MBP</a>
                                         </li>
                                         <li>
-                                            <a href="index.html#"><img src="{% static 'imgs/theme/flag-ru.png' %}" alt="" />EU</a>
+                                            <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/flag-ru.png' %}" alt="" />EU</a>
                                         </li>
                                     </ul>
                                 </li>
@@ -184,7 +184,7 @@
             <div class="container">
                 <div class="header-wrap">
                     <div class="logo logo-width-1">
-                        <a href="index.html"><img src="{% static 'imgs/theme/logo.svg' %}" alt="logo" /></a>
+                        <a href="{% url 'website:home' %}"><img src="{% static 'imgs/theme/logo.svg' %}" alt="logo" /></a>
                     </div>
                     <div class="header-right">
                         <div class="search-style-2">
@@ -228,25 +228,25 @@
                                     </form>
                                 </div>
                                 <div class="header-action-icon-2">
-                                    <a href="shop-compare.html">
+                                    <a href="{% url 'shop:compare' %}">
                                         <img class="svgInject" alt="Nest" src="{% static 'imgs/theme/icons/icon-compare.svg' %}" />
                                         <span class="pro-count blue">3</span>
                                     </a>
-                                    <a href="shop-compare.html"><span class="lable ml-0">Compare</span></a>
+                                    <a href="{% url 'shop:compare' %}"><span class="lable ml-0">Compare</span></a>
                                 </div>
                                 <div class="header-action-icon-2">
-                                    <a href="shop-wishlist.html">
+                                    <a href="{% url 'shop:wishlist' %}">
                                         <img class="svgInject" alt="Nest" src="{% static 'imgs/theme/icons/icon-heart.svg' %}" />
                                         <span class="pro-count blue">6</span>
                                     </a>
-                                    <a href="shop-wishlist.html"><span class="lable">Wishlist</span></a>
+                                    <a href="{% url 'shop:wishlist' %}"><span class="lable">Wishlist</span></a>
                                 </div>
                                 <div class="header-action-icon-2">
-                                    <a class="mini-cart-icon" href="shop-cart.html">
+                                    <a class="mini-cart-icon" href="{% url 'cart:cart' %}">
                                         <img alt="Nest" src="{% static 'imgs/theme/icons/icon-cart.svg' %}" />
                                         <span class="pro-count blue">2</span>
                                     </a>
-                                    <a href="shop-cart.html"><span class="lable">Cart</span></a>
+                                    <a href="{% url 'cart:cart' %}"><span class="lable">Cart</span></a>
                                     <div class="cart-dropdown-wrap cart-dropdown-hm2">
                                         <ul>
                                             <li>
@@ -258,7 +258,7 @@
                                                     <h4><span>1 × </span>$800.00</h4>
                                                 </div>
                                                 <div class="shopping-cart-delete">
-                                                    <a href="index.html#"><i class="fi-rs-cross-small"></i></a>
+                                                    <a href="{% url 'website:home' %}#"><i class="fi-rs-cross-small"></i></a>
                                                 </div>
                                             </li>
                                             <li>
@@ -270,7 +270,7 @@
                                                     <h4><span>1 × </span>$3200.00</h4>
                                                 </div>
                                                 <div class="shopping-cart-delete">
-                                                    <a href="index.html#"><i class="fi-rs-cross-small"></i></a>
+                                                    <a href="{% url 'website:home' %}#"><i class="fi-rs-cross-small"></i></a>
                                                 </div>
                                             </li>
                                         </ul>
@@ -279,36 +279,36 @@
                                                 <h4>Total <span>$4000.00</span></h4>
                                             </div>
                                             <div class="shopping-cart-button">
-                                                <a href="shop-cart.html" class="outline">View cart</a>
-                                                <a href="shop-checkout.html">Checkout</a>
+                                                <a href="{% url 'cart:cart' %}" class="outline">View cart</a>
+                                                <a href="{% url 'orders:checkout' %}">Checkout</a>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="header-action-icon-2">
-                                    <a href="page-account.html">
+                                    <a href="{% url 'accounts:account' %}">
                                         <img class="svgInject" alt="Nest" src="{% static 'imgs/theme/icons/icon-user.svg' %}" />
                                     </a>
-                                    <a href="page-account.html"><span class="lable ml-0">Account</span></a>
+                                    <a href="{% url 'accounts:account' %}"><span class="lable ml-0">Account</span></a>
                                     <div class="cart-dropdown-wrap cart-dropdown-hm2 account-dropdown">
                                         <ul>
                                             <li>
-                                                <a href="page-account.html"><i class="fi fi-rs-user mr-10"></i>My Account</a>
+                                                <a href="{% url 'accounts:account' %}"><i class="fi fi-rs-user mr-10"></i>My Account</a>
                                             </li>
                                             <li>
-                                                <a href="page-account.html"><i class="fi fi-rs-location-alt mr-10"></i>Order Tracking</a>
+                                                <a href="{% url 'accounts:account' %}"><i class="fi fi-rs-location-alt mr-10"></i>Order Tracking</a>
                                             </li>
                                             <li>
-                                                <a href="page-account.html"><i class="fi fi-rs-label mr-10"></i>My Voucher</a>
+                                                <a href="{% url 'accounts:account' %}"><i class="fi fi-rs-label mr-10"></i>My Voucher</a>
                                             </li>
                                             <li>
-                                                <a href="shop-wishlist.html"><i class="fi fi-rs-heart mr-10"></i>My Wishlist</a>
+                                                <a href="{% url 'shop:wishlist' %}"><i class="fi fi-rs-heart mr-10"></i>My Wishlist</a>
                                             </li>
                                             <li>
-                                                <a href="page-account.html"><i class="fi fi-rs-settings-sliders mr-10"></i>Setting</a>
+                                                <a href="{% url 'accounts:account' %}"><i class="fi fi-rs-settings-sliders mr-10"></i>Setting</a>
                                             </li>
                                             <li>
-                                                <a href="page-login.html"><i class="fi fi-rs-sign-out mr-10"></i>Sign out</a>
+                                                <a href="{% url 'accounts:login' %}"><i class="fi fi-rs-sign-out mr-10"></i>Sign out</a>
                                             </li>
                                         </ul>
                                     </div>
@@ -323,11 +323,11 @@
             <div class="container">
                 <div class="header-wrap header-space-between position-relative">
                     <div class="logo logo-width-1 d-block d-lg-none">
-                        <a href="index.html"><img src="{% static 'imgs/theme/logo.svg' %}" alt="logo" /></a>
+                        <a href="{% url 'website:home' %}"><img src="{% static 'imgs/theme/logo.svg' %}" alt="logo" /></a>
                     </div>
                     <div class="header-nav d-none d-lg-flex">
                         <div class="main-categori-wrap d-none d-lg-block">
-                            <a class="categories-button-active" href="index.html#">
+                            <a class="categories-button-active" href="{% url 'website:home' %}#">
                                 <span class="fi-rs-apps"></span> <span class="et">Browse</span> All Categories
                                 <i class="fi-rs-angle-down"></i>
                             </a>
@@ -396,9 +396,9 @@
                                 <ul>
                                     <li class="hot-deals"><img src="{% static 'imgs/theme/icons/icon-hot.svg' %}" alt="hot deals" /><a href="shop-grid-right.html">Deals</a></li>
                                     <li>
-                                        <a class="active" href="index.html">Home <i class="fi-rs-angle-down"></i></a>
+                                        <a class="active" href="{% url 'website:home' %}">Home <i class="fi-rs-angle-down"></i></a>
                                         <ul class="sub-menu">
-                                            <li><a href="index.html">Home 1</a></li>
+                                            <li><a href="{% url 'website:home' %}">Home 1</a></li>
                                             <li><a href="index-2.html">Home 2</a></li>
                                             <li><a href="index-3.html">Home 3</a></li>
                                             <li><a href="index-4.html">Home 4</a></li>
@@ -407,34 +407,34 @@
                                         </ul>
                                     </li>
                                     <li>
-                                        <a href="page-about.html">About</a>
+                                        <a href="{% url 'website:about' %}">About</a>
                                     </li>
                                     <li>
                                         <a href="shop-grid-right.html">Shop <i class="fi-rs-angle-down"></i></a>
                                         <ul class="sub-menu">
                                             <li><a href="shop-grid-right.html">Shop Grid – Right Sidebar</a></li>
-                                            <li><a href="shop-grid-left.html">Shop Grid – Left Sidebar</a></li>
+                                            <li><a href="{% url 'shop:grid_left' %}">Shop Grid – Left Sidebar</a></li>
                                             <li><a href="shop-list-right.html">Shop List – Right Sidebar</a></li>
                                             <li><a href="shop-list-left.html">Shop List – Left Sidebar</a></li>
                                             <li><a href="shop-fullwidth.html">Shop - Wide</a></li>
                                             <li>
-                                                <a href="index.html#">Single Product <i class="fi-rs-angle-right"></i></a>
+                                                <a href="{% url 'website:home' %}#">Single Product <i class="fi-rs-angle-right"></i></a>
                                                 <ul class="level-menu">
                                                     <li><a href="shop-product-right.html">Product – Right Sidebar</a></li>
                                                     <li><a href="shop-product-left.html">Product – Left Sidebar</a></li>
-                                                    <li><a href="shop-product-full.html">Product – No sidebar</a></li>
+                                                    <li><a href="{% url 'shop:product_detail' %}">Product – No sidebar</a></li>
                                                     <li><a href="shop-product-vendor.html">Product – Vendor Info</a></li>
                                                 </ul>
                                             </li>
-                                            <li><a href="shop-filter.html">Shop – Filter</a></li>
-                                            <li><a href="shop-wishlist.html">Shop – Wishlist</a></li>
-                                            <li><a href="shop-cart.html">Shop – Cart</a></li>
-                                            <li><a href="shop-checkout.html">Shop – Checkout</a></li>
-                                            <li><a href="shop-compare.html">Shop – Compare</a></li>
+                                            <li><a href="{% url 'shop:filter' %}">Shop – Filter</a></li>
+                                            <li><a href="{% url 'shop:wishlist' %}">Shop – Wishlist</a></li>
+                                            <li><a href="{% url 'cart:cart' %}">Shop – Cart</a></li>
+                                            <li><a href="{% url 'orders:checkout' %}">Shop – Checkout</a></li>
+                                            <li><a href="{% url 'shop:compare' %}">Shop – Compare</a></li>
                                             <li>
-                                                <a href="index.html#">Shop Invoice<i class="fi-rs-angle-right"></i></a>
+                                                <a href="{% url 'website:home' %}#">Shop Invoice<i class="fi-rs-angle-right"></i></a>
                                                 <ul class="level-menu">
-                                                    <li><a href="shop-invoice-1.html">Shop Invoice 1</a></li>
+                                                    <li><a href="{% url 'orders:invoice' %}">Shop Invoice 1</a></li>
                                                     <li><a href="shop-invoice-2.html">Shop Invoice 2</a></li>
                                                     <li><a href="shop-invoice-3.html">Shop Invoice 3</a></li>
                                                     <li><a href="shop-invoice-4.html">Shop Invoice 4</a></li>
@@ -445,21 +445,21 @@
                                         </ul>
                                     </li>
                                     <li>
-                                        <a href="index.html#">Vendors <i class="fi-rs-angle-down"></i></a>
+                                        <a href="{% url 'website:home' %}#">Vendors <i class="fi-rs-angle-down"></i></a>
                                         <ul class="sub-menu">
-                                            <li><a href="vendors-grid.html">Vendors Grid</a></li>
+                                            <li><a href="{% url 'vendors:list' %}">Vendors Grid</a></li>
                                             <li><a href="vendors-list.html">Vendors List</a></li>
                                             <li><a href="vendor-details-1.html">Vendor Details 01</a></li>
                                             <li><a href="vendor-details-2.html">Vendor Details 02</a></li>
-                                            <li><a href="vendor-dashboard.html">Vendor Dashboard</a></li>
-                                            <li><a href="vendor-guide.html">Vendor Guide</a></li>
+                                            <li><a href="{% url 'dashboard:dashboard' %}">Vendor Dashboard</a></li>
+                                            <li><a href="{% url 'vendors:guide' %}">Vendor Guide</a></li>
                                         </ul>
                                     </li>
                                     <li class="position-static">
-                                        <a href="index.html#">Mega menu <i class="fi-rs-angle-down"></i></a>
+                                        <a href="{% url 'website:home' %}#">Mega menu <i class="fi-rs-angle-down"></i></a>
                                         <ul class="mega-menu">
                                             <li class="sub-mega-menu sub-mega-menu-width-22">
-                                                <a class="menu-title" href="index.html#">Fruit & Vegetables</a>
+                                                <a class="menu-title" href="{% url 'website:home' %}#">Fruit & Vegetables</a>
                                                 <ul>
                                                     <li><a href="shop-product-right.html">Meat & Poultry</a></li>
                                                     <li><a href="shop-product-right.html">Fresh Vegetables</a></li>
@@ -470,7 +470,7 @@
                                                 </ul>
                                             </li>
                                             <li class="sub-mega-menu sub-mega-menu-width-22">
-                                                <a class="menu-title" href="index.html#">Breakfast & Dairy</a>
+                                                <a class="menu-title" href="{% url 'website:home' %}#">Breakfast & Dairy</a>
                                                 <ul>
                                                     <li><a href="shop-product-right.html">Milk & Flavoured Milk</a></li>
                                                     <li><a href="shop-product-right.html">Butter and Margarine</a></li>
@@ -481,7 +481,7 @@
                                                 </ul>
                                             </li>
                                             <li class="sub-mega-menu sub-mega-menu-width-22">
-                                                <a class="menu-title" href="index.html#">Meat & Seafood</a>
+                                                <a class="menu-title" href="{% url 'website:home' %}#">Meat & Seafood</a>
                                                 <ul>
                                                     <li><a href="shop-product-right.html">Breakfast Sausage</a></li>
                                                     <li><a href="shop-product-right.html">Dinner Sausage</a></li>
@@ -521,37 +521,37 @@
                                         <a href="blog-category-grid.html">Blog <i class="fi-rs-angle-down"></i></a>
                                         <ul class="sub-menu">
                                             <li><a href="blog-category-grid.html">Blog Category Grid</a></li>
-                                            <li><a href="blog-category-list.html">Blog Category List</a></li>
+                                            <li><a href="{% url 'blog:category_list' %}">Blog Category List</a></li>
                                             <li><a href="blog-category-big.html">Blog Category Big</a></li>
                                             <li><a href="blog-category-fullwidth.html">Blog Category Wide</a></li>
                                             <li>
-                                                <a href="index.html#">Single Post <i class="fi-rs-angle-right"></i></a>
+                                                <a href="{% url 'website:home' %}#">Single Post <i class="fi-rs-angle-right"></i></a>
                                                 <ul class="level-menu level-menu-modify">
                                                     <li><a href="blog-post-left.html">Left Sidebar</a></li>
                                                     <li><a href="blog-post-right.html">Right Sidebar</a></li>
-                                                    <li><a href="blog-post-fullwidth.html">No Sidebar</a></li>
+                                                    <li><a href="{% url 'blog:post_detail' %}">No Sidebar</a></li>
                                                 </ul>
                                             </li>
                                         </ul>
                                     </li>
                                     <li>
-                                        <a href="index.html#">Pages <i class="fi-rs-angle-down"></i></a>
+                                        <a href="{% url 'website:home' %}#">Pages <i class="fi-rs-angle-down"></i></a>
                                         <ul class="sub-menu">
-                                            <li><a href="page-about.html">About Us</a></li>
-                                            <li><a href="page-contact.html">Contact</a></li>
-                                            <li><a href="page-account.html">My Account</a></li>
-                                            <li><a href="page-login.html">Login</a></li>
-                                            <li><a href="page-register.html">Register</a></li>
-                                            <li><a href="page-forgot-password.html">Forgot password</a></li>
-                                            <li><a href="page-reset-password.html">Reset password</a></li>
-                                            <li><a href="page-purchase-guide.html">Purchase Guide</a></li>
-                                            <li><a href="page-privacy-policy.html">Privacy Policy</a></li>
-                                            <li><a href="page-terms.html">Terms of Service</a></li>
-                                            <li><a href="page-404.html">404 Page</a></li>
+                                            <li><a href="{% url 'website:about' %}">About Us</a></li>
+                                            <li><a href="{% url 'website:contact' %}">Contact</a></li>
+                                            <li><a href="{% url 'accounts:account' %}">My Account</a></li>
+                                            <li><a href="{% url 'accounts:login' %}">Login</a></li>
+                                            <li><a href="{% url 'accounts:register' %}">Register</a></li>
+                                            <li><a href="{% url 'accounts:forgot_password' %}">Forgot password</a></li>
+                                            <li><a href="{% url 'accounts:reset_password' %}">Reset password</a></li>
+                                            <li><a href="{% url 'website:purchase_guide' %}">Purchase Guide</a></li>
+                                            <li><a href="{% url 'website:privacy_policy' %}">Privacy Policy</a></li>
+                                            <li><a href="{% url 'website:terms' %}">Terms of Service</a></li>
+                                            <li><a href="{% url 'website:404' %}">404 Page</a></li>
                                         </ul>
                                     </li>
                                     <li>
-                                        <a href="page-contact.html">Contact</a>
+                                        <a href="{% url 'website:contact' %}">Contact</a>
                                     </li>
                                 </ul>
                             </nav>
@@ -571,13 +571,13 @@
                     <div class="header-action-right d-block d-lg-none">
                         <div class="header-action-2">
                             <div class="header-action-icon-2">
-                                <a href="shop-wishlist.html">
+                                <a href="{% url 'shop:wishlist' %}">
                                     <img alt="Nest" src="{% static 'imgs/theme/icons/icon-heart.svg' %}" />
                                     <span class="pro-count white">4</span>
                                 </a>
                             </div>
                             <div class="header-action-icon-2">
-                                <a class="mini-cart-icon" href="index.html#">
+                                <a class="mini-cart-icon" href="{% url 'website:home' %}#">
                                     <img alt="Nest" src="{% static 'imgs/theme/icons/icon-cart.svg' %}" />
                                     <span class="pro-count white">2</span>
                                 </a>
@@ -592,7 +592,7 @@
                                                 <h3><span>1 × </span>$800.00</h3>
                                             </div>
                                             <div class="shopping-cart-delete">
-                                                <a href="index.html#"><i class="fi-rs-cross-small"></i></a>
+                                                <a href="{% url 'website:home' %}#"><i class="fi-rs-cross-small"></i></a>
                                             </div>
                                         </li>
                                         <li>
@@ -604,7 +604,7 @@
                                                 <h3><span>1 × </span>$3500.00</h3>
                                             </div>
                                             <div class="shopping-cart-delete">
-                                                <a href="index.html#"><i class="fi-rs-cross-small"></i></a>
+                                                <a href="{% url 'website:home' %}#"><i class="fi-rs-cross-small"></i></a>
                                             </div>
                                         </li>
                                     </ul>
@@ -613,8 +613,8 @@
                                             <h4>Total <span>$383.00</span></h4>
                                         </div>
                                         <div class="shopping-cart-button">
-                                            <a href="shop-cart.html">View cart</a>
-                                            <a href="shop-checkout.html">Checkout</a>
+                                            <a href="{% url 'cart:cart' %}">View cart</a>
+                                            <a href="{% url 'orders:checkout' %}">Checkout</a>
                                         </div>
                                     </div>
                                 </div>
@@ -629,7 +629,7 @@
         <div class="mobile-header-wrapper-inner">
             <div class="mobile-header-top">
                 <div class="mobile-header-logo">
-                    <a href="index.html"><img src="{% static 'imgs/theme/logo.svg' %}" alt="logo" /></a>
+                    <a href="{% url 'website:home' %}"><img src="{% static 'imgs/theme/logo.svg' %}" alt="logo" /></a>
                 </div>
                 <div class="mobile-menu-close close-style-wrap close-style-position-inherit">
                     <button class="close-style search-close">
@@ -650,9 +650,9 @@
                     <nav>
                         <ul class="mobile-menu font-heading">
                             <li class="menu-item-has-children">
-                                <a href="index.html">Home</a>
+                                <a href="{% url 'website:home' %}">Home</a>
                                 <ul class="dropdown">
-                                    <li><a href="index.html">Home 1</a></li>
+                                    <li><a href="{% url 'website:home' %}">Home 1</a></li>
                                     <li><a href="index-2.html">Home 2</a></li>
                                     <li><a href="index-3.html">Home 3</a></li>
                                     <li><a href="index-4.html">Home 4</a></li>
@@ -664,28 +664,28 @@
                                 <a href="shop-grid-right.html">shop</a>
                                 <ul class="dropdown">
                                     <li><a href="shop-grid-right.html">Shop Grid – Right Sidebar</a></li>
-                                    <li><a href="shop-grid-left.html">Shop Grid – Left Sidebar</a></li>
+                                    <li><a href="{% url 'shop:grid_left' %}">Shop Grid – Left Sidebar</a></li>
                                     <li><a href="shop-list-right.html">Shop List – Right Sidebar</a></li>
                                     <li><a href="shop-list-left.html">Shop List – Left Sidebar</a></li>
                                     <li><a href="shop-fullwidth.html">Shop - Wide</a></li>
                                     <li class="menu-item-has-children">
-                                        <a href="index.html#">Single Product</a>
+                                        <a href="{% url 'website:home' %}#">Single Product</a>
                                         <ul class="dropdown">
                                             <li><a href="shop-product-right.html">Product – Right Sidebar</a></li>
                                             <li><a href="shop-product-left.html">Product – Left Sidebar</a></li>
-                                            <li><a href="shop-product-full.html">Product – No sidebar</a></li>
+                                            <li><a href="{% url 'shop:product_detail' %}">Product – No sidebar</a></li>
                                             <li><a href="shop-product-vendor.html">Product – Vendor Infor</a></li>
                                         </ul>
                                     </li>
-                                    <li><a href="shop-filter.html">Shop – Filter</a></li>
-                                    <li><a href="shop-wishlist.html">Shop – Wishlist</a></li>
-                                    <li><a href="shop-cart.html">Shop – Cart</a></li>
-                                    <li><a href="shop-checkout.html">Shop – Checkout</a></li>
-                                    <li><a href="shop-compare.html">Shop – Compare</a></li>
+                                    <li><a href="{% url 'shop:filter' %}">Shop – Filter</a></li>
+                                    <li><a href="{% url 'shop:wishlist' %}">Shop – Wishlist</a></li>
+                                    <li><a href="{% url 'cart:cart' %}">Shop – Cart</a></li>
+                                    <li><a href="{% url 'orders:checkout' %}">Shop – Checkout</a></li>
+                                    <li><a href="{% url 'shop:compare' %}">Shop – Compare</a></li>
                                     <li class="menu-item-has-children">
-                                        <a href="index.html#">Shop Invoice</a>
+                                        <a href="{% url 'website:home' %}#">Shop Invoice</a>
                                         <ul class="dropdown">
-                                            <li><a href="shop-invoice-1.html">Shop Invoice 1</a></li>
+                                            <li><a href="{% url 'orders:invoice' %}">Shop Invoice 1</a></li>
                                             <li><a href="shop-invoice-2.html">Shop Invoice 2</a></li>
                                             <li><a href="shop-invoice-3.html">Shop Invoice 3</a></li>
                                             <li><a href="shop-invoice-4.html">Shop Invoice 4</a></li>
@@ -696,21 +696,21 @@
                                 </ul>
                             </li>
                             <li class="menu-item-has-children">
-                                <a href="index.html#">Vendors</a>
+                                <a href="{% url 'website:home' %}#">Vendors</a>
                                 <ul class="dropdown">
-                                    <li><a href="vendors-grid.html">Vendors Grid</a></li>
+                                    <li><a href="{% url 'vendors:list' %}">Vendors Grid</a></li>
                                     <li><a href="vendors-list.html">Vendors List</a></li>
                                     <li><a href="vendor-details-1.html">Vendor Details 01</a></li>
                                     <li><a href="vendor-details-2.html">Vendor Details 02</a></li>
-                                    <li><a href="vendor-dashboard.html">Vendor Dashboard</a></li>
-                                    <li><a href="vendor-guide.html">Vendor Guide</a></li>
+                                    <li><a href="{% url 'dashboard:dashboard' %}">Vendor Dashboard</a></li>
+                                    <li><a href="{% url 'vendors:guide' %}">Vendor Guide</a></li>
                                 </ul>
                             </li>
                             <li class="menu-item-has-children">
-                                <a href="index.html#">Mega menu</a>
+                                <a href="{% url 'website:home' %}#">Mega menu</a>
                                 <ul class="dropdown">
                                     <li class="menu-item-has-children">
-                                        <a href="index.html#">Women's Fashion</a>
+                                        <a href="{% url 'website:home' %}#">Women's Fashion</a>
                                         <ul class="dropdown">
                                             <li><a href="shop-product-right.html">Dresses</a></li>
                                             <li><a href="shop-product-right.html">Blouses & Shirts</a></li>
@@ -719,7 +719,7 @@
                                         </ul>
                                     </li>
                                     <li class="menu-item-has-children">
-                                        <a href="index.html#">Men's Fashion</a>
+                                        <a href="{% url 'website:home' %}#">Men's Fashion</a>
                                         <ul class="dropdown">
                                             <li><a href="shop-product-right.html">Jackets</a></li>
                                             <li><a href="shop-product-right.html">Casual Faux Leather</a></li>
@@ -727,7 +727,7 @@
                                         </ul>
                                     </li>
                                     <li class="menu-item-has-children">
-                                        <a href="index.html#">Technology</a>
+                                        <a href="{% url 'website:home' %}#">Technology</a>
                                         <ul class="dropdown">
                                             <li><a href="shop-product-right.html">Gaming Laptops</a></li>
                                             <li><a href="shop-product-right.html">Ultraslim Laptops</a></li>
@@ -742,42 +742,42 @@
                                 <a href="blog-category-fullwidth.html">Blog</a>
                                 <ul class="dropdown">
                                     <li><a href="blog-category-grid.html">Blog Category Grid</a></li>
-                                    <li><a href="blog-category-list.html">Blog Category List</a></li>
+                                    <li><a href="{% url 'blog:category_list' %}">Blog Category List</a></li>
                                     <li><a href="blog-category-big.html">Blog Category Big</a></li>
                                     <li><a href="blog-category-fullwidth.html">Blog Category Wide</a></li>
                                     <li class="menu-item-has-children">
-                                        <a href="index.html#">Single Product Layout</a>
+                                        <a href="{% url 'website:home' %}#">Single Product Layout</a>
                                         <ul class="dropdown">
                                             <li><a href="blog-post-left.html">Left Sidebar</a></li>
                                             <li><a href="blog-post-right.html">Right Sidebar</a></li>
-                                            <li><a href="blog-post-fullwidth.html">No Sidebar</a></li>
+                                            <li><a href="{% url 'blog:post_detail' %}">No Sidebar</a></li>
                                         </ul>
                                     </li>
                                 </ul>
                             </li>
                             <li class="menu-item-has-children">
-                                <a href="index.html#">Pages</a>
+                                <a href="{% url 'website:home' %}#">Pages</a>
                                 <ul class="dropdown">
-                                    <li><a href="page-about.html">About Us</a></li>
-                                    <li><a href="page-contact.html">Contact</a></li>
-                                    <li><a href="page-account.html">My Account</a></li>
-                                    <li><a href="page-login.html">Login</a></li>
-                                    <li><a href="page-register.html">Register</a></li>
-                                    <li><a href="page-forgot-password.html">Forgot password</a></li>
-                                    <li><a href="page-reset-password.html">Reset password</a></li>
-                                    <li><a href="page-purchase-guide.html">Purchase Guide</a></li>
-                                    <li><a href="page-privacy-policy.html">Privacy Policy</a></li>
-                                    <li><a href="page-terms.html">Terms of Service</a></li>
-                                    <li><a href="page-404.html">404 Page</a></li>
+                                    <li><a href="{% url 'website:about' %}">About Us</a></li>
+                                    <li><a href="{% url 'website:contact' %}">Contact</a></li>
+                                    <li><a href="{% url 'accounts:account' %}">My Account</a></li>
+                                    <li><a href="{% url 'accounts:login' %}">Login</a></li>
+                                    <li><a href="{% url 'accounts:register' %}">Register</a></li>
+                                    <li><a href="{% url 'accounts:forgot_password' %}">Forgot password</a></li>
+                                    <li><a href="{% url 'accounts:reset_password' %}">Reset password</a></li>
+                                    <li><a href="{% url 'website:purchase_guide' %}">Purchase Guide</a></li>
+                                    <li><a href="{% url 'website:privacy_policy' %}">Privacy Policy</a></li>
+                                    <li><a href="{% url 'website:terms' %}">Terms of Service</a></li>
+                                    <li><a href="{% url 'website:404' %}">404 Page</a></li>
                                 </ul>
                             </li>
                             <li class="menu-item-has-children">
-                                <a href="index.html#">Language</a>
+                                <a href="{% url 'website:home' %}#">Language</a>
                                 <ul class="dropdown">
-                                    <li><a href="index.html#">English</a></li>
-                                    <li><a href="index.html#">French</a></li>
-                                    <li><a href="index.html#">German</a></li>
-                                    <li><a href="index.html#">Spanish</a></li>
+                                    <li><a href="{% url 'website:home' %}#">English</a></li>
+                                    <li><a href="{% url 'website:home' %}#">French</a></li>
+                                    <li><a href="{% url 'website:home' %}#">German</a></li>
+                                    <li><a href="{% url 'website:home' %}#">Spanish</a></li>
                                 </ul>
                             </li>
                         </ul>
@@ -786,22 +786,22 @@
                 </div>
                 <div class="mobile-header-info-wrap">
                     <div class="single-mobile-header-info">
-                        <a href="page-contact.html"><i class="fi-rs-marker"></i> Our location </a>
+                        <a href="{% url 'website:contact' %}"><i class="fi-rs-marker"></i> Our location </a>
                     </div>
                     <div class="single-mobile-header-info">
-                        <a href="page-login.html"><i class="fi-rs-user"></i>Log In / Sign Up </a>
+                        <a href="{% url 'accounts:login' %}"><i class="fi-rs-user"></i>Log In / Sign Up </a>
                     </div>
                     <div class="single-mobile-header-info">
-                        <a href="index.html#"><i class="fi-rs-headphones"></i>(+01) - 2345 - 6789 </a>
+                        <a href="{% url 'website:home' %}#"><i class="fi-rs-headphones"></i>(+01) - 2345 - 6789 </a>
                     </div>
                 </div>
                 <div class="mobile-social-icon mb-50">
                     <h6 class="mb-15">Follow Us</h6>
-                    <a href="index.html#"><img src="{% static 'imgs/theme/icons/icon-facebook-white.svg' %}" alt="" /></a>
-                    <a href="index.html#"><img src="{% static 'imgs/theme/icons/icon-twitter-white.svg' %}" alt="" /></a>
-                    <a href="index.html#"><img src="{% static 'imgs/theme/icons/icon-instagram-white.svg' %}" alt="" /></a>
-                    <a href="index.html#"><img src="{% static 'imgs/theme/icons/icon-pinterest-white.svg' %}" alt="" /></a>
-                    <a href="index.html#"><img src="{% static 'imgs/theme/icons/icon-youtube-white.svg' %}" alt="" /></a>
+                    <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/icons/icon-facebook-white.svg' %}" alt="" /></a>
+                    <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/icons/icon-twitter-white.svg' %}" alt="" /></a>
+                    <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/icons/icon-instagram-white.svg' %}" alt="" /></a>
+                    <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/icons/icon-pinterest-white.svg' %}" alt="" /></a>
+                    <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/icons/icon-youtube-white.svg' %}" alt="" /></a>
                 </div>
                 <div class="site-copyright">Copyright 2024 © Nest. All rights reserved. Powered by AliThemes.</div>
             </div>
@@ -912,7 +912,7 @@
                     <div class="col">
                         <div class="widget-about font-md mb-md-3 mb-lg-3 mb-xl-0 wow animate__animated animate__fadeInUp" data-wow-delay="0">
                             <div class="logo mb-30">
-                                <a href="index.html" class="mb-15"><img src="{% static 'imgs/theme/logo.svg' %}" alt="logo" /></a>
+                                <a href="{% url 'website:home' %}" class="mb-15"><img src="{% static 'imgs/theme/logo.svg' %}" alt="logo" /></a>
                                 <p class="font-lg text-heading">Awesome grocery store website template</p>
                             </div>
                             <ul class="contact-infor">
@@ -926,57 +926,57 @@
                     <div class="footer-link-widget col wow animate__animated animate__fadeInUp" data-wow-delay=".1s">
                         <h4 class=" widget-title">Company</h4>
                         <ul class="footer-list mb-sm-5 mb-md-0">
-                            <li><a href="index.html#">About Us</a></li>
-                            <li><a href="index.html#">Delivery Information</a></li>
-                            <li><a href="index.html#">Privacy Policy</a></li>
-                            <li><a href="index.html#">Terms &amp; Conditions</a></li>
-                            <li><a href="index.html#">Contact Us</a></li>
-                            <li><a href="index.html#">Support Center</a></li>
-                            <li><a href="index.html#">Careers</a></li>
+                            <li><a href="{% url 'website:home' %}#">About Us</a></li>
+                            <li><a href="{% url 'website:home' %}#">Delivery Information</a></li>
+                            <li><a href="{% url 'website:home' %}#">Privacy Policy</a></li>
+                            <li><a href="{% url 'website:home' %}#">Terms &amp; Conditions</a></li>
+                            <li><a href="{% url 'website:home' %}#">Contact Us</a></li>
+                            <li><a href="{% url 'website:home' %}#">Support Center</a></li>
+                            <li><a href="{% url 'website:home' %}#">Careers</a></li>
                         </ul>
                     </div>
                     <div class="footer-link-widget col wow animate__animated animate__fadeInUp" data-wow-delay=".2s">
                         <h4 class="widget-title">Account</h4>
                         <ul class="footer-list mb-sm-5 mb-md-0">
-                            <li><a href="index.html#">Sign In</a></li>
-                            <li><a href="index.html#">View Cart</a></li>
-                            <li><a href="index.html#">My Wishlist</a></li>
-                            <li><a href="index.html#">Track My Order</a></li>
-                            <li><a href="index.html#">Help Ticket</a></li>
-                            <li><a href="index.html#">Shipping Details</a></li>
-                            <li><a href="index.html#">Compare products</a></li>
+                            <li><a href="{% url 'website:home' %}#">Sign In</a></li>
+                            <li><a href="{% url 'website:home' %}#">View Cart</a></li>
+                            <li><a href="{% url 'website:home' %}#">My Wishlist</a></li>
+                            <li><a href="{% url 'website:home' %}#">Track My Order</a></li>
+                            <li><a href="{% url 'website:home' %}#">Help Ticket</a></li>
+                            <li><a href="{% url 'website:home' %}#">Shipping Details</a></li>
+                            <li><a href="{% url 'website:home' %}#">Compare products</a></li>
                         </ul>
                     </div>
                     <div class="footer-link-widget col wow animate__animated animate__fadeInUp" data-wow-delay=".3s">
                         <h4 class="widget-title">Corporate</h4>
                         <ul class="footer-list mb-sm-5 mb-md-0">
-                            <li><a href="index.html#">Become a Vendor</a></li>
-                            <li><a href="index.html#">Affiliate Program</a></li>
-                            <li><a href="index.html#">Farm Business</a></li>
-                            <li><a href="index.html#">Farm Careers</a></li>
-                            <li><a href="index.html#">Our Suppliers</a></li>
-                            <li><a href="index.html#">Accessibility</a></li>
-                            <li><a href="index.html#">Promotions</a></li>
+                            <li><a href="{% url 'website:home' %}#">Become a Vendor</a></li>
+                            <li><a href="{% url 'website:home' %}#">Affiliate Program</a></li>
+                            <li><a href="{% url 'website:home' %}#">Farm Business</a></li>
+                            <li><a href="{% url 'website:home' %}#">Farm Careers</a></li>
+                            <li><a href="{% url 'website:home' %}#">Our Suppliers</a></li>
+                            <li><a href="{% url 'website:home' %}#">Accessibility</a></li>
+                            <li><a href="{% url 'website:home' %}#">Promotions</a></li>
                         </ul>
                     </div>
                     <div class="footer-link-widget col wow animate__animated animate__fadeInUp" data-wow-delay=".4s">
                         <h4 class="widget-title">Popular</h4>
                         <ul class="footer-list mb-sm-5 mb-md-0">
-                            <li><a href="index.html#">Milk & Flavoured Milk</a></li>
-                            <li><a href="index.html#">Butter and Margarine</a></li>
-                            <li><a href="index.html#">Eggs Substitutes</a></li>
-                            <li><a href="index.html#">Marmalades</a></li>
-                            <li><a href="index.html#">Sour Cream and Dips</a></li>
-                            <li><a href="index.html#">Tea & Kombucha</a></li>
-                            <li><a href="index.html#">Cheese</a></li>
+                            <li><a href="{% url 'website:home' %}#">Milk & Flavoured Milk</a></li>
+                            <li><a href="{% url 'website:home' %}#">Butter and Margarine</a></li>
+                            <li><a href="{% url 'website:home' %}#">Eggs Substitutes</a></li>
+                            <li><a href="{% url 'website:home' %}#">Marmalades</a></li>
+                            <li><a href="{% url 'website:home' %}#">Sour Cream and Dips</a></li>
+                            <li><a href="{% url 'website:home' %}#">Tea & Kombucha</a></li>
+                            <li><a href="{% url 'website:home' %}#">Cheese</a></li>
                         </ul>
                     </div>
                     <div class="footer-link-widget widget-install-app col wow animate__animated animate__fadeInUp" data-wow-delay=".5s">
                         <h4 class="widget-title">Install App</h4>
                         <p class="">From App Store or Google Play</p>
                         <div class="download-app">
-                            <a href="index.html#" class="hover-up mb-sm-2 mb-lg-0"><img class="active" src="{% static 'imgs/theme/app-store.jpg' %}" alt="" /></a>
-                            <a href="index.html#" class="hover-up mb-sm-2"><img src="{% static 'imgs/theme/google-play.jpg' %}" alt="" /></a>
+                            <a href="{% url 'website:home' %}#" class="hover-up mb-sm-2 mb-lg-0"><img class="active" src="{% static 'imgs/theme/app-store.jpg' %}" alt="" /></a>
+                            <a href="{% url 'website:home' %}#" class="hover-up mb-sm-2"><img src="{% static 'imgs/theme/google-play.jpg' %}" alt="" /></a>
                         </div>
                         <p class="mb-20">Secured Payment Gateways</p>
                         <img class="" src="{% static 'imgs/theme/payment-method.png' %}" alt="" />
@@ -1004,11 +1004,11 @@
                 <div class="col-xl-4 col-lg-6 col-md-6 text-end d-none d-md-block">
                     <div class="mobile-social-icon">
                         <h6>Follow Us</h6>
-                        <a href="index.html#"><img src="{% static 'imgs/theme/icons/icon-facebook-white.svg' %}" alt="" /></a>
-                        <a href="index.html#"><img src="{% static 'imgs/theme/icons/icon-twitter-white.svg' %}" alt="" /></a>
-                        <a href="index.html#"><img src="{% static 'imgs/theme/icons/icon-instagram-white.svg' %}" alt="" /></a>
-                        <a href="index.html#"><img src="{% static 'imgs/theme/icons/icon-pinterest-white.svg' %}" alt="" /></a>
-                        <a href="index.html#"><img src="{% static 'imgs/theme/icons/icon-youtube-white.svg' %}" alt="" /></a>
+                        <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/icons/icon-facebook-white.svg' %}" alt="" /></a>
+                        <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/icons/icon-twitter-white.svg' %}" alt="" /></a>
+                        <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/icons/icon-instagram-white.svg' %}" alt="" /></a>
+                        <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/icons/icon-pinterest-white.svg' %}" alt="" /></a>
+                        <a href="{% url 'website:home' %}#"><img src="{% static 'imgs/theme/icons/icon-youtube-white.svg' %}" alt="" /></a>
                     </div>
                     <p class="font-sm">Up to 15% discount on your first subscribe</p>
                 </div>

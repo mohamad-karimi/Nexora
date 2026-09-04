@@ -12,3 +12,12 @@ class AboutView(TemplateView):
 
 class ContactView(TemplateView):
     template_name = 'website/page-contact.html'
+
+class PrivacyPolicyView(TemplateView):
+    template_name = 'website/page-privacy-policy.html'
+
+class PurchaseGuideView(TemplateView):
+    template_name = 'website/page-purchase-guide.html'
+
+class TermsView(TemplateView):
+    template_name = 'website/page-terms.html'

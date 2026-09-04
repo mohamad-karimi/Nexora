@@ -46,6 +46,12 @@ INSTALLED_APPS = [
     # My app
     "accounts",
     "website",
+    "blog",
+    "shop",
+    "vendors",
+    "cart",
+    "orders",
+    "dashboard",
 ]
 
 MIDDLEWARE = [
