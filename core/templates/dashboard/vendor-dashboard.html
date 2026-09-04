@@ -15,7 +15,7 @@
             <div class="container">
                 <h1 class="display-2 mt-30 pb-30">Dashboard</h1>
                 <hr class="mb-80" />
-                <div class="row">
+                <div class="row flex-row-reverse">
                     <div class="col-lg-9">
                         <h3 class="mb-30">Recent Orders</h3>
                         <div class="table-responsive">
@@ -90,49 +90,7 @@
                             </table>
                         </div>
                     </div>
-                    <div class="col-lg-3">
-                        <div class="primary-sidebar">
-                            <div class="sidebar-widget product-sidebar mt-15 p-30 bg-grey border-radius-10">
-                                <h5 class="section-title style-1 mb-30">Best sell</h5>
-                                <div class="single-post clearfix">
-                                    <div class="image">
-                                        <img src="{% static 'imgs/shop/thumbnail-3.jpg' %}" alt="#" />
-                                    </div>
-                                    <div class="content pt-10">
-                                        <h5><a href="https://nest-frontend-v6.vercel.app/shop-product-detail.html">Chen Cardigan</a></h5>
-                                        <p class="price mb-0 mt-5">$99.50</p>
-                                        <div class="product-rate">
-                                            <div class="product-rating" style="width: 90%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="single-post clearfix">
-                                    <div class="image">
-                                        <img src="{% static 'imgs/shop/thumbnail-4.jpg' %}" alt="#" />
-                                    </div>
-                                    <div class="content pt-10">
-                                        <h6><a href="https://nest-frontend-v6.vercel.app/shop-product-detail.html">Chen Sweater</a></h6>
-                                        <p class="price mb-0 mt-5">$89.50</p>
-                                        <div class="product-rate">
-                                            <div class="product-rating" style="width: 80%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="single-post clearfix">
-                                    <div class="image">
-                                        <img src="{% static 'imgs/shop/thumbnail-5.jpg' %}" alt="#" />
-                                    </div>
-                                    <div class="content pt-10">
-                                        <h6><a href="https://nest-frontend-v6.vercel.app/shop-product-detail.html">Colorful Jacket</a></h6>
-                                        <p class="price mb-0 mt-5">$25</p>
-                                        <div class="product-rate">
-                                            <div class="product-rating" style="width: 60%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {% include "dashboard/sidebar.html" %}
                 </div>
                 <div class="row mb-50 mt-50">
                     <div class="col-lg-12">

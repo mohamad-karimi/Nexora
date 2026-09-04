@@ -396,62 +396,25 @@
                                 <ul>
                                     <li class="hot-deals"><img src="{% static 'imgs/theme/icons/icon-hot.svg' %}" alt="hot deals" /><a href="shop-grid-right.html">Deals</a></li>
                                     <li>
-                                        <a class="active" href="{% url 'website:home' %}">Home <i class="fi-rs-angle-down"></i></a>
-                                        <ul class="sub-menu">
-                                            <li><a href="{% url 'website:home' %}">Home 1</a></li>
-                                            <li><a href="index-2.html">Home 2</a></li>
-                                            <li><a href="index-3.html">Home 3</a></li>
-                                            <li><a href="index-4.html">Home 4</a></li>
-                                            <li><a href="index-5.html">Home 5</a></li>
-                                            <li><a href="index-6.html">Home 6</a></li>
-                                        </ul>
+                                        <a class="active" href="{% url 'website:home' %}">Home</a>
                                     </li>
                                     <li>
                                         <a href="{% url 'website:about' %}">About</a>
                                     </li>
                                     <li>
-                                        <a href="shop-grid-right.html">Shop <i class="fi-rs-angle-down"></i></a>
+                                        <a href="{% url 'shop:grid_left' %}">Shop <i class="fi-rs-angle-down"></i></a>
                                         <ul class="sub-menu">
-                                            <li><a href="shop-grid-right.html">Shop Grid – Right Sidebar</a></li>
-                                            <li><a href="{% url 'shop:grid_left' %}">Shop Grid – Left Sidebar</a></li>
-                                            <li><a href="shop-list-right.html">Shop List – Right Sidebar</a></li>
-                                            <li><a href="shop-list-left.html">Shop List – Left Sidebar</a></li>
-                                            <li><a href="shop-fullwidth.html">Shop - Wide</a></li>
-                                            <li>
-                                                <a href="{% url 'website:home' %}#">Single Product <i class="fi-rs-angle-right"></i></a>
-                                                <ul class="level-menu">
-                                                    <li><a href="shop-product-right.html">Product – Right Sidebar</a></li>
-                                                    <li><a href="shop-product-left.html">Product – Left Sidebar</a></li>
-                                                    <li><a href="{% url 'shop:product_detail' %}">Product – No sidebar</a></li>
-                                                    <li><a href="shop-product-vendor.html">Product – Vendor Info</a></li>
-                                                </ul>
-                                            </li>
                                             <li><a href="{% url 'shop:filter' %}">Shop – Filter</a></li>
                                             <li><a href="{% url 'shop:wishlist' %}">Shop – Wishlist</a></li>
                                             <li><a href="{% url 'cart:cart' %}">Shop – Cart</a></li>
                                             <li><a href="{% url 'orders:checkout' %}">Shop – Checkout</a></li>
                                             <li><a href="{% url 'shop:compare' %}">Shop – Compare</a></li>
-                                            <li>
-                                                <a href="{% url 'website:home' %}#">Shop Invoice<i class="fi-rs-angle-right"></i></a>
-                                                <ul class="level-menu">
-                                                    <li><a href="{% url 'orders:invoice' %}">Shop Invoice 1</a></li>
-                                                    <li><a href="shop-invoice-2.html">Shop Invoice 2</a></li>
-                                                    <li><a href="shop-invoice-3.html">Shop Invoice 3</a></li>
-                                                    <li><a href="shop-invoice-4.html">Shop Invoice 4</a></li>
-                                                    <li><a href="shop-invoice-5.html">Shop Invoice 5</a></li>
-                                                    <li><a href="shop-invoice-6.html">Shop Invoice 6</a></li>
-                                                </ul>
-                                            </li>
                                         </ul>
                                     </li>
                                     <li>
                                         <a href="{% url 'website:home' %}#">Vendors <i class="fi-rs-angle-down"></i></a>
                                         <ul class="sub-menu">
-                                            <li><a href="{% url 'vendors:list' %}">Vendors Grid</a></li>
-                                            <li><a href="vendors-list.html">Vendors List</a></li>
-                                            <li><a href="vendor-details-1.html">Vendor Details 01</a></li>
-                                            <li><a href="vendor-details-2.html">Vendor Details 02</a></li>
-                                            <li><a href="{% url 'dashboard:dashboard' %}">Vendor Dashboard</a></li>
+                                            <li><a href="{% url 'vendors:list' %}">Vendors List</a></li>
                                             <li><a href="{% url 'vendors:guide' %}">Vendor Guide</a></li>
                                         </ul>
                                     </li>
@@ -518,37 +481,7 @@
                                         </ul>
                                     </li>
                                     <li>
-                                        <a href="blog-category-grid.html">Blog <i class="fi-rs-angle-down"></i></a>
-                                        <ul class="sub-menu">
-                                            <li><a href="blog-category-grid.html">Blog Category Grid</a></li>
-                                            <li><a href="{% url 'blog:category_list' %}">Blog Category List</a></li>
-                                            <li><a href="blog-category-big.html">Blog Category Big</a></li>
-                                            <li><a href="blog-category-fullwidth.html">Blog Category Wide</a></li>
-                                            <li>
-                                                <a href="{% url 'website:home' %}#">Single Post <i class="fi-rs-angle-right"></i></a>
-                                                <ul class="level-menu level-menu-modify">
-                                                    <li><a href="blog-post-left.html">Left Sidebar</a></li>
-                                                    <li><a href="blog-post-right.html">Right Sidebar</a></li>
-                                                    <li><a href="{% url 'blog:post_detail' %}">No Sidebar</a></li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        <a href="{% url 'website:home' %}#">Pages <i class="fi-rs-angle-down"></i></a>
-                                        <ul class="sub-menu">
-                                            <li><a href="{% url 'website:about' %}">About Us</a></li>
-                                            <li><a href="{% url 'website:contact' %}">Contact</a></li>
-                                            <li><a href="{% url 'accounts:account' %}">My Account</a></li>
-                                            <li><a href="{% url 'accounts:login' %}">Login</a></li>
-                                            <li><a href="{% url 'accounts:register' %}">Register</a></li>
-                                            <li><a href="{% url 'accounts:forgot_password' %}">Forgot password</a></li>
-                                            <li><a href="{% url 'accounts:reset_password' %}">Reset password</a></li>
-                                            <li><a href="{% url 'website:purchase_guide' %}">Purchase Guide</a></li>
-                                            <li><a href="{% url 'website:privacy_policy' %}">Privacy Policy</a></li>
-                                            <li><a href="{% url 'website:terms' %}">Terms of Service</a></li>
-                                            <li><a href="{% url 'website:404' %}">404 Page</a></li>
-                                        </ul>
+                                        <a href="{% url 'blog:category_list' %}">Blog</a>
                                     </li>
                                     <li>
                                         <a href="{% url 'website:contact' %}">Contact</a>
@@ -651,59 +584,23 @@
                         <ul class="mobile-menu font-heading">
                             <li class="menu-item-has-children">
                                 <a href="{% url 'website:home' %}">Home</a>
-                                <ul class="dropdown">
-                                    <li><a href="{% url 'website:home' %}">Home 1</a></li>
-                                    <li><a href="index-2.html">Home 2</a></li>
-                                    <li><a href="index-3.html">Home 3</a></li>
-                                    <li><a href="index-4.html">Home 4</a></li>
-                                    <li><a href="index-5.html">Home 5</a></li>
-                                    <li><a href="index-6.html">Home 6</a></li>
-                                </ul>
                             </li>
                             <li class="menu-item-has-children">
-                                <a href="shop-grid-right.html">shop</a>
+                                <a href="{% url 'shop:grid_left' %}">shop</a>
                                 <ul class="dropdown">
-                                    <li><a href="shop-grid-right.html">Shop Grid – Right Sidebar</a></li>
-                                    <li><a href="{% url 'shop:grid_left' %}">Shop Grid – Left Sidebar</a></li>
-                                    <li><a href="shop-list-right.html">Shop List – Right Sidebar</a></li>
-                                    <li><a href="shop-list-left.html">Shop List – Left Sidebar</a></li>
-                                    <li><a href="shop-fullwidth.html">Shop - Wide</a></li>
-                                    <li class="menu-item-has-children">
-                                        <a href="{% url 'website:home' %}#">Single Product</a>
-                                        <ul class="dropdown">
-                                            <li><a href="shop-product-right.html">Product – Right Sidebar</a></li>
-                                            <li><a href="shop-product-left.html">Product – Left Sidebar</a></li>
-                                            <li><a href="{% url 'shop:product_detail' %}">Product – No sidebar</a></li>
-                                            <li><a href="shop-product-vendor.html">Product – Vendor Infor</a></li>
-                                        </ul>
-                                    </li>
                                     <li><a href="{% url 'shop:filter' %}">Shop – Filter</a></li>
                                     <li><a href="{% url 'shop:wishlist' %}">Shop – Wishlist</a></li>
                                     <li><a href="{% url 'cart:cart' %}">Shop – Cart</a></li>
                                     <li><a href="{% url 'orders:checkout' %}">Shop – Checkout</a></li>
                                     <li><a href="{% url 'shop:compare' %}">Shop – Compare</a></li>
-                                    <li class="menu-item-has-children">
-                                        <a href="{% url 'website:home' %}#">Shop Invoice</a>
-                                        <ul class="dropdown">
-                                            <li><a href="{% url 'orders:invoice' %}">Shop Invoice 1</a></li>
-                                            <li><a href="shop-invoice-2.html">Shop Invoice 2</a></li>
-                                            <li><a href="shop-invoice-3.html">Shop Invoice 3</a></li>
-                                            <li><a href="shop-invoice-4.html">Shop Invoice 4</a></li>
-                                            <li><a href="shop-invoice-5.html">Shop Invoice 5</a></li>
-                                            <li><a href="shop-invoice-6.html">Shop Invoice 6</a></li>
-                                        </ul>
-                                    </li>
                                 </ul>
                             </li>
                             <li class="menu-item-has-children">
                                 <a href="{% url 'website:home' %}#">Vendors</a>
                                 <ul class="dropdown">
-                                    <li><a href="{% url 'vendors:list' %}">Vendors Grid</a></li>
-                                    <li><a href="vendors-list.html">Vendors List</a></li>
-                                    <li><a href="vendor-details-1.html">Vendor Details 01</a></li>
-                                    <li><a href="vendor-details-2.html">Vendor Details 02</a></li>
-                                    <li><a href="{% url 'dashboard:dashboard' %}">Vendor Dashboard</a></li>
+                                    <li><a href="{% url 'vendors:list' %}">Vendors List</a></li>
                                     <li><a href="{% url 'vendors:guide' %}">Vendor Guide</a></li>
+                                    <li><a href="{% url 'dashboard:dashboard' %}">Vendor Dashboard</a></li>
                                 </ul>
                             </li>
                             <li class="menu-item-has-children">
@@ -739,37 +636,7 @@
                                 </ul>
                             </li>
                             <li class="menu-item-has-children">
-                                <a href="blog-category-fullwidth.html">Blog</a>
-                                <ul class="dropdown">
-                                    <li><a href="blog-category-grid.html">Blog Category Grid</a></li>
-                                    <li><a href="{% url 'blog:category_list' %}">Blog Category List</a></li>
-                                    <li><a href="blog-category-big.html">Blog Category Big</a></li>
-                                    <li><a href="blog-category-fullwidth.html">Blog Category Wide</a></li>
-                                    <li class="menu-item-has-children">
-                                        <a href="{% url 'website:home' %}#">Single Product Layout</a>
-                                        <ul class="dropdown">
-                                            <li><a href="blog-post-left.html">Left Sidebar</a></li>
-                                            <li><a href="blog-post-right.html">Right Sidebar</a></li>
-                                            <li><a href="{% url 'blog:post_detail' %}">No Sidebar</a></li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="menu-item-has-children">
-                                <a href="{% url 'website:home' %}#">Pages</a>
-                                <ul class="dropdown">
-                                    <li><a href="{% url 'website:about' %}">About Us</a></li>
-                                    <li><a href="{% url 'website:contact' %}">Contact</a></li>
-                                    <li><a href="{% url 'accounts:account' %}">My Account</a></li>
-                                    <li><a href="{% url 'accounts:login' %}">Login</a></li>
-                                    <li><a href="{% url 'accounts:register' %}">Register</a></li>
-                                    <li><a href="{% url 'accounts:forgot_password' %}">Forgot password</a></li>
-                                    <li><a href="{% url 'accounts:reset_password' %}">Reset password</a></li>
-                                    <li><a href="{% url 'website:purchase_guide' %}">Purchase Guide</a></li>
-                                    <li><a href="{% url 'website:privacy_policy' %}">Privacy Policy</a></li>
-                                    <li><a href="{% url 'website:terms' %}">Terms of Service</a></li>
-                                    <li><a href="{% url 'website:404' %}">404 Page</a></li>
-                                </ul>
+                                <a href="{% url 'blog:category_list' %}">Blog</a>
                             </li>
                             <li class="menu-item-has-children">
                                 <a href="{% url 'website:home' %}#">Language</a>
@@ -926,11 +793,11 @@
                     <div class="footer-link-widget col wow animate__animated animate__fadeInUp" data-wow-delay=".1s">
                         <h4 class=" widget-title">Company</h4>
                         <ul class="footer-list mb-sm-5 mb-md-0">
-                            <li><a href="{% url 'website:home' %}#">About Us</a></li>
+                            <li><a href="{% url 'website:about' %}">About Us</a></li>
                             <li><a href="{% url 'website:home' %}#">Delivery Information</a></li>
-                            <li><a href="{% url 'website:home' %}#">Privacy Policy</a></li>
-                            <li><a href="{% url 'website:home' %}#">Terms &amp; Conditions</a></li>
-                            <li><a href="{% url 'website:home' %}#">Contact Us</a></li>
+                            <li><a href="{% url 'website:privacy_policy' %}">Privacy Policy</a></li>
+                            <li><a href="{% url 'website:terms' %}">Terms &amp; Conditions</a></li>
+                            <li><a href="{% url 'website:contact' %}">Contact Us</a></li>
                             <li><a href="{% url 'website:home' %}#">Support Center</a></li>
                             <li><a href="{% url 'website:home' %}#">Careers</a></li>
                         </ul>
@@ -938,19 +805,19 @@
                     <div class="footer-link-widget col wow animate__animated animate__fadeInUp" data-wow-delay=".2s">
                         <h4 class="widget-title">Account</h4>
                         <ul class="footer-list mb-sm-5 mb-md-0">
-                            <li><a href="{% url 'website:home' %}#">Sign In</a></li>
-                            <li><a href="{% url 'website:home' %}#">View Cart</a></li>
-                            <li><a href="{% url 'website:home' %}#">My Wishlist</a></li>
+                            <li><a href="{% url 'accounts:login' %}">Sign In</a></li>
+                            <li><a href="{% url 'cart:cart' %}">View Cart</a></li>
+                            <li><a href="{% url 'shop:wishlist' %}">My Wishlist</a></li>
                             <li><a href="{% url 'website:home' %}#">Track My Order</a></li>
                             <li><a href="{% url 'website:home' %}#">Help Ticket</a></li>
                             <li><a href="{% url 'website:home' %}#">Shipping Details</a></li>
-                            <li><a href="{% url 'website:home' %}#">Compare products</a></li>
+                            <li><a href="{% url 'shop:compare' %}">Compare products</a></li>
                         </ul>
                     </div>
                     <div class="footer-link-widget col wow animate__animated animate__fadeInUp" data-wow-delay=".3s">
                         <h4 class="widget-title">Corporate</h4>
                         <ul class="footer-list mb-sm-5 mb-md-0">
-                            <li><a href="{% url 'website:home' %}#">Become a Vendor</a></li>
+                            <li><a href="{% url 'vendors:guide' %}">Become a Vendor</a></li>
                             <li><a href="{% url 'website:home' %}#">Affiliate Program</a></li>
                             <li><a href="{% url 'website:home' %}#">Farm Business</a></li>
                             <li><a href="{% url 'website:home' %}#">Farm Careers</a></li>
@@ -962,13 +829,13 @@
                     <div class="footer-link-widget col wow animate__animated animate__fadeInUp" data-wow-delay=".4s">
                         <h4 class="widget-title">Popular</h4>
                         <ul class="footer-list mb-sm-5 mb-md-0">
-                            <li><a href="{% url 'website:home' %}#">Milk & Flavoured Milk</a></li>
-                            <li><a href="{% url 'website:home' %}#">Butter and Margarine</a></li>
-                            <li><a href="{% url 'website:home' %}#">Eggs Substitutes</a></li>
-                            <li><a href="{% url 'website:home' %}#">Marmalades</a></li>
-                            <li><a href="{% url 'website:home' %}#">Sour Cream and Dips</a></li>
-                            <li><a href="{% url 'website:home' %}#">Tea & Kombucha</a></li>
-                            <li><a href="{% url 'website:home' %}#">Cheese</a></li>
+                            <li><a href="{% url 'shop:grid_left' %}">Milk & Flavoured Milk</a></li>
+                            <li><a href="{% url 'shop:grid_left' %}">Butter and Margarine</a></li>
+                            <li><a href="{% url 'shop:grid_left' %}">Eggs Substitutes</a></li>
+                            <li><a href="{% url 'shop:grid_left' %}">Marmalades</a></li>
+                            <li><a href="{% url 'shop:grid_left' %}">Sour Cream and Dips</a></li>
+                            <li><a href="{% url 'shop:grid_left' %}">Tea & Kombucha</a></li>
+                            <li><a href="{% url 'shop:grid_left' %}">Cheese</a></li>
                         </ul>
                     </div>
                     <div class="footer-link-widget widget-install-app col wow animate__animated animate__fadeInUp" data-wow-delay=".5s">
@@ -982,6 +849,7 @@
                         <img class="" src="{% static 'imgs/theme/payment-method.png' %}" alt="" />
                     </div>
                 </div>
+            </div>
         </section>
         <div class="container pb-30 wow animate__animated animate__fadeInUp" data-wow-delay="0">
             <div class="row align-items-center">
