@@ -9,12 +9,19 @@ from .shop import ProductListSerializer
 class CartItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
     product_id = serializers.PrimaryKeyRelatedField(
-        queryset=Product.objects.all(), source="product", write_only=True
+        queryset=Product.objects.all(),
+        source="product",
+        write_only=True,
+        help_text="ID of the product to add/reference.",
     )
     unit_price = serializers.DecimalField(
-        max_digits=10, decimal_places=2, read_only=True
+        max_digits=10, decimal_places=2, read_only=True,
+        help_text="Snapshot of the product's price at the time it was added.",
     )
-    subtotal = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    subtotal = serializers.DecimalField(
+        max_digits=10, decimal_places=2, read_only=True,
+        help_text="unit_price * quantity.",
+    )
 
     class Meta:
         model = CartItem

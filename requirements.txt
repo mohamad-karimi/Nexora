@@ -12,3 +12,6 @@ python-decouple==3.8
 # Code Quality / Formatting
 black
 flake8==6.1.0
+
+# API Documentation
+drf-spectacular==0.30.0

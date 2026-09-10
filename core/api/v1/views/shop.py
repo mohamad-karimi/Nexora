@@ -1,4 +1,10 @@
 from django.db.models import Avg, Count, Q
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiResponse,
+    extend_schema,
+    extend_schema_view,
+)
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -16,7 +22,17 @@ from api.v1.serializers.shop import (
 from shop.models import Category, Product, Review, Tag, Wishlist
 
 
+@extend_schema_view(
+    list=extend_schema(summary="List categories"),
+    retrieve=extend_schema(
+        summary="Get a category",
+        description="Looked up by `slug`, not the numeric id.",
+    ),
+)
+@extend_schema(tags=["Catalog"])
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only listing/detail of product categories, with a live product count."""
+
     serializer_class = CategorySerializer
     lookup_field = "slug"
 
@@ -28,13 +44,42 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
         ).order_by("name")
 
 
+@extend_schema_view(
+    list=extend_schema(summary="List tags"),
+    retrieve=extend_schema(
+        summary="Get a tag",
+        description="Looked up by `slug`, not the numeric id.",
+    ),
+)
+@extend_schema(tags=["Catalog"])
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only listing/detail of product tags."""
+
     queryset = Tag.objects.all().order_by("name")
     serializer_class = TagSerializer
     lookup_field = "slug"
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List published products",
+        description=(
+            "Supports filtering by `category`/`vendor`/`tag` slug, a "
+            "`min_price`/`max_price` range and `in_stock`; free-text "
+            "search via `search`; and ordering via `ordering` "
+            "(`price`, `created_date`, `name`, `average_rating`, prefix "
+            "with `-` to reverse)."
+        ),
+    ),
+    retrieve=extend_schema(
+        summary="Get a product",
+        description="Looked up by `slug`, not the numeric id. Returns the extended detail representation.",
+    ),
+)
+@extend_schema(tags=["Catalog"])
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only browsing of published products, plus a nested `reviews` action."""
+
     lookup_field = "slug"
     filterset_class = ProductFilter
     search_fields = ["name", "short_description", "description", "sku"]
@@ -61,6 +106,33 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             return ProductDetailSerializer
         return ProductListSerializer
 
+    @extend_schema(
+        tags=["Reviews"],
+        summary="List or submit reviews for a product",
+        description=(
+            "**GET**: paginated list of approved reviews for the product "
+            "(an authenticated user also sees their own pending review, "
+            "if any). Anonymous requests only see approved reviews.\n\n"
+            "**POST**: requires authentication. Creates the current "
+            "user's review for this product, or updates it if one "
+            "already exists. New/updated reviews are unapproved "
+            "(`is_approved=false`) until moderated."
+        ),
+        request=ReviewSerializer,
+        responses={
+            200: ReviewSerializer(many=True),
+            201: ReviewSerializer,
+            401: OpenApiResponse(
+                description="Authentication required to leave a review.",
+                examples=[
+                    OpenApiExample(
+                        "Anonymous POST",
+                        value={"detail": "Authentication required to leave a review."},
+                    )
+                ],
+            ),
+        },
+    )
     @action(detail=True, methods=["get", "post"], url_path="reviews")
     def reviews(self, request, slug=None):
         product = self.get_object()
@@ -99,12 +171,23 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
 
+@extend_schema_view(
+    list=extend_schema(summary="List the current user's wishlist"),
+    create=extend_schema(
+        summary="Add a product to the wishlist",
+        description="Idempotent: adding a product already on the wishlist just returns the existing entry.",
+    ),
+    destroy=extend_schema(summary="Remove a product from the wishlist"),
+)
+@extend_schema(tags=["Wishlist"])
 class WishlistViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
+    """List, add to, and remove products from the current user's wishlist."""
+
     serializer_class = WishlistSerializer
     permission_classes = [IsAuthenticated]
 

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     # Third-party
     "rest_framework",
     "django_filters",
+    "drf_spectacular",
 
     # My app
     "accounts",
@@ -172,4 +173,42 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.JSONRenderer",
     ]
     + (["rest_framework.renderers.BrowsableAPIRenderer"] if DEBUG else []),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# drf-spectacular (OpenAPI / Swagger / Redoc)
+# https://drf-spectacular.readthedocs.io/en/latest/settings.html
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Nexora API",
+    "DESCRIPTION": (
+        "Official REST API for the Nexora multi-vendor grocery marketplace.\n\n"
+        "The API is consumed by Nexora's own server-rendered frontend via "
+        "same-origin fetch() calls, authenticated through the standard Django "
+        "session cookie (see the `sessionid` and `csrftoken` cookies). "
+        "To try authenticated endpoints from this page, log in through the "
+        "site at `/accounts/login/` (or call `POST /api/v1/auth/login/`) in "
+        "the same browser session first, then send the `X-CSRFToken` header "
+        "with unsafe (POST/PATCH/PUT/DELETE) requests."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": r"/api/v[0-9]+",
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayRequestDuration": True,
+    },
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SORT_OPERATIONS": False,
+    "TAGS": [
+        {"name": "Auth", "description": "Registration, session login/logout and the current user's profile."},
+        {"name": "Catalog", "description": "Browsing categories, tags and products."},
+        {"name": "Reviews", "description": "Product reviews."},
+        {"name": "Vendors", "description": "Marketplace vendors (sellers)."},
+        {"name": "Wishlist", "description": "The current user's saved/favourite products."},
+        {"name": "Cart", "description": "The current user's shopping cart and its line items."},
+        {"name": "Addresses", "description": "The current user's shipping/billing addresses."},
+        {"name": "Coupons", "description": "Discount coupon validation."},
+        {"name": "Orders", "description": "Checkout and the current user's order history."},
+    ],
 }

@@ -44,6 +44,12 @@ class CouponSerializer(serializers.ModelSerializer):
         fields = ["code", "discount_percent", "valid_to", "is_valid"]
 
 
+class CouponValidateSerializer(serializers.Serializer):
+    """Request body for `POST /api/v1/coupons/validate/` (schema/docs only)."""
+
+    code = serializers.CharField(help_text="The coupon code to look up (case-insensitive).")
+
+
 class OrderItemVendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vendor
@@ -120,14 +126,24 @@ class OrderCreateSerializer(serializers.Serializer):
     """
 
     shipping_address_id = serializers.PrimaryKeyRelatedField(
-        queryset=Address.objects.all()
+        queryset=Address.objects.all(),
+        help_text="ID of one of the current user's addresses to ship to.",
     )
     billing_address_id = serializers.PrimaryKeyRelatedField(
-        queryset=Address.objects.all(), required=False, allow_null=True
+        queryset=Address.objects.all(),
+        required=False,
+        allow_null=True,
+        help_text="ID of the billing address. Defaults to the shipping address when omitted.",
     )
-    coupon_code = serializers.CharField(required=False, allow_blank=True)
+    coupon_code = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="Optional discount coupon code, validated and applied at checkout.",
+    )
     payment_method = serializers.ChoiceField(
-        choices=Payment.Method.choices, default=Payment.Method.CARD
+        choices=Payment.Method.choices,
+        default=Payment.Method.CARD,
+        help_text="How the order will be paid for.",
     )
 
     def validate_shipping_address_id(self, address):

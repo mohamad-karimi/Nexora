@@ -31,9 +31,19 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, validators=[validate_password])
-    first_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
-    last_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    password = serializers.CharField(
+        write_only=True,
+        validators=[validate_password],
+        help_text="Must satisfy Django's password validators (length, similarity, common-password checks, etc).",
+    )
+    first_name = serializers.CharField(
+        write_only=True, required=False, allow_blank=True,
+        help_text="Optional; used to seed the new user's profile display name.",
+    )
+    last_name = serializers.CharField(
+        write_only=True, required=False, allow_blank=True,
+        help_text="Optional; used to seed the new user's profile display name.",
+    )
 
     class Meta:
         model = User
@@ -58,9 +68,13 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
-    password = serializers.CharField(trim_whitespace=False)
+    password = serializers.CharField(trim_whitespace=False, style={"input_type": "password"})
 
 
 class ChangePasswordSerializer(serializers.Serializer):
-    old_password = serializers.CharField()
-    new_password = serializers.CharField(validators=[validate_password])
+    old_password = serializers.CharField(style={"input_type": "password"})
+    new_password = serializers.CharField(
+        validators=[validate_password],
+        style={"input_type": "password"},
+        help_text="Must satisfy Django's password validators.",
+    )
