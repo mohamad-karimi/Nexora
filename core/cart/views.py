@@ -1,6 +1,7 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
 
-# Create your views here.
-class CartView(TemplateView):
+class CartView(LoginRequiredMixin, TemplateView):
     template_name = "cart/shop-cart.html"
+    login_url = "accounts:login"

@@ -43,6 +43,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
+    # Third-party
+    "rest_framework",
+    "django_filters",
+
     # My app
     "accounts",
     "website",
@@ -52,6 +56,7 @@ INSTALLED_APPS = [
     "cart",
     "orders",
     "dashboard",
+    "api",
 ]
 
 MIDDLEWARE = [
@@ -144,3 +149,27 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # User manage config
 AUTH_USER_MODEL = "accounts.CustomUser"
+
+# Django REST Framework
+# The frontend is a server-rendered site with fetch()-based AJAX calls
+# from the same origin, so we authenticate with the existing Django
+# session/cookie (no separate token/JWT system is introduced).
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "api.v1.pagination.StandardPagination",
+    "PAGE_SIZE": 12,
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ]
+    + (["rest_framework.renderers.BrowsableAPIRenderer"] if DEBUG else []),
+}
