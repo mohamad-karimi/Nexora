@@ -18,14 +18,17 @@
   function buildUrl(path, params) {
     var url = path.indexOf("http") === 0 ? path : API_ROOT + path.replace(/^\/+/, "");
     if (params) {
-      var query = Object.keys(params)
-        .filter(function (key) {
-          return params[key] !== undefined && params[key] !== null && params[key] !== "";
-        })
-        .map(function (key) {
-          return encodeURIComponent(key) + "=" + encodeURIComponent(params[key]);
-        })
-        .join("&");
+      var parts = [];
+      Object.keys(params).forEach(function (key) {
+        var value = params[key];
+        if (value === undefined || value === null || value === "") return;
+        var values = Array.isArray(value) ? value : [value];
+        values.forEach(function (v) {
+          if (v === undefined || v === null || v === "") return;
+          parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(v));
+        });
+      });
+      var query = parts.join("&");
       if (query) {
         url += (url.indexOf("?") === -1 ? "?" : "&") + query;
       }

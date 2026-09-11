@@ -323,23 +323,10 @@
         return;
       }
 
-      var wishlistBtn = event.target.closest(".js-wishlist-toggle");
-      if (wishlistBtn) {
-        event.preventDefault();
-        var productId = parseInt(wishlistBtn.getAttribute("data-product-id"), 10);
-        Site.toggleWishlist(productId).then(function () {
-          wishlistBtn.classList.toggle("active", Site.isWishlisted(productId));
-        });
-        return;
-      }
-
-      var addToCartBtn = event.target.closest(".js-add-to-cart");
-      if (addToCartBtn) {
-        event.preventDefault();
-        var pid = parseInt(addToCartBtn.getAttribute("data-product-id"), 10);
-        Site.addToCart(pid, 1);
-        return;
-      }
+      // Wishlist toggle / add-to-cart on product cards are handled
+      // sitewide by site.js (wireProductActions), so every page that
+      // renders a .js-wishlist-toggle / .js-add-to-cart button gets
+      // the same behaviour without each page script re-wiring it.
     });
   }
 

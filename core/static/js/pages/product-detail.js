@@ -234,6 +234,25 @@
     }
   }
 
+  function loadRelatedProducts(product) {
+    var container = document.querySelector(".js-related-products");
+    if (!container) return;
+    Api.get("products/", { category: product.category.slug, page_size: 8 })
+      .then(function (data) {
+        var related = data.results
+          .filter(function (p) {
+            return p.id !== product.id;
+          })
+          .slice(0, 4);
+        container.innerHTML = related.length
+          ? related.map(Site.buildProductCard).join("")
+          : '<div class="col-12 text-center"><p class="text-muted mb-0">No related products found.</p></div>';
+      })
+      .catch(function () {
+        container.innerHTML = "";
+      });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     wireActions();
     Site.ready().then(function () {
@@ -248,6 +267,7 @@
           fillBuyBox(product);
           fillSpecs(product);
           fillVendor(product);
+          loadRelatedProducts(product);
           return loadReviews();
         })
         .catch(function (error) {

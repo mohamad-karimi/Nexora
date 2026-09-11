@@ -24,6 +24,16 @@ class Product(models.Model):
         PUBLISHED = "published", "Published"
         ARCHIVED = "archived", "Archived"
 
+    class Color(models.TextChoices):
+        RED = "red", "Red"
+        GREEN = "green", "Green"
+        BLUE = "blue", "Blue"
+
+    class Condition(models.TextChoices):
+        NEW = "new", "New"
+        REFURBISHED = "refurbished", "Refurbished"
+        USED = "used", "Used"
+
     vendor = models.ForeignKey(
         "vendors.Vendor",
         on_delete=models.PROTECT,
@@ -64,6 +74,18 @@ class Product(models.Model):
 
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.DRAFT
+    )
+    color = models.CharField(
+        max_length=10,
+        choices=Color.choices,
+        blank=True,
+        help_text="Optional; powers the storefront's color filter.",
+    )
+    condition = models.CharField(
+        max_length=20,
+        choices=Condition.choices,
+        default=Condition.NEW,
+        help_text="Powers the storefront's item-condition filter.",
     )
 
     created_date = models.DateTimeField(auto_now_add=True)

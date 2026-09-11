@@ -24,6 +24,193 @@
     return "$" + number.toFixed(2);
   }
 
+  function ratingWidth(avg) {
+    var value = avg || 0;
+    return Math.max(0, Math.min(100, (value / 5) * 100));
+  }
+
+  /**
+   * Builds the standard "product-cart-wrap" grid card markup (same
+   * card used on the shop listing pages) for a product returned by
+   * /api/v1/products/. Shared by every page that lists products
+   * (home, shop filter, compare, related products...) so they all
+   * render/behave identically and stay in sync with the wishlist/cart.
+   */
+  function buildProductCard(product) {
+    var esc = escapeHtml;
+    var url = "/shop/product/" + encodeURIComponent(product.slug) + "/";
+    var img = product.image || "";
+    var hasDiscount = product.is_on_sale;
+    var wishClass = isWishlisted(product.id) ? "active" : "";
+    var badge = hasDiscount
+      ? '<div class="product-badges product-badges-position product-badges-mrg"><span class="hot">-' +
+        product.discount_percent +
+        "%</span></div>"
+      : "";
+    var outOfStock = !product.in_stock;
+
+    return (
+      '<div class="col-lg-1-5 col-md-4 col-12 col-sm-6">' +
+      '<div class="product-cart-wrap mb-30">' +
+      '<div class="product-img-action-wrap">' +
+      '<div class="product-img product-img-zoom">' +
+      '<a href="' +
+      url +
+      '">' +
+      (img ? '<img class="default-img" src="' + img + '" alt="' + esc(product.name) + '" />' : "") +
+      "</a>" +
+      "</div>" +
+      '<div class="product-action-1">' +
+      '<a aria-label="Add To Wishlist" class="action-btn js-wishlist-toggle ' +
+      wishClass +
+      '" href="#" data-product-id="' +
+      product.id +
+      '"><i class="fi-rs-heart"></i></a>' +
+      '<a aria-label="Compare" class="action-btn" href="/shop/compare/?add=' +
+      product.id +
+      '"><i class="fi-rs-shuffle"></i></a>' +
+      "</div>" +
+      badge +
+      "</div>" +
+      '<div class="product-content-wrap">' +
+      '<div class="product-category"><a href="/shop/filter/?category=' +
+      encodeURIComponent(product.category.slug) +
+      '">' +
+      esc(product.category.name) +
+      "</a></div>" +
+      '<h2><a href="' +
+      url +
+      '">' +
+      esc(product.name) +
+      "</a></h2>" +
+      '<div class="product-rate-cover">' +
+      '<div class="product-rate d-inline-block"><div class="product-rating" style="width: ' +
+      ratingWidth(product.average_rating) +
+      '%"></div></div>' +
+      '<span class="font-small ml-5 text-muted"> (' +
+      (product.average_rating ? product.average_rating.toFixed(1) : "0") +
+      ")</span>" +
+      "</div>" +
+      '<div><span class="font-small text-muted">By <a href="/shop/filter/?vendor=' +
+      encodeURIComponent(product.vendor.slug) +
+      '">' +
+      esc(product.vendor.store_name) +
+      "</a></span></div>" +
+      '<div class="product-card-bottom">' +
+      '<div class="product-price">' +
+      "<span>" +
+      formatMoney(product.final_price) +
+      "</span>" +
+      (hasDiscount
+        ? '<span class="old-price">' + formatMoney(product.price) + "</span>"
+        : "") +
+      "</div>" +
+      '<div class="add-cart">' +
+      (outOfStock
+        ? '<span class="add text-muted">Out of stock</span>'
+        : '<a class="add js-add-to-cart" href="#" data-product-id="' +
+          product.id +
+          '"><i class="fi-rs-shopping-cart mr-5"></i>Add </a>')
+      +
+      "</div>" +
+      "</div>" +
+      "</div>" +
+      "</div>" +
+      "</div>"
+    );
+  }
+
+  /**
+   * Compact "style-2" card used by Deals-of-the-day style carousels
+   * (home page + shop filter page). Only ever called with products
+   * that are actually on sale (product.is_on_sale === true).
+   */
+  function buildDealCard(product) {
+    var esc = escapeHtml;
+    var url = "/shop/product/" + encodeURIComponent(product.slug) + "/";
+    var img = product.image || "";
+    return (
+      '<div class="col-xl-3 col-lg-4 col-md-6">' +
+      '<div class="product-cart-wrap style-2">' +
+      '<div class="product-img-action-wrap">' +
+      '<div class="product-img"><a href="' +
+      url +
+      '">' +
+      (img ? '<img src="' + img + '" alt="' + esc(product.name) + '" />' : "") +
+      "</a></div></div>" +
+      '<div class="product-content-wrap">' +
+      '<div class="deals-content">' +
+      '<h2><a href="' +
+      url +
+      '">' +
+      esc(product.name) +
+      "</a></h2>" +
+      '<div class="product-rate-cover">' +
+      '<div class="product-rate d-inline-block"><div class="product-rating" style="width: ' +
+      ratingWidth(product.average_rating) +
+      '%"></div></div>' +
+      '<span class="font-small ml-5 text-muted"> (' +
+      (product.average_rating ? product.average_rating.toFixed(1) : "0") +
+      ")</span></div>" +
+      '<div><span class="font-small text-muted">By <a href="/shop/filter/?vendor=' +
+      encodeURIComponent(product.vendor.slug) +
+      '">' +
+      esc(product.vendor.store_name) +
+      "</a></span></div>" +
+      '<div class="product-card-bottom">' +
+      '<div class="product-price"><span>' +
+      formatMoney(product.final_price) +
+      '</span><span class="old-price">' +
+      formatMoney(product.price) +
+      "</span></div>" +
+      '<div class="add-cart">' +
+      (product.in_stock
+        ? '<a class="add js-add-to-cart" href="#" data-product-id="' +
+          product.id +
+          '"><i class="fi-rs-shopping-cart mr-5"></i>Add </a>'
+        : '<span class="add text-muted">Out of stock</span>') +
+      "</div></div></div></div></div></div>"
+    );
+  }
+
+  /**
+   * Small "product-list-small" row used by compact widgets (home page
+   * 4-column footer section, sidebar "New products").
+   */
+  function buildMiniCard(product) {
+    var esc = escapeHtml;
+    var url = "/shop/product/" + encodeURIComponent(product.slug) + "/";
+    var img = product.image || "";
+    return (
+      '<article class="row align-items-center hover-up">' +
+      '<figure class="col-md-4 mb-0"><a href="' +
+      url +
+      '">' +
+      (img ? '<img src="' + img + '" alt="' + esc(product.name) + '" />' : "") +
+      "</a></figure>" +
+      '<div class="col-md-8 mb-0">' +
+      "<h6><a href=\"" +
+      url +
+      '">' +
+      esc(product.name) +
+      "</a></h6>" +
+      '<div class="product-rate-cover">' +
+      '<div class="product-rate d-inline-block"><div class="product-rating" style="width: ' +
+      ratingWidth(product.average_rating) +
+      '%"></div></div>' +
+      '<span class="font-small ml-5 text-muted"> (' +
+      (product.average_rating ? product.average_rating.toFixed(1) : "0") +
+      ")</span></div>" +
+      '<div class="product-price"><span>' +
+      formatMoney(product.final_price) +
+      "</span>" +
+      (product.is_on_sale
+        ? '<span class="old-price">' + formatMoney(product.price) + "</span>"
+        : "") +
+      "</div></div></article>"
+    );
+  }
+
   function showToast(message, type) {
     var container = document.getElementById("js-toast-container");
     if (!container) {
@@ -251,16 +438,54 @@
     });
   }
 
+  /**
+   * Sitewide delegated handling for the two product-card actions that
+   * appear on many pages (home, shop listing/filter, compare, related
+   * products, wishlist...): wishlist toggle and add-to-cart. Any markup
+   * anywhere on the site can opt in just by using these classes/data
+   * attributes - no per-page wiring required.
+   */
+  function wireProductActions() {
+    document.addEventListener("click", function (event) {
+      var wishlistBtn = event.target.closest(".js-wishlist-toggle");
+      if (wishlistBtn) {
+        event.preventDefault();
+        var productId = parseInt(wishlistBtn.getAttribute("data-product-id"), 10);
+        toggleWishlist(productId).then(function () {
+          document
+            .querySelectorAll('.js-wishlist-toggle[data-product-id="' + productId + '"]')
+            .forEach(function (btn) {
+              btn.classList.toggle("active", isWishlisted(productId));
+            });
+        });
+        return;
+      }
+
+      var addToCartBtn = event.target.closest(".js-add-to-cart");
+      if (addToCartBtn) {
+        event.preventDefault();
+        var pid = parseInt(addToCartBtn.getAttribute("data-product-id"), 10);
+        var qty = parseInt(addToCartBtn.getAttribute("data-quantity"), 10) || 1;
+        addToCart(pid, qty);
+      }
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     wireLogout();
     wireMiniCartRemove();
     wireSearchForms();
+    wireProductActions();
     loadMe();
   });
 
   window.Site = {
     escapeHtml: escapeHtml,
     formatMoney: formatMoney,
+    ratingWidth: ratingWidth,
+    buildProductCard: buildProductCard,
+    buildDealCard: buildDealCard,
+    buildMiniCard: buildMiniCard,
     showToast: showToast,
     goToLogin: goToLogin,
     addToCart: addToCart,
