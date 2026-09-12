@@ -17,6 +17,7 @@ from api.v1.views.shop import (
     WishlistViewSet,
 )
 from api.v1.views.vendors import VendorViewSet
+from api.v1.views.website import ContactMessageView
 
 router = DefaultRouter()
 router.register("categories", CategoryViewSet, basename="category")
@@ -44,5 +45,6 @@ urlpatterns = [
     path(
         "coupons/validate/", CouponValidateView.as_view(), name="coupon-validate"
     ),
+    path("contact/", ContactMessageView.as_view(), name="contact-message"),
     path("", include(router.urls)),
 ]
