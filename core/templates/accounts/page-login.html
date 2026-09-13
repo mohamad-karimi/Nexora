@@ -38,10 +38,9 @@
                                                     <input type="text" required="" autocomplete="off" name="security_code" id="login-security-code" placeholder="Security code *" />
                                                 </div>
                                                 <span class="security-code" id="login-security-code-display">
-                                                    <b class="text-new"></b>
-                                                    <b class="text-hot"></b>
-                                                    <b class="text-sale"></b>
-                                                    <b class="text-best"></b>
+                                                    {% for digit in security_code %}
+                                                    <b class="{% cycle 'text-new' 'text-hot' 'text-sale' 'text-best' %}">{{ digit }}</b>
+                                                    {% endfor %}
                                                 </span>
                                             </div>
                                             <div class="login_footer form-group mb-50">
@@ -53,6 +52,7 @@
                                                 </div>
                                                 <a class="text-muted" href="{% url 'accounts:forgot_password' %}">Forgot password?</a>
                                             </div>
+                                            <div class="form-group js-form-success text-success mb-20" style="display:none;"></div>
                                             <div class="form-group js-form-error text-danger mb-20" style="display:none;"></div>
                                             <div class="form-group">
                                                 <button type="submit" class="btn btn-heading btn-block hover-up" name="login">Log in</button>

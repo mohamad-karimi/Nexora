@@ -2,8 +2,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
-from accounts.constants import SECURITY_CODE_SESSION_KEY
+from accounts.constants import LOGIN_SECURITY_CODE_SESSION_KEY, SECURITY_CODE_SESSION_KEY
 from accounts.models import Profile
+from accounts.tokens import TokenError, get_user_for_password_reset_token
 
 User = get_user_model()
 
@@ -121,6 +122,17 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(trim_whitespace=False, style={"input_type": "password"})
+    security_code = serializers.CharField(
+        write_only=True,
+        help_text="Must match the code shown on the login page for the current session.",
+    )
+
+    def validate_security_code(self, value):
+        request = self.context.get("request")
+        expected = request.session.get(LOGIN_SECURITY_CODE_SESSION_KEY) if request else None
+        if not expected or value.strip() != expected:
+            raise serializers.ValidationError("The security code is incorrect.")
+        return value
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -130,3 +142,49 @@ class ChangePasswordSerializer(serializers.Serializer):
         style={"input_type": "password"},
         help_text="Must satisfy Django's password validators.",
     )
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        help_text="If an account with this email exists, a reset link is sent to it.",
+    )
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    token = serializers.CharField(
+        write_only=True,
+        help_text="The JWT from the password-reset email link.",
+    )
+    new_password = serializers.CharField(
+        write_only=True,
+        validators=[validate_password],
+        style={"input_type": "password"},
+        help_text="Must satisfy Django's password validators.",
+    )
+    confirm_password = serializers.CharField(
+        write_only=True,
+        style={"input_type": "password"},
+    )
+
+    def validate(self, attrs):
+        if attrs["new_password"] != attrs["confirm_password"]:
+            raise serializers.ValidationError(
+                {"confirm_password": "Passwords do not match."}
+            )
+
+        try:
+            user = get_user_for_password_reset_token(attrs["token"])
+        except TokenError as exc:
+            raise serializers.ValidationError({"token": str(exc)})
+
+        attrs["user"] = user
+        return attrs
+
+    def save(self):
+        user = self.validated_data["user"]
+        user.set_password(self.validated_data["new_password"])
+        user.save(update_fields=["password"])
+        # The token's password stamp no longer matches, so it (and any
+        # other outstanding reset token for this user) is now dead --
+        # nothing further to revoke.
+        return user

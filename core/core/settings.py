@@ -151,6 +151,22 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # User manage config
 AUTH_USER_MODEL = "accounts.CustomUser"
 
+# Email (used for the account-verification and password-reset links).
+# Credentials are read only from the environment/`.env` -- never hardcoded.
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+
 # Django REST Framework
 # The frontend is a server-rendered site with fetch()-based AJAX calls
 # from the same origin, so we authenticate with the existing Django

@@ -8,6 +8,13 @@
     box.style.display = message ? "" : "none";
   }
 
+  function showSuccess(form, message) {
+    var box = form.querySelector(".js-form-success");
+    if (!box) return;
+    box.textContent = message;
+    box.style.display = message ? "" : "none";
+  }
+
   function getNextUrl() {
     var params = new URLSearchParams(window.location.search);
     return params.get("next") || "/account/";
@@ -16,13 +23,27 @@
   function wireLogin() {
     var form = document.getElementById("login-form");
     if (!form) return;
+
+    var params = new URLSearchParams(window.location.search);
+    if (params.get("verified")) {
+      showSuccess(form, "Your email has been verified. You can now log in.");
+    } else if (params.get("verify_error")) {
+      showError(form, "That verification link is invalid or has expired.");
+    }
+
     form.addEventListener("submit", function (event) {
       event.preventDefault();
       showError(form, "");
+      showSuccess(form, "");
       var username = document.getElementById("login-username").value.trim();
       var password = document.getElementById("login-password").value;
+      var securityCode = document.getElementById("login-security-code").value.trim();
 
-      window.Api.post("auth/login/", { username: username, password: password })
+      window.Api.post("auth/login/", {
+        username: username,
+        password: password,
+        security_code: securityCode,
+      })
         .then(function () {
           window.location.href = getNextUrl();
         })
@@ -73,8 +94,69 @@
     });
   }
 
+  function wireForgotPassword() {
+    var form = document.getElementById("forgot-password-form");
+    if (!form) return;
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      showError(form, "");
+      showSuccess(form, "");
+
+      var email = document.getElementById("forgot-password-email").value.trim();
+
+      window.Api.post("auth/forgot-password/", { email: email })
+        .then(function (data) {
+          form.reset();
+          showSuccess(
+            form,
+            (data && data.detail) ||
+              "If that email has an account, a reset link has been sent."
+          );
+        })
+        .catch(function (error) {
+          showError(form, error.message || "Something went wrong. Please try again.");
+        });
+    });
+  }
+
+  function wireResetPassword() {
+    var form = document.getElementById("reset-password-form");
+    if (!form) return;
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      showError(form, "");
+      showSuccess(form, "");
+
+      var newPassword = document.getElementById("reset-password-new").value;
+      var confirmPassword = document.getElementById("reset-password-confirm").value;
+      var token = document.getElementById("reset-password-token").value;
+
+      if (newPassword !== confirmPassword) {
+        showError(form, "Passwords do not match.");
+        return;
+      }
+
+      window.Api.post("auth/reset-password/", {
+        token: token,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      })
+        .then(function () {
+          showSuccess(form, "Your password has been reset. Redirecting to login...");
+          setTimeout(function () {
+            window.location.href = "/login/";
+          }, 1500);
+        })
+        .catch(function (error) {
+          showError(form, error.message || "Could not reset your password. Please try again.");
+        });
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     wireLogin();
     wireRegister();
+    wireForgotPassword();
+    wireResetPassword();
   });
 })(window, document);

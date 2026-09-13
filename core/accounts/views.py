@@ -1,10 +1,15 @@
 import random
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
-from django.views.generic import TemplateView
+from django.urls import reverse
+from django.views.generic import TemplateView, View
 
-from accounts.constants import SECURITY_CODE_SESSION_KEY
+from accounts.constants import LOGIN_SECURITY_CODE_SESSION_KEY, SECURITY_CODE_SESSION_KEY
+from accounts.tokens import TokenError, get_user_for_email_verification_token, get_user_for_password_reset_token
+
+User = get_user_model()
 
 
 class AccountView(LoginRequiredMixin, TemplateView):
@@ -26,6 +31,17 @@ class RedirectIfAuthenticatedMixin:
 class LoginView(RedirectIfAuthenticatedMixin, TemplateView):
     template_name = "accounts/page-login.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Same pattern as RegisterView below: a fresh code is generated on
+        # every page load and stored server-side (session) so it can be
+        # validated for real -- not just cosmetically -- when the form is
+        # submitted.
+        code = f"{random.randint(0, 9999):04d}"
+        self.request.session[LOGIN_SECURITY_CODE_SESSION_KEY] = code
+        context["security_code"] = code
+        return context
+
 
 class RegisterView(RedirectIfAuthenticatedMixin, TemplateView):
     template_name = "accounts/page-register.html"
@@ -45,4 +61,46 @@ class ForgotPasswordView(TemplateView):
 
 
 class ResetPasswordView(TemplateView):
+    """
+    /reset-password/ is not usable on its own: it only renders the actual
+    "set new password" form when a valid, non-expired, not-yet-used JWT
+    for a real user is supplied as ?token=... . Any other visit (no token,
+    garbage token, expired token, tampered user id, already-used token)
+    gets a "this link isn't valid" state instead of the form -- the token
+    is re-validated independently by the API when the form is submitted,
+    so this page-level check is a UX nicety, not the security boundary.
+    """
+
     template_name = "accounts/page-reset-password.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        token = self.request.GET.get("token", "")
+        try:
+            get_user_for_password_reset_token(token)
+        except TokenError as exc:
+            context["token_valid"] = False
+            context["token_error"] = str(exc)
+        else:
+            context["token_valid"] = True
+            context["token"] = token
+        return context
+
+
+class VerifyEmailView(View):
+    """One-shot GET link from the verification email. Activates the user
+    tied to the token (and only that user) then sends the visitor to the
+    login page with a status flag the page can show a message for."""
+
+    def get(self, request, token):
+        login_url = reverse("accounts:login")
+        try:
+            user = get_user_for_email_verification_token(token)
+        except TokenError:
+            return redirect(f"{login_url}?verify_error=1")
+
+        if not user.is_verified:
+            user.is_verified = True
+            user.save(update_fields=["is_verified"])
+
+        return redirect(f"{login_url}?verified=1")

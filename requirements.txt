@@ -9,6 +9,9 @@ Pillow==12.3.0
 # Configuration
 python-decouple==3.8
 
+# JWT
+PyJWT==2.14.0
+
 # Code Quality / Formatting
 black
 flake8==6.1.0

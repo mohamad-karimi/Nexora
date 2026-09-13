@@ -3,10 +3,12 @@ from rest_framework.routers import DefaultRouter
 
 from api.v1.views.accounts import (
     ChangePasswordView,
+    ForgotPasswordView,
     LoginView,
     LogoutView,
     MeView,
     RegisterView,
+    ResetPasswordView,
 )
 from api.v1.views.cart import CartItemViewSet, CartView
 from api.v1.views.orders import AddressViewSet, CouponValidateView, OrderViewSet
@@ -40,6 +42,16 @@ urlpatterns = [
         "auth/change-password/",
         ChangePasswordView.as_view(),
         name="auth-change-password",
+    ),
+    path(
+        "auth/forgot-password/",
+        ForgotPasswordView.as_view(),
+        name="auth-forgot-password",
+    ),
+    path(
+        "auth/reset-password/",
+        ResetPasswordView.as_view(),
+        name="auth-reset-password",
     ),
     path("cart/", CartView.as_view(), name="cart"),
     path(

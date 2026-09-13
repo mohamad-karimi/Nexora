@@ -1,17 +1,31 @@
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+import logging
+
+from django.contrib.auth import (
+    authenticate,
+    get_user_model,
+    login,
+    logout,
+    update_session_auth_hash,
+)
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.constants import LOGIN_SECURITY_CODE_SESSION_KEY
+from accounts.emails import send_password_reset_email, send_verification_email
 from api.v1.serializers.accounts import (
     ChangePasswordSerializer,
+    ForgotPasswordSerializer,
     LoginSerializer,
     ProfileSerializer,
     RegisterSerializer,
+    ResetPasswordSerializer,
     UserSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @extend_schema(tags=["Auth"])
@@ -35,6 +49,13 @@ class RegisterView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         login(request, user)
+        try:
+            send_verification_email(request, user)
+        except Exception:
+            # Registration must still succeed even if the mail server is
+            # unreachable/misconfigured -- the user can request the link
+            # again later. (See accounts.emails.send_verification_email.)
+            logger.exception("Failed to send verification email to user %s", user.pk)
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
@@ -66,7 +87,7 @@ class LoginView(APIView):
         },
     )
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
+        serializer = LoginSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         user = authenticate(
             request,
@@ -84,6 +105,8 @@ class LoginView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         login(request, user)
+        # One-time code: never reusable/brute-forceable after this point.
+        request.session.pop(LOGIN_SECURITY_CODE_SESSION_KEY, None)
         return Response(UserSerializer(user).data)
 
 
@@ -185,4 +208,67 @@ class ChangePasswordView(APIView):
         user.set_password(serializer.validated_data["new_password"])
         user.save(update_fields=["password"])
         update_session_auth_hash(request, user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(tags=["Auth"])
+class ForgotPasswordView(APIView):
+    """Requests a password-reset email."""
+
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="Request a password reset email",
+        description=(
+            "If an account exists for the given email, sends it a "
+            "one-time, time-limited JWT reset link. Always responds the "
+            "same way whether or not the email is registered, so this "
+            "endpoint can't be used to discover which emails have accounts."
+        ),
+        request=ForgotPasswordSerializer,
+        responses={200: OpenApiResponse(description="Request accepted.")},
+    )
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+
+        User = get_user_model()
+        user = User.objects.filter(email__iexact=email, is_active=True).first()
+        if user is not None:
+            try:
+                send_password_reset_email(request, user)
+            except Exception:
+                logger.exception("Failed to send password reset email to user %s", user.pk)
+
+        return Response(
+            {"detail": "If that email has an account, a reset link has been sent."}
+        )
+
+
+@extend_schema(tags=["Auth"])
+class ResetPasswordView(APIView):
+    """Sets a new password from a valid password-reset JWT."""
+
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="Reset password with a token",
+        description=(
+            "Sets a new password for the user identified by `token` -- "
+            "the JWT from the reset email. The user is identified only "
+            "from the token, never from any other request field, so this "
+            "can never be used to change another user's password. Expired, "
+            "tampered, or already-used tokens are rejected."
+        ),
+        request=ResetPasswordSerializer,
+        responses={
+            204: OpenApiResponse(description="Password reset successfully."),
+            400: OpenApiResponse(description="Invalid/expired token or invalid password."),
+        },
+    )
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
