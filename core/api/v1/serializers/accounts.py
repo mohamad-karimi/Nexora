@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
+from accounts.constants import SECURITY_CODE_SESSION_KEY
 from accounts.models import Profile
 
 User = get_user_model()
@@ -44,40 +45,82 @@ class RegisterSerializer(serializers.ModelSerializer):
         write_only=True, required=False, allow_blank=True,
         help_text="Optional; used to seed the new user's profile display name.",
     )
+    security_code = serializers.CharField(
+        write_only=True,
+        help_text="Must match the code shown on the registration page for the current session.",
+    )
+    agree_terms = serializers.BooleanField(
+        write_only=True,
+        help_text="Must be true; the user must accept the Terms & Policy to register.",
+    )
+    account_type = serializers.ChoiceField(
+        write_only=True,
+        choices=[(User.Role.CUSTOMER, "Customer"), (User.Role.VENDOR, "Vendor")],
+        default=User.Role.CUSTOMER,
+        help_text="Which kind of account to create: customer or vendor.",
+    )
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "first_name", "last_name"]
+        fields = [
+            "username",
+            "email",
+            "password",
+            "first_name",
+            "last_name",
+            "security_code",
+            "agree_terms",
+            "account_type",
+        ]
+
+    def validate_security_code(self, value):
+        request = self.context.get("request")
+        expected = request.session.get(SECURITY_CODE_SESSION_KEY) if request else None
+        if not expected or value.strip() != expected:
+            raise serializers.ValidationError("The security code is incorrect.")
+        return value
+
+    def validate_agree_terms(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                "You must agree to the Terms & Policy to register."
+            )
+        return value
 
     def create(self, validated_data):
+        # These are only used for validation above / role assignment below --
+        # they must never be written to the user's password, first_name, or
+        # display_name.
+        validated_data.pop("security_code", None)
+        validated_data.pop("agree_terms", None)
+        role = validated_data.pop("account_type", User.Role.CUSTOMER)
         first_name = validated_data.pop("first_name", "")
         last_name = validated_data.pop("last_name", "")
+
         user = User.objects.create_user(
             username=validated_data["username"],
             email=validated_data["email"],
             password=validated_data["password"],
+            role=role,
         )
-        if first_name or last_name:
-            profile = user.profile
-            profile.first_name = first_name
-            profile.last_name = last_name
-            profile.display_name = f"{first_name} {last_name}".strip() or user.username
-            profile.save()
+
+        profile = user.profile
+        profile.first_name = first_name
+        profile.last_name = last_name
+        profile.display_name = f"{first_name} {last_name}".strip() or user.username
+        profile.save()
+
+        request = self.context.get("request")
+        if request is not None:
+            # One-time code: never reusable/brute-forceable after this point.
+            request.session.pop(SECURITY_CODE_SESSION_KEY, None)
+
         return user
 
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(trim_whitespace=False, style={"input_type": "password"})
-    remember_me = serializers.BooleanField(
-        required=False,
-        default=False,
-        help_text=(
-            "If true, the session cookie persists for SESSION_COOKIE_AGE "
-            "after the browser closes. If false, the session expires as "
-            "soon as the browser is closed."
-        ),
-    )
 
 
 class ChangePasswordSerializer(serializers.Serializer):

@@ -1,6 +1,10 @@
+import random
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
+
+from accounts.constants import SECURITY_CODE_SESSION_KEY
 
 
 class AccountView(LoginRequiredMixin, TemplateView):
@@ -25,6 +29,15 @@ class LoginView(RedirectIfAuthenticatedMixin, TemplateView):
 
 class RegisterView(RedirectIfAuthenticatedMixin, TemplateView):
     template_name = "accounts/page-register.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # A fresh code is generated on every page load and stored server-side
+        # (session) so it can be validated for real when the form is submitted.
+        code = f"{random.randint(0, 9999):04d}"
+        self.request.session[SECURITY_CODE_SESSION_KEY] = code
+        context["security_code"] = code
+        return context
 
 
 class ForgotPasswordView(TemplateView):
