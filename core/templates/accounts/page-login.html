@@ -35,20 +35,20 @@
                                             </div>
                                             <div class="login_footer form-group">
                                                 <div class="chek-form">
-                                                    <input type="text" name="security_code" placeholder="Security code *" />
+                                                    <input type="text" required="" autocomplete="off" name="security_code" id="login-security-code" placeholder="Security code *" />
                                                 </div>
-                                                <span class="security-code">
-                                                    <b class="text-new">8</b>
-                                                    <b class="text-hot">6</b>
-                                                    <b class="text-sale">7</b>
-                                                    <b class="text-best">5</b>
+                                                <span class="security-code" id="login-security-code-display">
+                                                    <b class="text-new"></b>
+                                                    <b class="text-hot"></b>
+                                                    <b class="text-sale"></b>
+                                                    <b class="text-best"></b>
                                                 </span>
                                             </div>
                                             <div class="login_footer form-group mb-50">
                                                 <div class="chek-form">
                                                     <div class="custome-checkbox">
-                                                        <input class="form-check-input" type="checkbox" name="checkbox" id="exampleCheckbox1" value="" />
-                                                        <label class="form-check-label" for="exampleCheckbox1"><span>Remember me</span></label>
+                                                        <input class="form-check-input" type="checkbox" name="remember_me" id="login-remember" value="" />
+                                                        <label class="form-check-label" for="login-remember"><span>Remember me</span></label>
                                                     </div>
                                                 </div>
                                                 <a class="text-muted" href="{% url 'accounts:login' %}#">Forgot password?</a>

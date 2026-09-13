@@ -83,6 +83,79 @@
     Api.delete("addresses/" + del.getAttribute("data-id") + "/").then(loadAddresses);
   });
 
+  // Dashboard quick links just switch to the relevant sidebar tab
+  // (reuses the sidebar's own working data-bs-toggle="tab" link instead
+  // of re-implementing tab switching here).
+  document.addEventListener("click", function (e) {
+    var link = e.target.closest(".js-dashboard-tab-link");
+    if (!link) return;
+    e.preventDefault();
+    var tab = document.getElementById(link.getAttribute("data-target"));
+    if (tab) tab.click();
+  });
+
+  function renderTrackResult(order) {
+    var container = document.querySelector(".js-track-result");
+    var itemsHtml = (order.items || [])
+      .map(function (item) {
+        return (
+          "<li>" +
+          Site.escapeHtml(item.product_name) +
+          " &times; " +
+          item.quantity +
+          "</li>"
+        );
+      })
+      .join("");
+    container.innerHTML =
+      '<div class="card mt-3"><div class="card-body">' +
+      "<p><strong>Order:</strong> " +
+      Site.escapeHtml(order.order_number) +
+      "</p>" +
+      "<p><strong>Status:</strong> " +
+      Site.escapeHtml(order.status) +
+      "</p>" +
+      (order.tracking_code
+        ? "<p><strong>Tracking code:</strong> " +
+          Site.escapeHtml(order.tracking_code) +
+          "</p>"
+        : "") +
+      "<p><strong>Placed on:</strong> " +
+      new Date(order.created_date).toLocaleDateString() +
+      "</p>" +
+      "<p><strong>Total:</strong> " +
+      Site.formatMoney(order.total_amount) +
+      "</p>" +
+      '<ul class="mb-3">' +
+      itemsHtml +
+      "</ul>" +
+      '<a class="btn-small d-inline-block" href="/orders/invoice/' +
+      encodeURIComponent(order.order_number) +
+      '/">View full invoice</a>' +
+      "</div></div>";
+  }
+
+  var trackOrderForm = document.getElementById("trackOrderForm");
+  if (trackOrderForm) {
+    trackOrderForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var container = document.querySelector(".js-track-result");
+      var orderNumber = document.getElementById("track-order-number").value.trim();
+      if (!orderNumber) return;
+      container.innerHTML = '<p class="mt-3">Looking up your order…</p>';
+      Api.get("orders/" + encodeURIComponent(orderNumber) + "/")
+        .then(renderTrackResult)
+        .catch(function (err) {
+          var message =
+            err.status === 404
+              ? "No order with that number was found on your account."
+              : err.message || "Could not look up that order.";
+          container.innerHTML =
+            '<p class="mt-3 text-danger">' + Site.escapeHtml(message) + "</p>";
+        });
+    });
+  }
+
   var addAddressForm = document.getElementById("addAddressForm");
   if (addAddressForm) {
     addAddressForm.addEventListener("submit", function (e) {

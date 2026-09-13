@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
@@ -84,6 +85,12 @@ class LoginView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         login(request, user)
+        if serializer.validated_data.get("remember_me"):
+            # Keep the session for the normal SESSION_COOKIE_AGE duration.
+            request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+        else:
+            # Expire the session as soon as the browser is closed.
+            request.session.set_expiry(0)
         return Response(UserSerializer(user).data)
 
 

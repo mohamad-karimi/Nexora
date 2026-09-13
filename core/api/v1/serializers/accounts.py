@@ -69,6 +69,15 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(trim_whitespace=False, style={"input_type": "password"})
+    remember_me = serializers.BooleanField(
+        required=False,
+        default=False,
+        help_text=(
+            "If true, the session cookie persists for SESSION_COOKIE_AGE "
+            "after the browser closes. If false, the session expires as "
+            "soon as the browser is closed."
+        ),
+    )
 
 
 class ChangePasswordSerializer(serializers.Serializer):
