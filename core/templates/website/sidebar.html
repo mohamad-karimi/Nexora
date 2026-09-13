@@ -3,83 +3,20 @@
     <div class="widget-area">
         <div class="sidebar-widget-2 widget_search mb-50">
             <div class="search-form">
-                <form action="#">
-                    <input type="text" placeholder="Search…" />
+                <form action="{% url 'shop:grid_left' %}" class="js-search-form">
+                    <input type="text" name="q" class="js-search-input" placeholder="Search…" />
                     <button type="submit"><i class="fi-rs-search"></i></button>
                 </form>
             </div>
         </div>
         <div class="sidebar-widget widget-category-2 mb-30">
             <h5 class="section-title style-1 mb-30">Category</h5>
-            <ul>
-                <li>
-                    <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-1.svg' %}" alt="" />Milks & Dairies</a><span class="count">30</span>
-                </li>
-                <li>
-                    <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-2.svg' %}" alt="" />Clothing</a><span class="count">35</span>
-                </li>
-                <li>
-                    <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-3.svg' %}" alt="" />Pet Foods </a><span class="count">42</span>
-                </li>
-                <li>
-                    <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-4.svg' %}" alt="" />Baking material</a><span class="count">68</span>
-                </li>
-                <li>
-                    <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-5.svg' %}" alt="" />Fresh Fruit</a><span class="count">87</span>
-                </li>
-            </ul>
+            <ul class="js-category-list"></ul>
         </div>
         <!-- Product sidebar Widget -->
         <div class="sidebar-widget product-sidebar mb-30 p-30 bg-grey border-radius-10">
             <h5 class="section-title style-1 mb-30">Trending Now</h5>
-            <div class="single-post clearfix">
-                <div class="image">
-                    <img src="{% static 'imgs/shop/thumbnail-3.jpg' %}" alt="#" />
-                </div>
-                <div class="content pt-10">
-                    <h5><a href="https://nest-frontend-v6.vercel.app/shop-product-detail.html">Chen Cardigan</a></h5>
-                    <p class="price mb-0 mt-5">$99.50</p>
-                    <div class="product-rate">
-                        <div class="product-rating" style="width: 90%"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="single-post clearfix">
-                <div class="image">
-                    <img src="{% static 'imgs/shop/thumbnail-4.jpg' %}" alt="#" />
-                </div>
-                <div class="content pt-10">
-                    <h6><a href="https://nest-frontend-v6.vercel.app/shop-product-detail.html">Chen Sweater</a></h6>
-                    <p class="price mb-0 mt-5">$89.50</p>
-                    <div class="product-rate">
-                        <div class="product-rating" style="width: 80%"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="single-post clearfix">
-                <div class="image">
-                    <img src="{% static 'imgs/shop/thumbnail-5.jpg' %}" alt="#" />
-                </div>
-                <div class="content pt-10">
-                    <h6><a href="https://nest-frontend-v6.vercel.app/shop-product-detail.html">Colorful Jacket</a></h6>
-                    <p class="price mb-0 mt-5">$25</p>
-                    <div class="product-rate">
-                        <div class="product-rating" style="width: 60%"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="single-post clearfix">
-                <div class="image">
-                    <img src="{% static 'imgs/shop/thumbnail-6.jpg' %}" alt="#" />
-                </div>
-                <div class="content pt-10">
-                    <h6><a href="https://nest-frontend-v6.vercel.app/shop-product-detail.html">Lorem, ipsum</a></h6>
-                    <p class="price mb-0 mt-5">$25</p>
-                    <div class="product-rate">
-                        <div class="product-rating" style="width: 60%"></div>
-                    </div>
-                </div>
-            </div>
+            <div class="js-sidebar-new-products"></div>
         </div>
         <div class="banner-img wow fadeIn mb-40 animated d-lg-block d-none">
             <img src="{% static 'imgs/banner/banner-11.png' %}" alt="" />
