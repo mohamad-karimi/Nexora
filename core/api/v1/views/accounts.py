@@ -15,12 +15,14 @@ from rest_framework.views import APIView
 
 from accounts.constants import LOGIN_SECURITY_CODE_SESSION_KEY
 from accounts.emails import send_password_reset_email, send_verification_email
+from api.v1.permissions import IsVerified
 from api.v1.serializers.accounts import (
     ChangePasswordSerializer,
     ForgotPasswordSerializer,
     LoginSerializer,
     ProfileSerializer,
     RegisterSerializer,
+    ResendVerificationSerializer,
     ResetPasswordSerializer,
     UserSerializer,
 )
@@ -30,16 +32,20 @@ logger = logging.getLogger(__name__)
 
 @extend_schema(tags=["Auth"])
 class RegisterView(APIView):
-    """Create a new account and immediately sign the user in (session cookie)."""
+    """Create a new (unverified) account. Does NOT log the user in --
+    they can't authenticate until they verify their email address."""
 
     permission_classes = [AllowAny]
 
     @extend_schema(
         summary="Register a new account",
         description=(
-            "Creates a new user account. On success the user is logged in "
-            "immediately, so the response also sets the session cookie -- "
-            "no separate login call is required afterwards."
+            "Creates a new user account and emails it a verification "
+            "link. The account is created with `is_verified=False` and "
+            "the request is NOT logged in -- no session is started. "
+            "The user must click the link in the verification email "
+            "(see `GET /accounts/verify-email/<token>/`) before they "
+            "can log in or use any authenticated endpoint."
         ),
         request=RegisterSerializer,
         responses={201: UserSerializer},
@@ -48,7 +54,6 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        login(request, user)
         try:
             send_verification_email(request, user)
         except Exception:
@@ -57,6 +62,52 @@ class RegisterView(APIView):
             # again later. (See accounts.emails.send_verification_email.)
             logger.exception("Failed to send verification email to user %s", user.pk)
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+
+
+@extend_schema(tags=["Auth"])
+class ResendVerificationEmailView(APIView):
+    """Re-sends the email-verification link (e.g. after the first one expired)."""
+
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="Resend the email verification link",
+        description=(
+            "If an unverified account exists for the given email, a fresh "
+            "verification link (with a new expiry) is emailed to it -- the "
+            "old link, if any, still works independently until it expires "
+            "on its own; no tokens are revoked. Always responds the same "
+            "way whether or not the email matches an unverified account, "
+            "so this can't be used to discover registered emails."
+        ),
+        request=ResendVerificationSerializer,
+        responses={200: OpenApiResponse(description="Request accepted.")},
+    )
+    def post(self, request):
+        serializer = ResendVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+
+        User = get_user_model()
+        user = User.objects.filter(
+            email__iexact=email, is_active=True, is_verified=False
+        ).first()
+        if user is not None:
+            try:
+                send_verification_email(request, user)
+            except Exception:
+                logger.exception(
+                    "Failed to resend verification email to user %s", user.pk
+                )
+
+        return Response(
+            {
+                "detail": (
+                    "If that email has an unverified account, a new "
+                    "verification link has been sent."
+                )
+            }
+        )
 
 
 @extend_schema(tags=["Auth"])
@@ -76,12 +127,16 @@ class LoginView(APIView):
         responses={
             200: UserSerializer,
             400: OpenApiResponse(
-                description="Invalid credentials or inactive account.",
+                description="Invalid credentials, inactive account, or unverified email.",
                 examples=[
                     OpenApiExample(
                         "Invalid credentials",
                         value={"detail": "Invalid username or password."},
-                    )
+                    ),
+                    OpenApiExample(
+                        "Unverified email",
+                        value={"detail": "Please verify your email before logging in."},
+                    ),
                 ],
             ),
         },
@@ -102,6 +157,11 @@ class LoginView(APIView):
         if not user.is_active:
             return Response(
                 {"detail": "This account is inactive."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not user.is_verified:
+            return Response(
+                {"detail": "Please verify your email before logging in."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         login(request, user)
@@ -131,7 +191,7 @@ class LogoutView(APIView):
 class MeView(APIView):
     """Read or update the profile of the currently authenticated user."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerified]
 
     @extend_schema(
         summary="Get the current user",
@@ -172,7 +232,7 @@ class MeView(APIView):
 class ChangePasswordView(APIView):
     """Change the current user's password."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerified]
 
     @extend_schema(
         summary="Change password",

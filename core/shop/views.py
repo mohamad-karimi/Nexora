@@ -1,5 +1,6 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
+
+from accounts.views import VerifiedRequiredMixin
 
 
 class CompareView(TemplateView):
@@ -30,6 +31,6 @@ class ProductFullView(TemplateView):
         return context
 
 
-class WishlistView(LoginRequiredMixin, TemplateView):
+class WishlistView(VerifiedRequiredMixin, TemplateView):
     template_name = "shop/shop-wishlist.html"
     login_url = "accounts:login"

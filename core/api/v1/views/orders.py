@@ -1,9 +1,9 @@
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from api.v1.permissions import IsVerified
 from api.v1.serializers.orders import (
     AddressSerializer,
     CouponSerializer,
@@ -27,7 +27,7 @@ class AddressViewSet(viewsets.ModelViewSet):
     """Full CRUD over the current user's shipping/billing addresses."""
 
     serializer_class = AddressSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerified]
 
     def get_queryset(self):
         return Address.objects.filter(user=self.request.user)
@@ -37,7 +37,7 @@ class AddressViewSet(viewsets.ModelViewSet):
 class CouponValidateView(APIView):
     """POST {"code": "..."} -> whether the coupon can currently be used."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerified]
 
     @extend_schema(
         summary="Validate a coupon code",
@@ -99,7 +99,7 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
     """Read-only access to the current user's orders, plus checkout via `create`."""
 
     lookup_field = "order_number"
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerified]
 
     def get_queryset(self):
         return (

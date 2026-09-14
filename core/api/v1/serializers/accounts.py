@@ -150,6 +150,12 @@ class ForgotPasswordSerializer(serializers.Serializer):
     )
 
 
+class ResendVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        help_text="If an unverified account with this email exists, a new verification link is sent to it.",
+    )
+
+
 class ResetPasswordSerializer(serializers.Serializer):
     token = serializers.CharField(
         write_only=True,

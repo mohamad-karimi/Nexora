@@ -8,6 +8,7 @@ from api.v1.views.accounts import (
     LogoutView,
     MeView,
     RegisterView,
+    ResendVerificationEmailView,
     ResetPasswordView,
 )
 from api.v1.views.cart import CartItemViewSet, CartView
@@ -47,6 +48,11 @@ urlpatterns = [
         "auth/forgot-password/",
         ForgotPasswordView.as_view(),
         name="auth-forgot-password",
+    ),
+    path(
+        "auth/resend-verification/",
+        ResendVerificationEmailView.as_view(),
+        name="auth-resend-verification",
     ),
     path(
         "auth/reset-password/",

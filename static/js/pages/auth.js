@@ -126,31 +126,6 @@
     });
   }
 
-  function wireResendVerification() {
-    var form = document.getElementById("resend-verification-form");
-    if (!form) return;
-    form.addEventListener("submit", function (event) {
-      event.preventDefault();
-      showError(form, "");
-      showSuccess(form, "");
-
-      var email = document.getElementById("resend-verification-email").value.trim();
-
-      window.Api.post("auth/resend-verification/", { email: email })
-        .then(function (data) {
-          form.reset();
-          showSuccess(
-            form,
-            (data && data.detail) ||
-              "If that email has an unverified account, a new verification link has been sent."
-          );
-        })
-        .catch(function (error) {
-          showError(form, error.message || "Something went wrong. Please try again.");
-        });
-    });
-  }
-
   function wireResetPassword() {
     var form = document.getElementById("reset-password-form");
     if (!form) return;
@@ -189,7 +164,6 @@
     wireLogin();
     wireRegister();
     wireForgotPassword();
-    wireResendVerification();
     wireResetPassword();
   });
 })(window, document);

@@ -69,5 +69,30 @@
     </main>
 {% endblock %}
 {% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{% static 'js/pages/auth.js' %}"></script>
+    <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get("verified") === "1") {
+                Swal.fire({
+                    icon: "success",
+                    title: "Email verified",
+                    text: "Your email has been verified successfully. You can now log in.",
+                    confirmButtonText: "OK",
+                });
+            } else if (params.get("verify_error") === "1") {
+                Swal.fire({
+                    icon: "error",
+                    title: "Verification failed",
+                    text: "This verification link is invalid or has expired. Please request a new one.",
+                    confirmButtonText: "OK",
+                });
+            } else {
+                return;
+            }
+            // Don't re-show the popup if the page is reloaded/revisited.
+            window.history.replaceState({}, "", window.location.pathname);
+        })();
+    </script>
 {% endblock %}

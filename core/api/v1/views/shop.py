@@ -7,10 +7,10 @@ from drf_spectacular.utils import (
 )
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.v1.filters import ProductFilter
+from api.v1.permissions import IsVerified
 from api.v1.serializers.shop import (
     CategorySerializer,
     ProductDetailSerializer,
@@ -189,7 +189,7 @@ class WishlistViewSet(
     """List, add to, and remove products from the current user's wishlist."""
 
     serializer_class = WishlistSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerified]
 
     def get_queryset(self):
         return (

@@ -12,7 +12,23 @@ from accounts.tokens import TokenError, get_user_for_email_verification_token, g
 User = get_user_model()
 
 
-class AccountView(LoginRequiredMixin, TemplateView):
+class VerifiedRequiredMixin(LoginRequiredMixin):
+    """
+    Like LoginRequiredMixin, but also refuses an authenticated-yet-
+    unverified visitor (e.g. a session that predates this check, or
+    one created some other way). Login itself already won't start a
+    session for an unverified account, so in the normal flow this is
+    a defense-in-depth backstop rather than the primary gate -- but it
+    keeps every "inside the account" page consistent with the API.
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not request.user.is_verified:
+            return redirect("accounts:email_verification_pending")
+        return super().dispatch(request, *args, **kwargs)
+
+
+class AccountView(VerifiedRequiredMixin, TemplateView):
     template_name = "accounts/page-account.html"
     login_url = "accounts:login"
 
@@ -24,6 +40,8 @@ class RedirectIfAuthenticatedMixin:
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
+            if not request.user.is_verified:
+                return redirect("accounts:email_verification_pending")
             return redirect(self.authenticated_redirect_url)
         return super().get(request, *args, **kwargs)
 
@@ -58,6 +76,22 @@ class RegisterView(RedirectIfAuthenticatedMixin, TemplateView):
 
 class ForgotPasswordView(TemplateView):
     template_name = "accounts/page-forgot-password.html"
+
+
+class EmailVerificationPendingView(TemplateView):
+    """
+    Landing page for a just-registered (unverified, not-logged-in)
+    user: "check your email" instructions, nothing account-specific.
+    An already-verified, logged-in visitor is sent to their account
+    instead -- there's nothing for them to do here.
+    """
+
+    template_name = "accounts/page-email-verification-pending.html"
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.is_verified:
+            return redirect("accounts:account")
+        return super().get(request, *args, **kwargs)
 
 
 class ResetPasswordView(TemplateView):

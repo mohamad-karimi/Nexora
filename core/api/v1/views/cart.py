@@ -1,9 +1,9 @@
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import mixins, status, viewsets
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from api.v1.permissions import IsVerified
 from api.v1.serializers.cart import CartItemSerializer, CartSerializer
 from cart.models import Cart, CartItem
 
@@ -17,7 +17,7 @@ def get_or_create_cart(user):
 class CartView(APIView):
     """Current user's cart: GET to view it, DELETE to empty it."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerified]
 
     @extend_schema(
         summary="Get the current user's cart",
@@ -75,7 +75,7 @@ class CartItemViewSet(
     """Create/update/delete individual line items of the current user's cart."""
 
     serializer_class = CartItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerified]
 
     def get_queryset(self):
         return CartItem.objects.filter(cart__user=self.request.user)
