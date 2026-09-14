@@ -3,130 +3,58 @@
     <div class="widget-area">
         <div class="sidebar-widget-2 widget_search mb-50">
             <div class="search-form">
-                <form action="#">
-                    <input type="text" placeholder="Search…" />
+                <form action="{% url 'blog:category_list' %}" class="js-search-form">
+                    <input type="text" name="q" class="js-search-input" placeholder="Search…" />
                     <button type="submit"><i class="fi-rs-search"></i></button>
                 </form>
             </div>
         </div>
         <div class="sidebar-widget widget-category-2 mb-50">
             <h5 class="section-title style-1 mb-30">Category</h5>
-            <ul>
-                <li>
-                    <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-1.svg' %}" alt="" />Milks & Dairies</a><span class="count">30</span>
-                </li>
-                <li>
-                    <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-2.svg' %}" alt="" />Clothing</a><span class="count">35</span>
-                </li>
-                <li>
-                    <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-3.svg' %}" alt="" />Pet Foods </a><span class="count">42</span>
-                </li>
-                <li>
-                    <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-4.svg' %}" alt="" />Baking material</a><span class="count">68</span>
-                </li>
-                <li>
-                    <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-5.svg' %}" alt="" />Fresh Fruit</a><span class="count">87</span>
-                </li>
-            </ul>
+            <!--
+                Was a hardcoded list of shop categories (wrong app entirely)
+                linking to shop:grid_left. Populated for real by
+                loadSidebarCategories() in blog-list.js from
+                /api/v1/blog/categories/, with live post counts, matching
+                the js-category-list convention already used by
+                shop/sidebar.html and website/sidebar.html.
+            -->
+            <ul class="js-category-list"></ul>
         </div>
         <!-- Product sidebar Widget -->
         <div class="sidebar-widget product-sidebar mb-50 p-30 bg-grey border-radius-10">
             <h5 class="section-title style-1 mb-30">Trending Now</h5>
-            <div class="single-post clearfix">
-                <div class="image">
-                    <img src="{% static 'imgs/shop/thumbnail-3.jpg' %}" alt="#" />
-                </div>
-                <div class="content pt-10">
-                    <h5><a href="https://nest-frontend-v6.vercel.app/shop-product-detail.html">Chen Cardigan</a></h5>
-                    <p class="price mb-0 mt-5">$99.50</p>
-                    <div class="product-rate">
-                        <div class="product-rating" style="width: 90%"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="single-post clearfix">
-                <div class="image">
-                    <img src="{% static 'imgs/shop/thumbnail-4.jpg' %}" alt="#" />
-                </div>
-                <div class="content pt-10">
-                    <h6><a href="https://nest-frontend-v6.vercel.app/shop-product-detail.html">Chen Sweater</a></h6>
-                    <p class="price mb-0 mt-5">$89.50</p>
-                    <div class="product-rate">
-                        <div class="product-rating" style="width: 80%"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="single-post clearfix">
-                <div class="image">
-                    <img src="{% static 'imgs/shop/thumbnail-5.jpg' %}" alt="#" />
-                </div>
-                <div class="content pt-10">
-                    <h6><a href="https://nest-frontend-v6.vercel.app/shop-product-detail.html">Colorful Jacket</a></h6>
-                    <p class="price mb-0 mt-5">$25</p>
-                    <div class="product-rate">
-                        <div class="product-rating" style="width: 60%"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="single-post clearfix">
-                <div class="image">
-                    <img src="{% static 'imgs/shop/thumbnail-6.jpg' %}" alt="#" />
-                </div>
-                <div class="content pt-10">
-                    <h6><a href="https://nest-frontend-v6.vercel.app/shop-product-detail.html">Lorem, ipsum</a></h6>
-                    <p class="price mb-0 mt-5">$25</p>
-                    <div class="product-rate">
-                        <div class="product-rating" style="width: 60%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="sidebar-widget widget_instagram mb-50">
-            <h5 class="section-title style-1 mb-30">Gallery</h5>
-            <div class="instagram-gellay">
-                <ul class="insta-feed">
-                    <li>
-                        <a href="{% url 'blog:category_list' %}#"><img class="border-radius-5" src="{% static 'imgs/shop/thumbnail-1.jpg' %}" alt="" /></a>
-                    </li>
-                    <li>
-                        <a href="{% url 'blog:category_list' %}#"><img class="border-radius-5" src="{% static 'imgs/shop/thumbnail-2.jpg' %}" alt="" /></a>
-                    </li>
-                    <li>
-                        <a href="{% url 'blog:category_list' %}#"><img class="border-radius-5" src="{% static 'imgs/shop/thumbnail-3.jpg' %}" alt="" /></a>
-                    </li>
-                    <li>
-                        <a href="{% url 'blog:category_list' %}#"><img class="border-radius-5" src="{% static 'imgs/shop/thumbnail-4.jpg' %}" alt="" /></a>
-                    </li>
-                    <li>
-                        <a href="{% url 'blog:category_list' %}#"><img class="border-radius-5" src="{% static 'imgs/shop/thumbnail-5.jpg' %}" alt="" /></a>
-                    </li>
-                    <li>
-                        <a href="{% url 'blog:category_list' %}#"><img class="border-radius-5" src="{% static 'imgs/shop/thumbnail-6.jpg' %}" alt="" /></a>
-                    </li>
-                </ul>
-            </div>
+            <!--
+                Was 4 hardcoded shop products (thumbnails/prices/ratings)
+                linking to an external demo site (nest-frontend-v6.vercel.app) -
+                a dead end inside this Django project, and the wrong content
+                type for a blog sidebar besides. Populated for real by
+                loadSidebarTrendingPosts() in blog-list.js from
+                /api/v1/blog/posts/, showing actual recent posts.
+            -->
+            <div class="js-sidebar-trending-posts"></div>
         </div>
         <!--Tags-->
         <div class="sidebar-widget widget-tags mb-50 pb-10">
             <h5 class="section-title style-1 mb-30">Popular Tags</h5>
             <ul class="tags-list">
                 <li class="hover-up">
-                    <a href="blog-category-grid.html"><i class="fi-rs-cross mr-10"></i>Cabbage</a>
+                    <a href="{% url 'blog:category_list' %}"><i class="fi-rs-cross mr-10"></i>Cabbage</a>
                 </li>
                 <li class="hover-up">
-                    <a href="blog-category-grid.html"><i class="fi-rs-cross mr-10"></i>Broccoli</a>
+                    <a href="{% url 'blog:category_list' %}"><i class="fi-rs-cross mr-10"></i>Broccoli</a>
                 </li>
                 <li class="hover-up">
-                    <a href="blog-category-grid.html"><i class="fi-rs-cross mr-10"></i>Smoothie</a>
+                    <a href="{% url 'blog:category_list' %}"><i class="fi-rs-cross mr-10"></i>Smoothie</a>
                 </li>
                 <li class="hover-up">
-                    <a href="blog-category-grid.html"><i class="fi-rs-cross mr-10"></i>Fruit</a>
+                    <a href="{% url 'blog:category_list' %}"><i class="fi-rs-cross mr-10"></i>Fruit</a>
                 </li>
                 <li class="hover-up mr-0">
-                    <a href="blog-category-grid.html"><i class="fi-rs-cross mr-10"></i>Salad</a>
+                    <a href="{% url 'blog:category_list' %}"><i class="fi-rs-cross mr-10"></i>Salad</a>
                 </li>
                 <li class="hover-up mr-0">
-                    <a href="blog-category-grid.html"><i class="fi-rs-cross mr-10"></i>Appetizer</a>
+                    <a href="{% url 'blog:category_list' %}"><i class="fi-rs-cross mr-10"></i>Appetizer</a>
                 </li>
             </ul>
         </div>

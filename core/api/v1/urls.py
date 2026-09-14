@@ -11,6 +11,8 @@ from api.v1.views.accounts import (
     ResendVerificationEmailView,
     ResetPasswordView,
 )
+from api.v1.views.blog import CategoryViewSet as BlogCategoryViewSet
+from api.v1.views.blog import PostViewSet as BlogPostViewSet
 from api.v1.views.cart import CartItemViewSet, CartView
 from api.v1.views.orders import AddressViewSet, CouponValidateView, OrderViewSet
 from api.v1.views.shop import (
@@ -31,6 +33,8 @@ router.register("wishlist", WishlistViewSet, basename="wishlist")
 router.register("cart/items", CartItemViewSet, basename="cart-item")
 router.register("addresses", AddressViewSet, basename="address")
 router.register("orders", OrderViewSet, basename="order")
+router.register("blog/categories", BlogCategoryViewSet, basename="blog-category")
+router.register("blog/posts", BlogPostViewSet, basename="blog-post")
 
 app_name = "api_v1"
 

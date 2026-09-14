@@ -1,5 +1,6 @@
 import django_filters
 
+from blog.models import Post as BlogPost
 from shop.models import Product
 
 
@@ -30,3 +31,11 @@ class ProductFilter(django_filters.FilterSet):
         if value:
             return queryset.filter(stock__gt=0)
         return queryset.filter(stock=0)
+
+
+class PostFilter(django_filters.FilterSet):
+    category = django_filters.CharFilter(field_name="category__slug")
+
+    class Meta:
+        model = BlogPost
+        fields = ["category"]
