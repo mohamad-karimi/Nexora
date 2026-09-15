@@ -37,6 +37,38 @@
     });
   }
 
+  /**
+   * Populates the category tag-list in the page header (top-right of
+   * templates/blog/blog-category-list.html). Used to be 5 hardcoded
+   * items ("Shopping", "Recips"...) linking to blog-category-grid.html,
+   * a page that doesn't exist in this project. Shows the real blog
+   * categories and links to /blog/?category=<slug>, matching the
+   * category filter blog-list.js already applies.
+   */
+  function loadHeaderCategories() {
+    var list = document.querySelector(".js-header-categories");
+    if (!list) return;
+
+    Api.get("blog/categories/", { page_size: 100 }).then(function (data) {
+      var categories = data.results;
+      list.innerHTML = categories
+        .map(function (category, index) {
+          var isActive = state.category && state.category === category.slug;
+          var classes = "hover-up" + (isActive ? " active" : "") + (index === categories.length - 1 ? " mr-0" : "");
+          return (
+            '<li class="' +
+            classes +
+            '"><a href="/blog/?category=' +
+            encodeURIComponent(category.slug) +
+            '"><i class="fi-rs-cross mr-10"></i>' +
+            Site.escapeHtml(category.name) +
+            "</a></li>"
+          );
+        })
+        .join("");
+    });
+  }
+
   function loadSidebarTags() {
     var list = document.querySelector(".js-sidebar-tags");
     if (!list) return;
@@ -290,6 +322,7 @@
     wireEvents();
     loadPosts();
     loadSidebarCategories();
+    loadHeaderCategories();
     loadSidebarTrendingPosts();
     loadSidebarTags();
   });
