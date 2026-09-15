@@ -35,7 +35,8 @@ class ProductFilter(django_filters.FilterSet):
 
 class PostFilter(django_filters.FilterSet):
     category = django_filters.CharFilter(field_name="category__slug")
+    tag = django_filters.CharFilter(field_name="tags__slug")
 
     class Meta:
         model = BlogPost
-        fields = ["category"]
+        fields = ["category", "tag"]

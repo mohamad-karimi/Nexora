@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from blog.models import Category, Post
+from blog.models import Category, Post, Tag
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -15,6 +15,12 @@ class CategorySerializer(serializers.ModelSerializer):
 class CategoryMinimalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
+        fields = ["id", "name", "slug"]
+
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
         fields = ["id", "name", "slug"]
 
 
@@ -53,5 +59,7 @@ class PostListSerializer(serializers.ModelSerializer):
 
 
 class PostDetailSerializer(PostListSerializer):
+    tags = TagSerializer(many=True, read_only=True)
+
     class Meta(PostListSerializer.Meta):
-        fields = PostListSerializer.Meta.fields + ["content", "update_date"]
+        fields = PostListSerializer.Meta.fields + ["content", "update_date", "tags"]

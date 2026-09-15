@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
-__all__ = ["Category", "Post"]
+__all__ = ["Category", "Post", "Tag"]
 
 
 class Category(models.Model):
@@ -16,6 +16,29 @@ class Category(models.Model):
 
     class Meta:
         verbose_name_plural = "Categories"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
+class Tag(models.Model):
+    """
+    A free-form label posts can be grouped by (e.g. "Recipe", "Tips").
+    Mirrors shop.Tag: a post can carry several tags and a tag can be
+    shared by many posts, hence the ManyToMany on Post. Backs the
+    blog sidebar's "Popular Tags" widget.
+    """
+
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=120, unique=True, blank=True)
+
+    class Meta:
         ordering = ["name"]
 
     def __str__(self):
@@ -52,6 +75,7 @@ class Post(models.Model):
         on_delete=models.PROTECT,
         related_name="posts",
     )
+    tags = models.ManyToManyField("blog.Tag", related_name="posts", blank=True)
 
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=280, unique=True, blank=True)

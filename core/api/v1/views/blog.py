@@ -7,8 +7,9 @@ from api.v1.serializers.blog import (
     CategorySerializer,
     PostDetailSerializer,
     PostListSerializer,
+    TagSerializer,
 )
-from blog.models import Category, Post
+from blog.models import Category, Post, Tag
 
 
 @extend_schema_view(
@@ -29,6 +30,22 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
         return Category.objects.annotate(
             post_count=Count("posts", filter=Q(posts__status=Post.Status.PUBLISHED))
         ).order_by("name")
+
+
+@extend_schema_view(
+    list=extend_schema(summary="List blog tags"),
+    retrieve=extend_schema(
+        summary="Get a blog tag",
+        description="Looked up by `slug`, not the numeric id.",
+    ),
+)
+@extend_schema(tags=["Blog"])
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only listing/detail of blog tags (mirrors shop.Tag's API shape)."""
+
+    queryset = Tag.objects.all().order_by("name")
+    serializer_class = TagSerializer
+    lookup_field = "slug"
 
 
 @extend_schema_view(
@@ -56,8 +73,10 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
     ordering = ["-created_date"]
 
     def get_queryset(self):
-        return Post.objects.filter(status=Post.Status.PUBLISHED).select_related(
-            "category", "author", "author__profile"
+        return (
+            Post.objects.filter(status=Post.Status.PUBLISHED)
+            .select_related("category", "author", "author__profile")
+            .prefetch_related("tags")
         )
 
     def get_serializer_class(self):

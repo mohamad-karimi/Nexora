@@ -37,6 +37,25 @@
     });
   }
 
+  function loadSidebarTags() {
+    var list = document.querySelector(".js-sidebar-tags");
+    if (!list) return;
+
+    Api.get("blog/tags/", { page_size: 100 }).then(function (data) {
+      list.innerHTML = data.results
+        .map(function (tag) {
+          return (
+            '<li class="hover-up"><a href="/blog/?tag=' +
+            encodeURIComponent(tag.slug) +
+            '"><i class="fi-rs-cross mr-10"></i>' +
+            Site.escapeHtml(tag.name) +
+            "</a></li>"
+          );
+        })
+        .join("");
+    });
+  }
+
   function loadSidebarTrendingPosts() {
     var container = document.querySelector(".js-sidebar-trending-posts");
     if (!container) return;
@@ -76,28 +95,31 @@
 
   var state = {
     category: "",
+    tag: "",
     q: "",
     ordering: "-created_date",
     page: 1,
-    page_size: 50,
+    page_size: 6,
   };
 
   function readStateFromUrl() {
     var params = new URLSearchParams(window.location.search);
     state.category = params.get("category") || "";
+    state.tag = params.get("tag") || "";
     state.q = params.get("q") || "";
     state.ordering = params.get("ordering") || "-created_date";
     state.page = parseInt(params.get("page"), 10) || 1;
-    state.page_size = parseInt(params.get("page_size"), 10) || 50;
+    state.page_size = parseInt(params.get("page_size"), 10) || 6;
   }
 
   function pushStateToUrl() {
     var params = new URLSearchParams();
     if (state.category) params.set("category", state.category);
+    if (state.tag) params.set("tag", state.tag);
     if (state.q) params.set("q", state.q);
     if (state.ordering && state.ordering !== "-created_date") params.set("ordering", state.ordering);
     if (state.page > 1) params.set("page", state.page);
-    if (state.page_size !== 50) params.set("page_size", state.page_size);
+    if (state.page_size !== 6) params.set("page_size", state.page_size);
     var query = params.toString();
     var url = window.location.pathname + (query ? "?" + query : "");
     window.history.replaceState({}, "", url);
@@ -113,7 +135,7 @@
   function postCardHtml(post) {
     var esc = Site.escapeHtml;
     var url = "/blog/post/" + encodeURIComponent(post.slug) + "/";
-    var img = post.image || "";
+    var img = post.image || "/static/imgs/blog/blog-1.png";
     var authorName = post.author ? esc(post.author.display_name) : "";
 
     return (
@@ -202,6 +224,7 @@
     grid.innerHTML = '<p class="mb-0">Loading posts…</p>';
     return Api.get("blog/posts/", {
       category: state.category || undefined,
+      tag: state.tag || undefined,
       search: state.q || undefined,
       ordering: state.ordering,
       page: state.page,
@@ -268,5 +291,6 @@
     loadPosts();
     loadSidebarCategories();
     loadSidebarTrendingPosts();
+    loadSidebarTags();
   });
 })(window, document);

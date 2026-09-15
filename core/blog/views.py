@@ -7,4 +7,16 @@ class CategoryListView(TemplateView):
 
 
 class PostFullwidthView(TemplateView):
+    """
+    Renders the page shell only. The post itself (title, image,
+    content, author, tags) is fetched client-side from
+    /api/v1/blog/posts/<slug>/ - only the slug from the URL is passed
+    into the template context, mirroring shop.ProductFullView.
+    """
+
     template_name = "blog/blog-post-fullwidth.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["post_slug"] = self.kwargs.get("slug", "")
+        return context
