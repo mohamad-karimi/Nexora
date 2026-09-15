@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
-__all__ = ["Category", "Post", "Tag"]
+__all__ = ["Category", "Post", "Tag", "Comment", "PostBookmark", "PostLike"]
 
 
 class Category(models.Model):
@@ -104,3 +104,97 @@ class Post(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+
+
+class Comment(models.Model):
+    """
+    A logged-in user's comment on a post. Published by default -
+    `published` gates public visibility (an admin can uncheck it to
+    hide a comment from every visitor without deleting it). Mirrors
+    shop.Review's shape minus the score field and the one-per-user
+    uniqueness constraint, since a reader may leave more than one
+    comment on a post.
+    """
+
+    post = models.ForeignKey(
+        "blog.Post", on_delete=models.CASCADE, related_name="comments"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="blog_comments",
+    )
+    content = models.TextField()
+    is_approved = models.BooleanField(
+        default=False, help_text="Comments are moderated before they go public."
+    )
+    published = models.BooleanField(
+        default=True,
+        help_text="Visible on the site when checked. Uncheck to hide this "
+        "comment from every visitor without deleting it.",
+    )
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_date"]
+
+    def __str__(self):
+        return f"Comment by {self.user} on {self.post}"
+
+
+class PostBookmark(models.Model):
+    """
+    A post a user has saved/bookmarked. Mirrors shop.Wishlist exactly
+    (one row per user+post, same cascade behaviour) so the blog's
+    save/like buttons reuse the project's one existing "save this for
+    later" pattern instead of a second bespoke one.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="post_bookmarks",
+    )
+    post = models.ForeignKey(
+        "blog.Post", on_delete=models.CASCADE, related_name="bookmarked_by"
+    )
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "post"], name="unique_bookmark_per_user_post"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} \u2192 {self.post}"
+
+
+class PostLike(models.Model):
+    """
+    A user liking a post. Deliberately separate from PostBookmark -
+    same shape, same one-row-per-user-per-post pattern, but a
+    distinct table/endpoint so liking and bookmarking a post are two
+    completely independent actions (one doesn't affect the other).
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="post_likes",
+    )
+    post = models.ForeignKey("blog.Post", on_delete=models.CASCADE, related_name="likes")
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "post"], name="unique_like_per_user_post"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user} \u2665 {self.post}"
