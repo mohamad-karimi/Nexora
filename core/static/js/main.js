@@ -705,8 +705,11 @@
     /*-----Modal----*/
 
     $(".modal").on("shown.bs.modal", function (e) {
-        $(".product-image-slider").slick("setPosition");
-        $(".slider-nav-thumbnails").slick("setPosition");
+        // A dynamically-filled gallery (product detail page) is only
+        // slicked once its images arrive, so guard the call - slick()
+        // on an uninitialised element throws.
+        $(".product-image-slider.slick-initialized").slick("setPosition");
+        $(".slider-nav-thumbnails.slick-initialized").slick("setPosition");
         if ($(window).width() > 768) {
             $(".product-image-slider .slick-active img").elevateZoom({
                 zoomType: "inner",

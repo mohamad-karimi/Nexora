@@ -7,7 +7,7 @@
             <div class="container">
                 <div class="breadcrumb">
                     <a href="{% url 'website:home' %}" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
-                    <span></span> <a href="/shop/grid-left/" class="js-breadcrumb-category">Shop</a> <span></span> <span class="js-breadcrumb-title"></span>
+                    <span></span> <a href="/shop/grid-left/" class="js-breadcrumb-category">Shop</a><span class="js-breadcrumb-title"></span>
                 </div>
             </div>
         </div>
@@ -17,42 +17,12 @@
                     <div class="product-detail accordion-detail">
                         <div class="row mb-50 mt-30">
                             <div class="col-md-6 col-sm-12 col-xs-12 mb-md-0 mb-sm-5">
-                                <div class="detail-gallery">
+                                <div class="detail-gallery js-gallery" data-gallery="dynamic">
                                     <span class="zoom-icon"><i class="fi-rs-search"></i></span>
-                                    <!-- MAIN SLIDES -->
-                                    <div class="product-image-slider">
-                                        <figure class="border-radius-10">
-                                            <img class="js-gallery-main-img" src="{% static 'imgs/shop/product-16-2.jpg' %}" alt="product image" />
-                                        </figure>
-                                        <figure class="border-radius-10">
-                                            <img class="js-gallery-main-img" src="{% static 'imgs/shop/product-16-1.jpg' %}" alt="product image" />
-                                        </figure>
-                                        <figure class="border-radius-10">
-                                            <img class="js-gallery-main-img" src="{% static 'imgs/shop/product-16-3.jpg' %}" alt="product image" />
-                                        </figure>
-                                        <figure class="border-radius-10">
-                                            <img class="js-gallery-main-img" src="{% static 'imgs/shop/product-16-4.jpg' %}" alt="product image" />
-                                        </figure>
-                                        <figure class="border-radius-10">
-                                            <img class="js-gallery-main-img" src="{% static 'imgs/shop/product-16-5.jpg' %}" alt="product image" />
-                                        </figure>
-                                        <figure class="border-radius-10">
-                                            <img class="js-gallery-main-img" src="{% static 'imgs/shop/product-16-6.jpg' %}" alt="product image" />
-                                        </figure>
-                                        <figure class="border-radius-10">
-                                            <img class="js-gallery-main-img" src="{% static 'imgs/shop/product-16-7.jpg' %}" alt="product image" />
-                                        </figure>
-                                    </div>
-                                    <!-- THUMBNAILS -->
-                                    <div class="slider-nav-thumbnails">
-                                        <div><img class="js-gallery-thumb-img" src="{% static 'imgs/shop/thumbnail-3.jpg' %}" alt="product image" /></div>
-                                        <div><img class="js-gallery-thumb-img" src="{% static 'imgs/shop/thumbnail-4.jpg' %}" alt="product image" /></div>
-                                        <div><img class="js-gallery-thumb-img" src="{% static 'imgs/shop/thumbnail-5.jpg' %}" alt="product image" /></div>
-                                        <div><img class="js-gallery-thumb-img" src="{% static 'imgs/shop/thumbnail-6.jpg' %}" alt="product image" /></div>
-                                        <div><img class="js-gallery-thumb-img" src="{% static 'imgs/shop/thumbnail-7.jpg' %}" alt="product image" /></div>
-                                        <div><img class="js-gallery-thumb-img" src="{% static 'imgs/shop/thumbnail-8.jpg' %}" alt="product image" /></div>
-                                        <div><img class="js-gallery-thumb-img" src="{% static 'imgs/shop/thumbnail-9.jpg' %}" alt="product image" /></div>
-                                    </div>
+                                    <!-- MAIN SLIDES (built from the product's real images, same markup as the theme: figure.border-radius-10 > img) -->
+                                    <div class="product-image-slider js-gallery-main"></div>
+                                    <!-- THUMBNAILS (built from the product's real images, same markup as the theme: div > img) -->
+                                    <div class="slider-nav-thumbnails js-gallery-thumbs"></div>
                                 </div>
                                 <!-- End Gallery -->
                             </div>
@@ -98,7 +68,7 @@
                                             <li class="js-life-row" style="display:none;">LIFE: <span class="text-brand js-life"></span></li>
                                         </ul>
                                         <ul class="float-start">
-                                            <li class="mb-5">SKU: <a href="#" class="js-sku">-</a></li>
+                                            <li class="mb-5">SKU: <span class="js-sku">-</span></li>
                                             <li class="mb-5">Tags: <span class="js-detail-tags"></span></li>
                                             <li>Stock:<span class="in-stock text-brand ml-5 js-stock-text">-</span></li>
                                         </ul>
