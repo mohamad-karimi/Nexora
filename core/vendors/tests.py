@@ -4,6 +4,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from shop.models import Category, Product
 from vendors.models import Vendor
 from website.models import ContactMessage
 
@@ -81,8 +82,15 @@ class VendorGuideContactAPITests(APITestCase):
         self.assertEqual(ContactMessage.objects.count(), 0)
 
     def test_vendor_submission_is_stored_with_user_vendor_and_source(self):
+        # A Vendor row is created automatically by vendors.signals as
+        # soon as the user is saved with role=Vendor (see make_user
+        # above); update it with a specific store name instead of
+        # creating a second one, which the OneToOne `user` field
+        # wouldn't allow anyway.
         user = make_user("vera", role=User.Role.VENDOR)
-        vendor = Vendor.objects.create(user=user, store_name="Vera Store")
+        vendor = user.vendor_profile
+        vendor.store_name = "Vera Store"
+        vendor.save()
         self.client.force_authenticate(user=user)
 
         response = self.client.post(self.url, self.payload)
@@ -95,7 +103,13 @@ class VendorGuideContactAPITests(APITestCase):
         self.assertEqual(message.message, self.payload["message"])
 
     def test_vendor_without_store_row_still_submits(self):
+        # Every Vendor-role user gets a Vendor row automatically now
+        # (see vendors.signals), so exercise the still-supported
+        # defensive path -- a vendor whose row is missing for some
+        # other reason (deleted, or a pre-fix legacy account before
+        # the backfill migration ran) -- by removing it explicitly.
         user = make_user("vera", role=User.Role.VENDOR)
+        user.vendor_profile.delete()
         self.client.force_authenticate(user=user)
 
         response = self.client.post(self.url, self.payload)
@@ -179,3 +193,120 @@ class VendorGuidePrefillDataTests(APITestCase):
         # erroring.
         self.assertEqual(profile.get("first_name", ""), "")
         self.assertEqual(profile.get("phone", ""), "")
+
+
+class VendorProductCreationAPITests(APITestCase):
+    """
+    POST /api/v1/vendors/dashboard/products/ -- the Vendor Account's
+    "Add Product" panel. Covers the vendor_profile root-cause fix
+    (vendors.signals) end-to-end: a vendor created the normal way,
+    through registration, must be able to create a product.
+    """
+
+    def setUp(self):
+        self.url = reverse("api:api_v1:vendor-dashboard-products")
+        self.category = Category.objects.create(name="Groceries")
+        self.payload = {
+            "name": "Organic Honey",
+            "category": self.category.id,
+            "sku": "HONEY-001",
+            "price": "9.99",
+        }
+
+    def test_anonymous_cannot_create_product(self):
+        response = self.client.post(self.url, self.payload)
+        self.assertIn(
+            response.status_code,
+            (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN),
+        )
+        self.assertEqual(Product.objects.count(), 0)
+
+    def test_customer_cannot_create_product(self):
+        self.client.force_authenticate(user=make_user("carol"))
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Product.objects.count(), 0)
+
+    def test_vendor_created_via_registration_can_create_a_product(self):
+        # make_user() only ever sets role=Vendor, exactly like real
+        # registration -- the Vendor row itself must come from
+        # vendors.signals, not from this test setting it up by hand.
+        user = make_user("vera", role=User.Role.VENDOR)
+        self.client.force_authenticate(user=user)
+
+        response = self.client.post(self.url, self.payload)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        product = Product.objects.get(sku="HONEY-001")
+        self.assertEqual(product.vendor, user.vendor_profile)
+        self.assertEqual(response.data["vendor"]["id"], user.vendor_profile.id)
+
+    def test_vendor_cannot_assign_product_to_another_vendor(self):
+        user = make_user("vera", role=User.Role.VENDOR)
+        other = make_user("victor", role=User.Role.VENDOR)
+        self.client.force_authenticate(user=user)
+
+        response = self.client.post(
+            self.url, dict(self.payload, vendor=other.vendor_profile.id)
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        product = Product.objects.get(sku="HONEY-001")
+        self.assertEqual(product.vendor, user.vendor_profile)
+        self.assertNotEqual(product.vendor, other.vendor_profile)
+
+    def test_vendor_only_sees_their_own_products(self):
+        user = make_user("vera", role=User.Role.VENDOR)
+        other = make_user("victor", role=User.Role.VENDOR)
+        Product.objects.create(
+            vendor=user.vendor_profile,
+            category=self.category,
+            name="Mine",
+            sku="MINE-1",
+            price="1.00",
+        )
+        Product.objects.create(
+            vendor=other.vendor_profile,
+            category=self.category,
+            name="Theirs",
+            sku="THEIRS-1",
+            price="1.00",
+        )
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        names = [item["name"] for item in response.data["results"]]
+        self.assertEqual(names, ["Mine"])
+
+
+class VendorProfileIntegrityTests(TestCase):
+    """
+    The business rule this whole fix is about: role=Vendor <=> exactly
+    one Vendor row.
+    """
+
+    def test_registering_as_vendor_creates_a_vendor_row(self):
+        user = make_user("vera", role=User.Role.VENDOR)
+        self.assertTrue(Vendor.objects.filter(user=user).exists())
+
+    def test_promoting_an_existing_customer_creates_a_vendor_row(self):
+        # Covers the admin-changes-role-by-hand path, not just
+        # registration.
+        user = make_user("carol")
+        self.assertFalse(Vendor.objects.filter(user=user).exists())
+
+        user.role = User.Role.VENDOR
+        user.save()
+
+        self.assertTrue(Vendor.objects.filter(user=user).exists())
+
+    def test_saving_an_existing_vendor_again_does_not_duplicate_the_row(self):
+        user = make_user("vera", role=User.Role.VENDOR)
+        vendor_id = user.vendor_profile.id
+
+        user.save()
+
+        self.assertEqual(Vendor.objects.filter(user=user).count(), 1)
+        self.assertEqual(user.vendor_profile.id, vendor_id)

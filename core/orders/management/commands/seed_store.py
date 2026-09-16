@@ -470,17 +470,19 @@ class Command(BaseCommand):
                 profile.description = data["description"]
                 profile.save()
 
-            vendor, _ = Vendor.objects.get_or_create(
-                user=user,
-                defaults={
-                    "store_name": data["store_name"],
-                    "phone": data["phone"],
-                    "email": data["email"],
-                    "address": "123 Market Street",
-                    "description": data["description"],
-                    "is_approved": True,
-                },
-            )
+            # vendors.signals already creates a bare Vendor row as soon
+            # as `user` is saved with role=Vendor above (get_or_create's
+            # own initial save included), so get_or_create here would
+            # find that bare row and skip `defaults` entirely. Fetch
+            # (or create, for safety) then always apply the seed data.
+            vendor, _ = Vendor.objects.get_or_create(user=user)
+            vendor.store_name = data["store_name"]
+            vendor.phone = data["phone"]
+            vendor.email = data["email"]
+            vendor.address = "123 Market Street"
+            vendor.description = data["description"]
+            vendor.is_approved = True
+            vendor.save()
             if not vendor.logo:
                 vendor.logo.save(
                     f"{vendor.slug}.png",

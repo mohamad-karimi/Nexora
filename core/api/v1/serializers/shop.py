@@ -151,6 +151,44 @@ class ProductDetailSerializer(ProductListSerializer):
         ]
 
 
+class ProductCreateSerializer(serializers.ModelSerializer):
+    """
+    Used by vendors to create their own product from the Vendor
+    Dashboard's "Your Products" panel (see
+    api.v1.views.vendors.VendorDashboardProductsView).
+
+    `vendor` is intentionally *not* one of the fields below: the view
+    sets it from the authenticated user's own `vendor_profile`, so
+    nothing in the request body can ever assign the product to a
+    different vendor. `slug` is left to `Product.save()`, which fills
+    it in from `name` when blank.
+    """
+
+    class Meta:
+        model = Product
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "category",
+            "short_description",
+            "description",
+            "sku",
+            "price",
+            "discount_percent",
+            "discount_end",
+            "stock",
+            "image",
+            "product_type",
+            "manufacture_date",
+            "shelf_life_days",
+            "status",
+            "color",
+            "condition",
+        ]
+        read_only_fields = ["id", "slug"]
+
+
 class WishlistSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
     product_id = serializers.PrimaryKeyRelatedField(

@@ -80,6 +80,12 @@ class RegisterAPITests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         user = User.objects.get(username="vendoruser")
         self.assertEqual(user.role, User.Role.VENDOR)
+        # Regression: registering as a vendor must also create the
+        # Vendor row (vendors.signals), or product creation later has
+        # no vendor to attach to (see vendors/tests.py for the rest of
+        # this invariant's coverage).
+        self.assertTrue(hasattr(user, "vendor_profile"))
+        self.assertEqual(user.vendor_profile.user_id, user.id)
 
     def test_customer_account_type_is_persisted(self):
         code = self._get_security_code()

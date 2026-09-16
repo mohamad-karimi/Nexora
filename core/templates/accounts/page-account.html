@@ -23,6 +23,9 @@
                                         <li class="nav-item">
                                             <a class="nav-link" href="{% url 'dashboard:dashboard' %}"><i class="fi-rs-settings-sliders mr-10"></i>Dashboard</a>
                                         </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="add-product-tab" data-bs-toggle="tab" href="{% url 'accounts:account' %}#add-product" role="tab" aria-controls="add-product" aria-selected="false"><i class="fi-rs-shopping-bag-add mr-10"></i>Add Product</a>
+                                        </li>
                                         {% else %}
                                         <li class="nav-item">
                                             <a class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" href="{% url 'accounts:account' %}#dashboard" role="tab" aria-controls="dashboard" aria-selected="false"><i class="fi-rs-settings-sliders mr-10"></i>Dashboard</a>
@@ -156,6 +159,122 @@
                                         </div>
                                     </div>
                                     {% endif %}
+                                    {% if is_vendor %}
+                                    <div class="tab-pane fade" id="add-product" role="tabpanel" aria-labelledby="add-product-tab">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0">Add Product</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="js-add-product-message" style="display:none;"></p>
+                                                <form id="vendorAddProductForm" enctype="multipart/form-data">
+                                                    <div class="row">
+                                                        <div class="form-group col-md-6">
+                                                            <label>Product Name <span class="required">*</span></label>
+                                                            <input required class="form-control" id="product-name" type="text" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Category <span class="required">*</span></label>
+                                                            <select required class="form-control" id="product-category">
+                                                                <option value="">Select a category…</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>SKU <span class="required">*</span></label>
+                                                            <input required class="form-control" id="product-sku" type="text" placeholder="Unique product code" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Price <span class="required">*</span></label>
+                                                            <input required class="form-control" id="product-price" type="number" min="0" step="0.01" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Discount % <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-discount-percent" type="number" min="0" max="100" step="1" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Discount Ends <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-discount-end" type="datetime-local" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Stock</label>
+                                                            <input class="form-control" id="product-stock" type="number" min="0" step="1" value="0" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Condition</label>
+                                                            <select class="form-control" id="product-condition">
+                                                                <option value="new">New</option>
+                                                                <option value="refurbished">Refurbished</option>
+                                                                <option value="used">Used</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Status</label>
+                                                            <select class="form-control" id="product-status">
+                                                                <option value="draft">Draft</option>
+                                                                <option value="published">Published</option>
+                                                                <option value="archived">Archived</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Color <span class="text-muted">(optional)</span></label>
+                                                            <select class="form-control" id="product-color">
+                                                                <option value="">None</option>
+                                                                <option value="red">Red</option>
+                                                                <option value="green">Green</option>
+                                                                <option value="blue">Blue</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="form-group col-md-12">
+                                                            <label>Short Description <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-short-description" type="text" maxlength="500" />
+                                                        </div>
+                                                        <div class="form-group col-md-12">
+                                                            <label>Description <span class="text-muted">(optional)</span></label>
+                                                            <textarea class="form-control" id="product-description" rows="5"></textarea>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Product Type <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-type" type="text" placeholder='e.g. "Organic"' />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Product Image <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-image" type="file" accept="image/*" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Manufacture Date <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-manufacture-date" type="date" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Shelf Life (days) <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-shelf-life-days" type="number" min="0" step="1" />
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <button type="submit" class="btn btn-fill-out submit font-weight-bold">Create Product</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                                <hr class="mt-30 mb-30" />
+                                                <h5>Your Products</h5>
+                                                <div class="table-responsive">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Product</th>
+                                                                <th>Category</th>
+                                                                <th>Price</th>
+                                                                <th>Stock</th>
+                                                                <th>Status</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="js-vendor-products-body">
+                                                            <tr><td colspan="5">Loading…</td></tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
                                     <div class="tab-pane fade{% if is_vendor %} active show{% endif %}" id="account-detail" role="tabpanel" aria-labelledby="account-detail-tab">
                                         <div class="card">
                                             <div class="card-header">
@@ -218,4 +337,7 @@
 {% endblock %}
 {% block extra_js %}
     <script src="{% static 'js/pages/account.js' %}"></script>
+    {% if is_vendor %}
+    <script src="{% static 'js/pages/account-vendor-product.js' %}"></script>
+    {% endif %}
 {% endblock %}

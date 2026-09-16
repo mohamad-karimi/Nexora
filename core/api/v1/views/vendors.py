@@ -1,11 +1,17 @@
 from django.db.models import Avg, Count, Q, Sum
 from django.db.models.functions import Coalesce
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from rest_framework import generics, viewsets
+from rest_framework import generics, status, viewsets
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 
 from api.v1.pagination import StandardPagination
 from api.v1.permissions import IsVendor, IsVerified
-from api.v1.serializers.shop import ProductListSerializer
+from api.v1.serializers.shop import (
+    ProductCreateSerializer,
+    ProductDetailSerializer,
+    ProductListSerializer,
+)
 from api.v1.serializers.vendors import VendorOrderItemSerializer, VendorSerializer
 from orders.models import Order, OrderItem
 from shop.models import Product
@@ -59,12 +65,39 @@ class VendorDashboardMixin:
         return getattr(self.request.user, "vendor_profile", None)
 
 
+@extend_schema_view(
+    get=extend_schema(
+        summary="List your products",
+        description="Paginated list of the current vendor's own products (any status), for the Vendor Dashboard's \"Your Products\" grid.",
+    ),
+    post=extend_schema(
+        summary="Create a product",
+        description=(
+            "Creates a new product owned by the current vendor. The "
+            "`vendor` is always taken from the authenticated user's own "
+            "vendor profile -- it is not a field on this endpoint, so a "
+            "vendor can never create a product for someone else's store."
+        ),
+        request=ProductCreateSerializer,
+        responses={201: ProductDetailSerializer},
+    ),
+)
 @extend_schema(tags=["Vendors"])
-class VendorDashboardProductsView(VendorDashboardMixin, generics.ListAPIView):
-    """Paginated list of the current vendor's own products (any status), for the Vendor Dashboard's "Your Products" grid."""
+class VendorDashboardProductsView(VendorDashboardMixin, generics.ListCreateAPIView):
+    """
+    GET: paginated list of the current vendor's own products (any
+    status), for the Vendor Dashboard's "Your Products" grid.
 
-    serializer_class = ProductListSerializer
+    POST: lets a vendor create a new product for their own store from
+    the Vendor Account's "Add Product" panel.
+    """
+
     pagination_class = StandardPagination
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return ProductCreateSerializer
+        return ProductListSerializer
 
     def get_queryset(self):
         vendor = self.get_vendor()
@@ -83,6 +116,31 @@ class VendorDashboardProductsView(VendorDashboardMixin, generics.ListAPIView):
                 ),
             )
             .order_by("-created_date")
+        )
+
+    def perform_create(self, serializer):
+        # The vendor is resolved from the authenticated user's own
+        # Vendor row -- never from request data -- so this is the one
+        # and only place `vendor` gets set on a vendor-created product.
+        vendor = self.get_vendor()
+        if vendor is None:
+            raise PermissionDenied(
+                "Your account does not have a vendor profile yet."
+            )
+        serializer.save(vendor=vendor)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        output_serializer = ProductDetailSerializer(
+            serializer.instance, context=self.get_serializer_context()
+        )
+        headers = self.get_success_headers(output_serializer.data)
+        return Response(
+            output_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
         )
 
 
