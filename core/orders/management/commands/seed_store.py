@@ -574,6 +574,7 @@ class Command(BaseCommand):
                     "manufacture_date": manufacture_date,
                     "shelf_life_days": shelf_life_days,
                     "status": Product.Status.PUBLISHED,
+                    "published": True,
                 },
             )
             if created:

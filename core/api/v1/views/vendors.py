@@ -46,7 +46,7 @@ class VendorViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return Vendor.objects.filter(is_approved=True).annotate(
             product_count=Count(
-                "products", filter=Q(products__status=Product.Status.PUBLISHED)
+                "products", filter=Q(products__published=True)
             )
         )
 
@@ -142,6 +142,86 @@ class VendorDashboardProductsView(VendorDashboardMixin, generics.ListCreateAPIVi
             status=status.HTTP_201_CREATED,
             headers=headers,
         )
+
+
+@extend_schema_view(
+    get=extend_schema(
+        summary="Get one of your products",
+        description=(
+            "Looked up by `slug`, scoped to the current vendor's own "
+            "products only (same resolution as the list above) -- a "
+            "slug belonging to another vendor's product 404s exactly "
+            "like an unknown slug would, for the Vendor Dashboard's "
+            "Edit Product page."
+        ),
+        responses={200: ProductCreateSerializer},
+    ),
+    put=extend_schema(
+        summary="Update one of your products",
+        description=(
+            "Full update of a product owned by the current vendor. "
+            "`vendor` and `published` are not fields on this endpoint "
+            "-- the product stays owned by the same vendor, and its "
+            "`published` status is left untouched, no matter what the "
+            "request body contains. Only staff/admin can change "
+            "`published`, from Django Admin."
+        ),
+        request=ProductCreateSerializer,
+        responses={200: ProductDetailSerializer},
+    ),
+    patch=extend_schema(
+        summary="Partially update one of your products",
+        request=ProductCreateSerializer,
+        responses={200: ProductDetailSerializer},
+    ),
+)
+@extend_schema(tags=["Vendors"])
+class VendorDashboardProductDetailView(
+    VendorDashboardMixin, generics.RetrieveUpdateAPIView
+):
+    """
+    GET/PUT/PATCH a single product owned by the current vendor, for
+    the Vendor Dashboard's Edit Product page.
+
+    Reuses ProductCreateSerializer -- the same fields the Create
+    Product form uses, minus `vendor` and `published` -- so a vendor
+    can never reassign a product to another store or publish it from
+    this endpoint, exactly like VendorDashboardProductsView.create()
+    above. Ownership is enforced by scoping get_queryset() to the
+    requester's own vendor: a slug that exists but belongs to a
+    different vendor's product simply isn't in that queryset, so it
+    404s the same way a nonexistent slug would, instead of leaking a
+    403 that would confirm the slug is real.
+    """
+
+    serializer_class = ProductCreateSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        vendor = self.get_vendor()
+        if vendor is None:
+            return Product.objects.none()
+        return (
+            Product.objects.filter(vendor=vendor)
+            .select_related("category", "vendor")
+            .prefetch_related("tags")
+        )
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        # ModelSerializer.update() only ever touches the fields declared
+        # on ProductCreateSerializer, so `vendor` and `published` are
+        # never among validated_data -- this can't move the product to
+        # another vendor or change its approval state, whatever the
+        # request body contains.
+        self.perform_update(serializer)
+        output_serializer = ProductDetailSerializer(
+            serializer.instance, context=self.get_serializer_context()
+        )
+        return Response(output_serializer.data)
 
 
 @extend_schema(tags=["Vendors"])

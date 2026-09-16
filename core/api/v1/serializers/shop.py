@@ -117,7 +117,9 @@ class ProductListSerializer(serializers.ModelSerializer):
             "average_rating",
             "review_count",
             "is_wishlisted",
+            "published",
         ]
+        read_only_fields = ["published"]
 
     def get_is_wishlisted(self, obj):
         request = self.context.get("request")
@@ -154,14 +156,24 @@ class ProductDetailSerializer(ProductListSerializer):
 class ProductCreateSerializer(serializers.ModelSerializer):
     """
     Used by vendors to create their own product from the Vendor
-    Dashboard's "Your Products" panel (see
-    api.v1.views.vendors.VendorDashboardProductsView).
+    Dashboard's "Your Products" panel, and reused as-is to edit one
+    (see api.v1.views.vendors.VendorDashboardProductsView and
+    VendorDashboardProductDetailView) -- both the Create and Edit
+    Product forms work with exactly the same field set.
 
     `vendor` is intentionally *not* one of the fields below: the view
-    sets it from the authenticated user's own `vendor_profile`, so
-    nothing in the request body can ever assign the product to a
-    different vendor. `slug` is left to `Product.save()`, which fills
-    it in from `name` when blank.
+    sets it from the authenticated user's own `vendor_profile` on
+    create, and never touches it on update, so nothing in the request
+    body can ever assign the product to a different vendor. `slug` is
+    read-only: `Product.save()` fills it in from `name` when blank on
+    create, and it's left untouched on every later edit, so an
+    existing product's URL never changes underneath it.
+
+    `published` is likewise intentionally left out: it always saves
+    as `False` (the model's default) for a vendor-created product,
+    is never touched by a vendor's edit, and only a staff/admin can
+    flip it to `True`, from Django Admin. It's never something a
+    request body can set here.
     """
 
     class Meta:

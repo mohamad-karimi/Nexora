@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <main class="main pages">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="{% url 'website:home' %}" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                    <span></span> <a href="{% url 'dashboard:dashboard' %}">Dashboard</a>
+                    <span></span> Edit Product
+                </div>
+            </div>
+        </div>
+        <div class="page-content pt-50">
+            <div class="container">
+                <h1 class="display-2 mt-30 pb-30">Edit Product</h1>
+                <hr class="mb-80" />
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0 js-edit-product-title">Edit Product</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="js-edit-product-message" style="display:none;"></p>
+                                <form id="vendorEditProductForm" enctype="multipart/form-data" data-product-slug="{{ product_slug }}">
+                                    <div class="row">
+                                        <div class="form-group col-md-6">
+                                            <label>Product Name <span class="required">*</span></label>
+                                            <input required class="form-control" id="product-name" type="text" />
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Category <span class="required">*</span></label>
+                                            <select required class="form-control" id="product-category">
+                                                <option value="">Select a category…</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>SKU <span class="required">*</span></label>
+                                            <input required class="form-control" id="product-sku" type="text" placeholder="Unique product code" />
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Price <span class="required">*</span></label>
+                                            <input required class="form-control" id="product-price" type="number" min="0" step="0.01" />
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Discount % <span class="text-muted">(optional)</span></label>
+                                            <input class="form-control" id="product-discount-percent" type="number" min="0" max="100" step="1" />
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Discount Ends <span class="text-muted">(optional)</span></label>
+                                            <input class="form-control" id="product-discount-end" type="datetime-local" />
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Stock</label>
+                                            <input class="form-control" id="product-stock" type="number" min="0" step="1" value="0" />
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Condition</label>
+                                            <select class="form-control" id="product-condition">
+                                                <option value="new">New</option>
+                                                <option value="refurbished">Refurbished</option>
+                                                <option value="used">Used</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Status</label>
+                                            <select class="form-control" id="product-status">
+                                                <option value="draft">Draft</option>
+                                                <option value="published">Published</option>
+                                                <option value="archived">Archived</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Color <span class="text-muted">(optional)</span></label>
+                                            <select class="form-control" id="product-color">
+                                                <option value="">None</option>
+                                                <option value="red">Red</option>
+                                                <option value="green">Green</option>
+                                                <option value="blue">Blue</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-12">
+                                            <label>Short Description <span class="text-muted">(optional)</span></label>
+                                            <input class="form-control" id="product-short-description" type="text" maxlength="500" />
+                                        </div>
+                                        <div class="form-group col-md-12">
+                                            <label>Description <span class="text-muted">(optional)</span></label>
+                                            <textarea class="form-control" id="product-description" rows="5"></textarea>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Product Type <span class="text-muted">(optional)</span></label>
+                                            <input class="form-control" id="product-type" type="text" placeholder='e.g. "Organic"' />
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Product Image <span class="text-muted">(optional)</span></label>
+                                            <input class="form-control" id="product-image" type="file" accept="image/*" />
+                                            <div class="mt-10 js-current-image-wrap" style="display:none;">
+                                                <span class="font-small text-muted">Current image:</span><br />
+                                                <img class="js-current-image" src="" alt="" style="max-width:120px;max-height:120px;" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Manufacture Date <span class="text-muted">(optional)</span></label>
+                                            <input class="form-control" id="product-manufacture-date" type="date" />
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Shelf Life (days) <span class="text-muted">(optional)</span></label>
+                                            <input class="form-control" id="product-shelf-life-days" type="number" min="0" step="1" />
+                                        </div>
+                                        <div class="col-md-12">
+                                            <button type="submit" class="btn btn-fill-out submit font-weight-bold js-edit-product-submit">Save Changes</button>
+                                            <a href="{% url 'dashboard:dashboard' %}" class="btn btn-outline font-weight-bold">Cancel</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/pages/vendor-product-edit.js' %}"></script>
+{% endblock %}

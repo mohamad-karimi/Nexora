@@ -91,6 +91,7 @@
   function productCardHtml(product) {
     var esc = Site.escapeHtml;
     var url = "/shop/product/" + encodeURIComponent(product.slug) + "/";
+    var editUrl = "/dashboard/product/" + encodeURIComponent(product.slug) + "/edit/";
     var img = product.image || "";
     var badge = product.is_on_sale
       ? '<div class="product-badges product-badges-position product-badges-mrg"><span class="hot">-' +
@@ -150,7 +151,7 @@
       "</div>" +
       '<div class="add-cart">' +
       '<a class="add" href="' +
-      url +
+      editUrl +
       '"><i class="fi-rs-edit mr-5"></i>Edit </a>' +
       "</div>" +
       "</div>" +

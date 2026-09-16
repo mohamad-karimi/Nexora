@@ -1,4 +1,5 @@
 from django.db.models import Avg, Count, Q
+from django.http import Http404
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiResponse,
@@ -7,6 +8,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from api.v1.filters import ProductFilter
@@ -39,7 +41,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return Category.objects.annotate(
             product_count=Count(
-                "products", filter=Q(products__status=Product.Status.PUBLISHED)
+                "products", filter=Q(products__published=True)
             )
         ).order_by("name")
 
@@ -78,7 +80,23 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 )
 @extend_schema(tags=["Catalog"])
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
-    """Read-only browsing of published products, plus a nested `reviews` action."""
+    """
+    Read-only browsing of products, plus a nested `reviews` action.
+
+    Listing (and every other list-style access -- category/tag/vendor
+    filtering, search, ordering) only ever returns `published=True`
+    products, so an unapproved product never shows up in the Shop,
+    category/list pages, search, or related-products.
+
+    Looking up a single product by slug (`retrieve`, and the nested
+    `reviews` action) is a little more permissive: the product's own
+    vendor and staff/admin can open it even while it's unpublished --
+    e.g. right after creating it from the Vendor Dashboard, before an
+    admin has approved it -- via get_object() below. Everyone else
+    gets the same 404 a nonexistent slug would, so an unpublished
+    product's existence is never revealed to the public or to a
+    vendor who doesn't own it.
+    """
 
     lookup_field = "slug"
     filterset_class = ProductFilter
@@ -87,9 +105,8 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     ordering = ["-created_date"]
 
     def get_queryset(self):
-        return (
-            Product.objects.filter(status=Product.Status.PUBLISHED)
-            .select_related("category", "vendor")
+        queryset = (
+            Product.objects.select_related("category", "vendor")
             .prefetch_related("tags", "images", "specifications")
             .annotate(
                 average_rating=Avg(
@@ -100,6 +117,34 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
                 ),
             )
         )
+        if self.action == "list":
+            queryset = queryset.filter(published=True)
+        return queryset
+
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        obj = get_object_or_404(queryset, slug=self.kwargs[lookup_url_kwarg])
+
+        if not obj.published and not self._can_view_unpublished(obj):
+            # Same 404 an unknown slug would give -- an unpublished
+            # product's existence isn't revealed to anyone but its
+            # owner/staff.
+            raise Http404(
+                f"No {queryset.model._meta.object_name} matches the given query."
+            )
+
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    def _can_view_unpublished(self, product):
+        user = self.request.user
+        if not (user and user.is_authenticated):
+            return False
+        if user.is_staff or user.is_superuser:
+            return True
+        vendor = getattr(user, "vendor_profile", None)
+        return vendor is not None and product.vendor_id == vendor.id
 
     def get_serializer_class(self):
         if self.action == "retrieve":

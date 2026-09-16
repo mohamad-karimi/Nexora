@@ -75,6 +75,17 @@ class Product(models.Model):
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.DRAFT
     )
+    published = models.BooleanField(
+        default=False,
+        help_text=(
+            "Controls public storefront visibility (Shop, category/list "
+            "pages, search, related products, and the public Product "
+            "API). Only staff/admin can set this to True, from Django "
+            "Admin -- vendors cannot publish their own products. The "
+            "owning vendor and staff can still view/manage the product "
+            "before it's published; everyone else cannot."
+        ),
+    )
     color = models.CharField(
         max_length=10,
         choices=Color.choices,
@@ -96,6 +107,7 @@ class Product(models.Model):
         indexes = [
             models.Index(fields=["status"]),
             models.Index(fields=["slug"]),
+            models.Index(fields=["published"]),
         ]
 
     def __str__(self):

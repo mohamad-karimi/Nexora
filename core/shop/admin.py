@@ -44,9 +44,11 @@ class ProductAdmin(admin.ModelAdmin):
         "price",
         "stock",
         "status",
+        "published",
         "created_date",
     )
-    list_filter = ("status", "category", "vendor")
+    list_editable = ("published",)
+    list_filter = ("published", "status", "category", "vendor")
     search_fields = ("name", "sku")
     prepopulated_fields = {"slug": ("name",)}
     autocomplete_fields = ("vendor", "category", "tags")

@@ -25,6 +25,7 @@ from api.v1.views.shop import (
 from api.v1.views.vendors import (
     VendorDashboardBestSellersView,
     VendorDashboardOrderItemsView,
+    VendorDashboardProductDetailView,
     VendorDashboardProductsView,
     VendorViewSet,
 )
@@ -78,6 +79,11 @@ urlpatterns = [
         "vendors/dashboard/products/",
         VendorDashboardProductsView.as_view(),
         name="vendor-dashboard-products",
+    ),
+    path(
+        "vendors/dashboard/products/<slug:slug>/",
+        VendorDashboardProductDetailView.as_view(),
+        name="vendor-dashboard-product-detail",
     ),
     path(
         "vendors/dashboard/best-sellers/",
