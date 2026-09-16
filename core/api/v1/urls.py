@@ -22,7 +22,12 @@ from api.v1.views.shop import (
     TagViewSet,
     WishlistViewSet,
 )
-from api.v1.views.vendors import VendorViewSet
+from api.v1.views.vendors import (
+    VendorDashboardBestSellersView,
+    VendorDashboardOrderItemsView,
+    VendorDashboardProductsView,
+    VendorViewSet,
+)
 from api.v1.views.website import (
     ContactMessageView,
     VendorGuideContactMessageView,
@@ -69,6 +74,21 @@ urlpatterns = [
         name="auth-reset-password",
     ),
     path("cart/", CartView.as_view(), name="cart"),
+    path(
+        "vendors/dashboard/products/",
+        VendorDashboardProductsView.as_view(),
+        name="vendor-dashboard-products",
+    ),
+    path(
+        "vendors/dashboard/best-sellers/",
+        VendorDashboardBestSellersView.as_view(),
+        name="vendor-dashboard-best-sellers",
+    ),
+    path(
+        "vendors/dashboard/orders/",
+        VendorDashboardOrderItemsView.as_view(),
+        name="vendor-dashboard-orders",
+    ),
     path(
         "coupons/validate/", CouponValidateView.as_view(), name="coupon-validate"
     ),

@@ -54,8 +54,20 @@ class VendorRequiredMixin(VerifiedRequiredMixin):
 
 
 class AccountView(VerifiedRequiredMixin, TemplateView):
+    """
+    Same template for every verified role; the template itself hides
+    the customer-only tabs (Orders/Track/Address) and points
+    "Dashboard" at the real Vendor Dashboard when `is_vendor` is set,
+    so a vendor never has to pick a different page manually.
+    """
+
     template_name = "accounts/page-account.html"
     login_url = "accounts:login"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["is_vendor"] = self.request.user.role == User.Role.VENDOR
+        return context
 
 
 class RedirectIfAuthenticatedMixin:
