@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from rest_framework.permissions import BasePermission
 
 
@@ -31,3 +32,23 @@ class IsVerified(BasePermission):
     def has_permission(self, request, view):
         user = request.user
         return bool(user and user.is_authenticated and user.is_verified)
+
+
+class IsVendor(BasePermission):
+    """
+    Restricts an endpoint to accounts whose database role is Vendor.
+
+    Used by the vendor-only Vendor Guide contact endpoint. The role is
+    read from the user row on every request, so hiding or showing markup
+    in the template is never what actually grants access.
+    """
+
+    message = "Only vendor accounts can perform this action."
+
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(
+            user
+            and user.is_authenticated
+            and user.role == get_user_model().Role.VENDOR
+        )

@@ -43,6 +43,11 @@
     var messageEl = form.parentElement.querySelector(".form-messege");
     var submitBtn = form.querySelector('button[type="submit"]');
 
+    // Same form, same popup, same prefill - only the endpoint differs
+    // between the public Contact page and the vendor-only Vendor Guide
+    // form, so the template declares it instead of duplicating this file.
+    var endpoint = form.getAttribute("data-contact-endpoint") || "contact/";
+
     if (window.Site && window.Site.ready) {
       window.Site.ready().then(function () {
         prefillFromProfile(form);
@@ -63,7 +68,7 @@
 
       if (submitBtn) submitBtn.disabled = true;
 
-      window.Api.post("contact/", payload)
+      window.Api.post(endpoint, payload)
         .then(function () {
           form.reset();
           setMessage(messageEl, "Thanks! Your message has been sent.", false);

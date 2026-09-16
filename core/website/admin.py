@@ -5,10 +5,12 @@ from website.models import ContactMessage
 
 @admin.register(ContactMessage)
 class ContactMessageAdmin(admin.ModelAdmin):
-    list_display = ["name", "email", "phone", "subject", "created_date", "user"]
-    list_filter = ["created_date"]
+    list_display = ["name", "email", "phone", "subject", "source", "user", "vendor", "created_date"]
+    list_filter = ["source", "created_date"]
     search_fields = ["name", "email", "phone", "subject", "message"]
     readonly_fields = [
+        "source",
+        "vendor",
         "user",
         "name",
         "email",

@@ -2,6 +2,7 @@ import random
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import TemplateView, View
@@ -25,6 +26,30 @@ class VerifiedRequiredMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not request.user.is_verified:
             return redirect("accounts:email_verification_pending")
+        return super().dispatch(request, *args, **kwargs)
+
+
+class VendorRequiredMixin(VerifiedRequiredMixin):
+    """
+    Page-level counterpart of the API's IsVendor permission: the view is
+    only rendered for an authenticated, verified account whose database
+    role is Vendor.
+
+    An anonymous visitor is sent to the login page by LoginRequiredMixin;
+    a logged-in non-vendor gets a real 403 from the server, so the page is
+    never delivered to the browser at all.
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        if (
+            user.is_authenticated
+            and user.is_verified
+            and user.role != User.Role.VENDOR
+        ):
+            raise PermissionDenied("This page is only available to vendor accounts.")
+        # Anonymous -> login redirect, unverified -> verification page,
+        # both handled by the mixins above.
         return super().dispatch(request, *args, **kwargs)
 
 
