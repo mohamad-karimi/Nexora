@@ -3,13 +3,20 @@
   var Api = window.Api;
   var Site = window.Site;
 
+  // Account details (profile form) is shown for every role. The
+  // dashboard greeting, orders list and address book below are
+  // customer-only sections of page-account.html (wrapped in
+  // {% if not is_vendor %}), so they simply aren't in the DOM on a
+  // vendor's account page -- each is looked up and used defensively
+  // rather than gating the whole script on any one of them existing.
   var greeting = document.querySelector(".js-account-greeting");
-  if (!greeting) return;
 
   function loadMeAndFillProfile() {
     var user = Site.getUser();
     if (!user) return;
-    greeting.textContent = "Hello " + (user.profile.display_name || user.username) + "!";
+    if (greeting) {
+      greeting.textContent = "Hello " + (user.profile.display_name || user.username) + "!";
+    }
     document.getElementById("profile-first-name").value = user.profile.first_name || "";
     document.getElementById("profile-last-name").value = user.profile.last_name || "";
     document.getElementById("profile-display-name").value = user.profile.display_name || "";
@@ -18,6 +25,7 @@
 
   function loadOrders() {
     var body = document.querySelector(".js-orders-body");
+    if (!body) return;
     Api.get("orders/").then(function (data) {
       if (!data.results.length) {
         body.innerHTML = '<tr><td colspan="5">You have not placed any orders yet.</td></tr>';
@@ -67,6 +75,7 @@
 
   function loadAddresses() {
     var container = document.querySelector(".js-addresses-container");
+    if (!container) return;
     Api.get("addresses/", { page_size: 50 }).then(function (data) {
       if (!data.results.length) {
         container.innerHTML = '<div class="col-12"><p>No saved addresses yet.</p></div>';

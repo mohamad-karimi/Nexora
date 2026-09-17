@@ -229,10 +229,6 @@
       titleHtml +
       "</h1>" +
       (slide.description ? '<p class="mb-65">' + esc(slide.description) + "</p>" : "") +
-      '<form class="form-subcriber d-flex">' +
-      '<input type="email" placeholder="Your emaill address" />' +
-      '<button class="btn" type="submit">Subscribe</button>' +
-      "</form>" +
       "</div>" +
       "</div>"
     );
