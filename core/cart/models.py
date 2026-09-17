@@ -24,7 +24,7 @@ class Cart(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=models.Q(user__isnull=False)
+                condition=models.Q(user__isnull=False)
                 | models.Q(session_key__isnull=False),
                 name="cart_requires_user_or_session",
             )

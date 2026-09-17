@@ -654,14 +654,14 @@
                             <li><a href="{% url 'accounts:login' %}">Sign In</a></li>
                             <li><a href="{% url 'cart:cart' %}">View Cart</a></li>
                             <li><a href="{% url 'shop:wishlist' %}">My Wishlist</a></li>
-                            <li><a href="{% url 'accounts:account' %}#track-orders">Track My Order</a></li>
+                            {% if not user.is_authenticated or user.role != 'vendor' %}<li><a href="{% url 'accounts:account' %}#track-orders">Track My Order</a></li>{% endif %}
                             <li><a href="{% url 'shop:compare' %}">Compare products</a></li>
                         </ul>
                     </div>
                     <div class="footer-link-widget col wow animate__animated animate__fadeInUp" data-wow-delay=".3s">
                         <h4 class="widget-title">Corporate</h4>
                         <ul class="footer-list mb-sm-5 mb-md-0">
-                            <li><a href="{% url 'vendors:guide' %}">Become a Vendor</a></li>
+                            {% if user.is_authenticated and user.role == 'vendor' %}<li><a href="{% url 'vendors:guide' %}">Become a Vendor</a></li>{% endif %}
                             <li><a href="{% url 'vendors:list' %}">Our Suppliers</a></li>
                         </ul>
                     </div>
