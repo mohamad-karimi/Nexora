@@ -299,15 +299,14 @@
                         <div class="main-menu main-menu-padding-1 main-menu-lh-2 d-none d-lg-block font-heading">
                             <nav>
                                 <ul>
-                                    <li class="hot-deals"><img src="{% static 'imgs/theme/icons/icon-hot.svg' %}" alt="hot deals" /><a href="{% url 'shop:filter' %}">Deals</a></li>
                                     <li>
-                                        <a class="active" href="{% url 'website:home' %}">Home</a>
+                                        <a{% if request.resolver_match.namespace == 'website' and request.resolver_match.url_name == 'home' %} class="active"{% endif %} href="{% url 'website:home' %}">Home</a>
                                     </li>
                                     <li>
-                                        <a href="{% url 'website:about' %}">About</a>
+                                        <a{% if request.resolver_match.namespace == 'website' and request.resolver_match.url_name == 'about' %} class="active"{% endif %} href="{% url 'website:about' %}">About</a>
                                     </li>
                                     <li>
-                                        <a href="{% url 'shop:grid_left' %}">Shop <i class="fi-rs-angle-down"></i></a>
+                                        <a{% if request.resolver_match.namespace == 'shop' %} class="active"{% endif %} href="{% url 'shop:grid_left' %}">Shop <i class="fi-rs-angle-down"></i></a>
                                         <ul class="sub-menu">
                                             <li><a href="{% url 'shop:filter' %}">Shop – Filter</a></li>
                                             <li><a href="{% url 'shop:wishlist' %}">Shop – Wishlist</a></li>
@@ -318,7 +317,7 @@
                                     </li>
                                     {% if user.is_authenticated and user.role == 'vendor' %}
                                     <li>
-                                        <a href="{% url 'website:home' %}#">Vendors <i class="fi-rs-angle-down"></i></a>
+                                        <a{% if request.resolver_match.namespace == 'vendors' %} class="active"{% endif %} href="{% url 'website:home' %}#">Vendors <i class="fi-rs-angle-down"></i></a>
                                         <ul class="sub-menu">
                                             <li><a href="{% url 'vendors:list' %}">Vendor List</a></li>
                                             <li><a href="{% url 'vendors:guide' %}">Vendor Guide</a></li>
@@ -326,7 +325,7 @@
                                     </li>
                                     {% else %}
                                     <li>
-                                        <a href="{% url 'vendors:list' %}">Vendors</a>
+                                        <a{% if request.resolver_match.namespace == 'vendors' %} class="active"{% endif %} href="{% url 'vendors:list' %}">Vendors</a>
                                     </li>
                                     {% endif %}
                                     {% comment %} <li class="position-static">
@@ -362,10 +361,10 @@
                                         </ul>
                                     </li> {% endcomment %}
                                     <li>
-                                        <a href="{% url 'blog:category_list' %}">Blog</a>
+                                        <a{% if request.resolver_match.namespace == 'blog' %} class="active"{% endif %} href="{% url 'blog:category_list' %}">Blog</a>
                                     </li>
                                     <li>
-                                        <a href="{% url 'website:contact' %}">Contact</a>
+                                        <a{% if request.resolver_match.namespace == 'website' and request.resolver_match.url_name == 'contact' %} class="active"{% endif %} href="{% url 'website:contact' %}">Contact</a>
                                     </li>
                                 </ul>
                             </nav>
