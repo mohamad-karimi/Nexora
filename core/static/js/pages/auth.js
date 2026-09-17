@@ -24,13 +24,6 @@
     var form = document.getElementById("login-form");
     if (!form) return;
 
-    var params = new URLSearchParams(window.location.search);
-    if (params.get("verified")) {
-      showSuccess(form, "Your email has been verified. You can now log in.");
-    } else if (params.get("verify_error")) {
-      showError(form, "That verification link is invalid or has expired.");
-    }
-
     form.addEventListener("submit", function (event) {
       event.preventDefault();
       showError(form, "");
@@ -126,29 +119,122 @@
     });
   }
 
-  function wireResendVerification() {
-    var form = document.getElementById("resend-verification-form");
+  function wireVerifyEmail() {
+    var form = document.getElementById("verify-email-form");
     if (!form) return;
+
+    var digits = Array.prototype.slice.call(
+      form.querySelectorAll(".js-otp-digit")
+    );
+    var resendButton = document.getElementById("resend-otp-button");
+
+    function code() {
+      return digits.map(function (el) { return el.value; }).join("");
+    }
+
+    function focusDigit(index) {
+      var clamped = Math.max(0, Math.min(index, digits.length - 1));
+      if (digits[clamped]) digits[clamped].focus();
+    }
+
+    function clearDigits() {
+      digits.forEach(function (el) { el.value = ""; });
+      focusDigit(0);
+    }
+
+    function submitIfComplete() {
+      if (code().length === digits.length) {
+        form.dispatchEvent(new Event("submit", { cancelable: true }));
+      }
+    }
+
+    digits.forEach(function (input, index) {
+      input.addEventListener("input", function () {
+        input.value = input.value.replace(/\D/g, "").slice(0, 1);
+        if (input.value && index < digits.length - 1) {
+          focusDigit(index + 1);
+        }
+        submitIfComplete();
+      });
+
+      input.addEventListener("keydown", function (event) {
+        if (event.key === "Backspace" && !input.value && index > 0) {
+          focusDigit(index - 1);
+        }
+      });
+
+      input.addEventListener("paste", function (event) {
+        var clipboard = event.clipboardData || window.clipboardData;
+        var text = clipboard ? clipboard.getData("text") : "";
+        var pasted = (text || "").replace(/\D/g, "").slice(0, digits.length).split("");
+        if (!pasted.length) return;
+        event.preventDefault();
+        pasted.forEach(function (digit, i) {
+          if (digits[i]) digits[i].value = digit;
+        });
+        focusDigit(pasted.length - 1);
+        submitIfComplete();
+      });
+    });
+
     form.addEventListener("submit", function (event) {
       event.preventDefault();
       showError(form, "");
-      showSuccess(form, "");
 
-      var email = document.getElementById("resend-verification-email").value.trim();
+      var otp = code();
+      if (otp.length !== digits.length) {
+        showError(form, "Please enter the full " + digits.length + "-digit code.");
+        return;
+      }
 
-      window.Api.post("auth/resend-verification/", { email: email })
-        .then(function (data) {
-          form.reset();
-          showSuccess(
-            form,
-            (data && data.detail) ||
-              "If that email has an unverified account, a new verification link has been sent."
-          );
+      var submitButton = form.querySelector('button[type="submit"]');
+      if (submitButton) submitButton.disabled = true;
+
+      window.Api.post("auth/verify-email/", { code: otp })
+        .then(function () {
+          if (typeof window.Swal !== "undefined") {
+            window.Swal.fire({
+              text: "You are logged in and your email has been verified successfully.",
+              icon: "success",
+            });
+          }
+          // Close the popup or, if it never rendered, just proceed after
+          // a short delay either way.
+          setTimeout(function () {
+            window.location.href = "/account/";
+          }, 1500);
         })
         .catch(function (error) {
-          showError(form, error.message || "Something went wrong. Please try again.");
+          if (submitButton) submitButton.disabled = false;
+          clearDigits();
+          showError(form, error.message || "Verification failed. Please try again.");
         });
     });
+
+    if (resendButton) {
+      resendButton.addEventListener("click", function () {
+        showError(form, "");
+        showSuccess(form, "");
+        resendButton.disabled = true;
+
+        window.Api.post("auth/resend-verification/", {})
+          .then(function (data) {
+            clearDigits();
+            showSuccess(
+              form,
+              (data && data.detail) || "A new code has been sent to your email."
+            );
+          })
+          .catch(function (error) {
+            showError(form, error.message || "Could not resend the code. Please try again.");
+          })
+          .finally(function () {
+            setTimeout(function () {
+              resendButton.disabled = false;
+            }, 3000);
+          });
+      });
+    }
   }
 
   function wireResetPassword() {
@@ -189,7 +275,7 @@
     wireLogin();
     wireRegister();
     wireForgotPassword();
-    wireResendVerification();
+    wireVerifyEmail();
     wireResetPassword();
   });
 })(window, document);

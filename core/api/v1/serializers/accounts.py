@@ -2,7 +2,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
-from accounts.constants import LOGIN_SECURITY_CODE_SESSION_KEY, SECURITY_CODE_SESSION_KEY
+from accounts.constants import (
+    EMAIL_OTP_LENGTH,
+    LOGIN_SECURITY_CODE_SESSION_KEY,
+    SECURITY_CODE_SESSION_KEY,
+)
 from accounts.models import Profile
 from accounts.tokens import TokenError, get_user_for_password_reset_token
 
@@ -150,9 +154,14 @@ class ForgotPasswordSerializer(serializers.Serializer):
     )
 
 
-class ResendVerificationSerializer(serializers.Serializer):
-    email = serializers.EmailField(
-        help_text="If an unverified account with this email exists, a new verification link is sent to it.",
+class VerifyEmailCodeSerializer(serializers.Serializer):
+    code = serializers.RegexField(
+        rf"^\d{{{EMAIL_OTP_LENGTH}}}$",
+        write_only=True,
+        help_text=(
+            f"The {EMAIL_OTP_LENGTH}-digit code emailed to the account "
+            "pending verification in this session."
+        ),
     )
 
 

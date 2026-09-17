@@ -1,6 +1,5 @@
 """
-Stateless JWT helpers used by the email-verification and forgot/reset
-password flows.
+Stateless JWT helpers used by the forgot/reset password flow.
 
 Design notes
 ------------
@@ -16,6 +15,9 @@ Design notes
   is called, using a reset link invalidates every other outstanding
   reset link for that user -- including itself if replayed -- without
   needing a database-backed token/blacklist table.
+
+Email verification no longer uses a JWT link -- see accounts/otp.py for
+the 6-digit one-time-code flow that replaced it.
 """
 
 import hashlib
@@ -25,8 +27,6 @@ import jwt
 from django.conf import settings
 
 from accounts.constants import (
-    EMAIL_VERIFY_TOKEN_EXP_MINUTES,
-    EMAIL_VERIFY_TOKEN_PURPOSE,
     PASSWORD_RESET_TOKEN_EXP_MINUTES,
     PASSWORD_RESET_TOKEN_PURPOSE,
 )
@@ -65,33 +65,6 @@ def _decode(token, expected_purpose):
     if payload.get("purpose") != expected_purpose:
         raise TokenError("This link is invalid.")
     return payload
-
-
-def make_email_verification_token(user):
-    now = datetime.now(dt_timezone.utc)
-    payload = {
-        "uid": user.pk,
-        "purpose": EMAIL_VERIFY_TOKEN_PURPOSE,
-        "iat": now,
-        "exp": now + timedelta(minutes=EMAIL_VERIFY_TOKEN_EXP_MINUTES),
-    }
-    return _encode(payload)
-
-
-def get_user_for_email_verification_token(token):
-    """Decode + validate an email-verification token and return its user.
-
-    Raises TokenError if the token is missing/invalid/expired or the
-    user no longer exists.
-    """
-    from django.contrib.auth import get_user_model
-
-    payload = _decode(token, EMAIL_VERIFY_TOKEN_PURPOSE)
-    User = get_user_model()
-    user = User.objects.filter(pk=payload.get("uid")).first()
-    if user is None:
-        raise TokenError("This link is invalid.")
-    return user
 
 
 def make_password_reset_token(user):

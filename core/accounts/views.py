@@ -4,11 +4,14 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
-from django.urls import reverse
-from django.views.generic import TemplateView, View
+from django.views.generic import TemplateView
 
-from accounts.constants import LOGIN_SECURITY_CODE_SESSION_KEY, SECURITY_CODE_SESSION_KEY
-from accounts.tokens import TokenError, get_user_for_email_verification_token, get_user_for_password_reset_token
+from accounts.constants import (
+    EMAIL_VERIFICATION_SESSION_KEY,
+    LOGIN_SECURITY_CODE_SESSION_KEY,
+    SECURITY_CODE_SESSION_KEY,
+)
+from accounts.tokens import TokenError, get_user_for_password_reset_token
 
 User = get_user_model()
 
@@ -117,10 +120,14 @@ class ForgotPasswordView(TemplateView):
 
 class EmailVerificationPendingView(TemplateView):
     """
-    Landing page for a just-registered (unverified, not-logged-in)
-    user: "check your email" instructions, nothing account-specific.
-    An already-verified, logged-in visitor is sent to their account
-    instead -- there's nothing for them to do here.
+    "Verify Your Email" page for a just-registered (unverified,
+    not-logged-in) user: enter the 6-digit code emailed to them.
+
+    Only reachable while this browser session has a pending
+    verification (set by POST /api/v1/auth/register/, see
+    accounts.otp.start_email_verification) -- anyone else (direct visit,
+    expired session, already verified) has nothing to submit against
+    here and is redirected instead.
     """
 
     template_name = "accounts/page-email-verification-pending.html"
@@ -128,6 +135,8 @@ class EmailVerificationPendingView(TemplateView):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated and request.user.is_verified:
             return redirect("accounts:account")
+        if not request.session.get(EMAIL_VERIFICATION_SESSION_KEY):
+            return redirect("accounts:register")
         return super().get(request, *args, **kwargs)
 
 
@@ -156,22 +165,3 @@ class ResetPasswordView(TemplateView):
             context["token_valid"] = True
             context["token"] = token
         return context
-
-
-class VerifyEmailView(View):
-    """One-shot GET link from the verification email. Activates the user
-    tied to the token (and only that user) then sends the visitor to the
-    login page with a status flag the page can show a message for."""
-
-    def get(self, request, token):
-        login_url = reverse("accounts:login")
-        try:
-            user = get_user_for_email_verification_token(token)
-        except TokenError:
-            return redirect(f"{login_url}?verify_error=1")
-
-        if not user.is_verified:
-            user.is_verified = True
-            user.save(update_fields=["is_verified"])
-
-        return redirect(f"{login_url}?verified=1")

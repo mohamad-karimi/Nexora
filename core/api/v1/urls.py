@@ -10,11 +10,7 @@ from api.v1.views.accounts import (
     RegisterView,
     ResendVerificationEmailView,
     ResetPasswordView,
-)
-from api.v1.views.auth_jwt import (
-    JWTTokenObtainPairView,
-    JWTTokenRefreshView,
-    JWTTokenVerifyView,
+    VerifyEmailCodeView,
 )
 from api.v1.views.blog import CategoryViewSet as BlogCategoryViewSet
 from api.v1.views.blog import PostViewSet as BlogPostViewSet
@@ -79,26 +75,14 @@ urlpatterns = [
         name="auth-resend-verification",
     ),
     path(
+        "auth/verify-email/",
+        VerifyEmailCodeView.as_view(),
+        name="auth-verify-email",
+    ),
+    path(
         "auth/reset-password/",
         ResetPasswordView.as_view(),
         name="auth-reset-password",
-    ),
-    # JWT auth for the API/other clients -- alongside, not instead of,
-    # the session-based auth/login/ above (see api.v1.views.auth_jwt).
-    path(
-        "auth/token/",
-        JWTTokenObtainPairView.as_view(),
-        name="auth-token-obtain",
-    ),
-    path(
-        "auth/token/refresh/",
-        JWTTokenRefreshView.as_view(),
-        name="auth-token-refresh",
-    ),
-    path(
-        "auth/token/verify/",
-        JWTTokenVerifyView.as_view(),
-        name="auth-token-verify",
     ),
     path("cart/", CartView.as_view(), name="cart"),
     path(

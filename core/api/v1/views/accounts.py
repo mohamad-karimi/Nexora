@@ -14,7 +14,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.constants import LOGIN_SECURITY_CODE_SESSION_KEY
-from accounts.emails import send_password_reset_email, send_verification_email
+from accounts.emails import send_password_reset_email
+from accounts.otp import (
+    OTPError,
+    resend_email_verification,
+    start_email_verification,
+    verify_email_code,
+)
 from api.v1.permissions import IsVerified
 from api.v1.serializers.accounts import (
     ChangePasswordSerializer,
@@ -22,9 +28,9 @@ from api.v1.serializers.accounts import (
     LoginSerializer,
     ProfileSerializer,
     RegisterSerializer,
-    ResendVerificationSerializer,
     ResetPasswordSerializer,
     UserSerializer,
+    VerifyEmailCodeSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,12 +46,13 @@ class RegisterView(APIView):
     @extend_schema(
         summary="Register a new account",
         description=(
-            "Creates a new user account and emails it a verification "
-            "link. The account is created with `is_verified=False` and "
-            "the request is NOT logged in -- no session is started. "
-            "The user must click the link in the verification email "
-            "(see `GET /accounts/verify-email/<token>/`) before they "
-            "can log in or use any authenticated endpoint."
+            "Creates a new user account and emails it a 6-digit "
+            "verification code. The account is created with "
+            "`is_verified=False` and the request is NOT logged in -- no "
+            "authenticated session is started. This browser session is, "
+            "however, tied server-side to the new account so the "
+            "Verify Your Email page (and its Resend Code button) know "
+            "which account to act on -- see `POST /auth/verify-email/`."
         ),
         request=RegisterSerializer,
         responses={201: UserSerializer},
@@ -55,58 +62,98 @@ class RegisterView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         try:
-            send_verification_email(request, user)
+            start_email_verification(request, user)
         except Exception:
             # Registration must still succeed even if the mail server is
-            # unreachable/misconfigured -- the user can request the link
-            # again later. (See accounts.emails.send_verification_email.)
-            logger.exception("Failed to send verification email to user %s", user.pk)
+            # unreachable/misconfigured -- the user can request the code
+            # again later via Resend Code. (See accounts.otp.)
+            logger.exception("Failed to send verification code to user %s", user.pk)
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
 @extend_schema(tags=["Auth"])
-class ResendVerificationEmailView(APIView):
-    """Re-sends the email-verification link (e.g. after the first one expired)."""
+class VerifyEmailCodeView(APIView):
+    """Verifies the 6-digit code for the account pending verification in
+    this session, then logs that account in."""
 
     permission_classes = [AllowAny]
 
     @extend_schema(
-        summary="Resend the email verification link",
+        summary="Verify email with a 6-digit code",
         description=(
-            "If an unverified account exists for the given email, a fresh "
-            "verification link (with a new expiry) is emailed to it -- the "
-            "old link, if any, still works independently until it expires "
-            "on its own; no tokens are revoked. Always responds the same "
-            "way whether or not the email matches an unverified account, "
-            "so this can't be used to discover registered emails."
+            "Verifies `code` against the account pending verification in "
+            "this browser session (set by `POST /auth/register/` or "
+            "`POST /auth/resend-verification/`). The target account is "
+            "never taken from the request body -- only from this "
+            "server-side session -- so this can't be used to verify a "
+            "different account by changing an email or user id in the "
+            "request. On success the account is marked verified, the "
+            "code is invalidated, and the browser is logged in."
         ),
-        request=ResendVerificationSerializer,
-        responses={200: OpenApiResponse(description="Request accepted.")},
+        request=VerifyEmailCodeSerializer,
+        responses={
+            200: UserSerializer,
+            400: OpenApiResponse(
+                description="No pending verification, or an incorrect/expired/exhausted code.",
+                examples=[
+                    OpenApiExample(
+                        "Incorrect code",
+                        value={"detail": "The code you entered is incorrect."},
+                    ),
+                ],
+            ),
+        },
     )
     def post(self, request):
-        serializer = ResendVerificationSerializer(data=request.data)
+        serializer = VerifyEmailCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data["email"]
+        try:
+            user = verify_email_code(request, serializer.validated_data["code"])
+        except OTPError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
-        User = get_user_model()
-        user = User.objects.filter(
-            email__iexact=email, is_active=True, is_verified=False
-        ).first()
-        if user is not None:
-            try:
-                send_verification_email(request, user)
-            except Exception:
-                logger.exception(
-                    "Failed to resend verification email to user %s", user.pk
-                )
+        login(request, user)
+        return Response(UserSerializer(user).data)
+
+
+@extend_schema(tags=["Auth"])
+class ResendVerificationEmailView(APIView):
+    """Re-sends the email-verification code (e.g. after the first one expired)."""
+
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="Resend the email verification code",
+        description=(
+            "Generates a new 6-digit code for the account pending "
+            "verification in this browser session (set by "
+            "`POST /auth/register/`), invalidating the previous code, "
+            "and emails the new one. The account is taken only from this "
+            "session, never from the request body. Subject to a short "
+            "cooldown between requests."
+        ),
+        request=None,
+        responses={
+            200: OpenApiResponse(description="A new code has been sent."),
+            400: OpenApiResponse(
+                description="No pending verification for this session, or cooldown not elapsed."
+            ),
+        },
+    )
+    def post(self, request):
+        try:
+            resend_email_verification(request)
+        except OTPError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            logger.exception("Failed to resend verification code")
+            return Response(
+                {"detail": "Could not resend the verification code. Please try again."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         return Response(
-            {
-                "detail": (
-                    "If that email has an unverified account, a new "
-                    "verification link has been sent."
-                )
-            }
+            {"detail": "A new verification code has been sent to your email."}
         )
 
 
