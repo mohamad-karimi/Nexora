@@ -69,8 +69,8 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
             "Supports filtering by `category`/`vendor`/`tag` slug, a "
             "`min_price`/`max_price` range and `in_stock`; free-text "
             "search via `search`; and ordering via `ordering` "
-            "(`price`, `created_date`, `name`, `average_rating`, prefix "
-            "with `-` to reverse)."
+            "(`price`, `created_date`, `name`, `average_rating`, "
+            "`discount_percent`, prefix with `-` to reverse)."
         ),
     ),
     retrieve=extend_schema(
@@ -101,7 +101,13 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = "slug"
     filterset_class = ProductFilter
     search_fields = ["name", "short_description", "description", "sku"]
-    ordering_fields = ["price", "created_date", "name", "average_rating"]
+    ordering_fields = [
+        "price",
+        "created_date",
+        "name",
+        "average_rating",
+        "discount_percent",
+    ]
     ordering = ["-created_date"]
 
     def get_queryset(self):

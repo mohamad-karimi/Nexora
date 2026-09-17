@@ -125,10 +125,10 @@
                     <div class="col-xl-3 col-lg-4">
                         <div class="header-info">
                             <ul>
-                                <li><a href="https://nest-frontend-v6.vercel.app/page-about.htlm">About Us</a></li>
+                                <li><a href="{% url 'website:about' %}">About Us</a></li>
                                 <li><a href="{% url 'accounts:account' %}">My Account</a></li>
                                 <li><a href="{% url 'shop:wishlist' %}">Wishlist</a></li>
-                                <li><a href="https://nest-frontend-v6.vercel.app/shop-order.html">Order Tracking</a></li>
+                                {% if not user.is_authenticated or user.role != 'vendor' %}<li><a href="{% url 'accounts:account' %}#track-orders">Order Tracking</a></li>{% endif %}
                             </ul>
                         </div>
                     </div>
@@ -190,44 +190,14 @@
                     <div class="header-right">
                         <div class="search-style-2">
                             <form action="{% url 'shop:grid_left' %}" class="js-search-form">
-                                <select class="select-active">
-                                    <option>All Categories</option>
-                                    <option>Milks and Dairies</option>
-                                    <option>Wines & Alcohol</option>
-                                    <option>Clothing & Beauty</option>
-                                    <option>Pet Foods & Toy</option>
-                                    <option>Fast food</option>
-                                    <option>Baking material</option>
-                                    <option>Vegetables</option>
-                                    <option>Fresh Seafood</option>
-                                    <option>Noodles & Rice</option>
-                                    <option>Ice cream</option>
+                                <select class="select-active js-header-category-select">
+                                    <option value="">All Categories</option>
                                 </select>
                                 <input type="text" name="q" class="js-search-input" placeholder="Search for items..." />
                             </form>
                         </div>
                         <div class="header-action-right">
                             <div class="header-action-2">
-                                <div class="search-location">
-                                    <form action="#">
-                                        <select class="select-active">
-                                            <option>Your Location</option>
-                                            <option>Alabama</option>
-                                            <option>Alaska</option>
-                                            <option>Arizona</option>
-                                            <option>Delaware</option>
-                                            <option>Florida</option>
-                                            <option>Georgia</option>
-                                            <option>Hawaii</option>
-                                            <option>Indiana</option>
-                                            <option>Maryland</option>
-                                            <option>Nevada</option>
-                                            <option>New Jersey</option>
-                                            <option>New Mexico</option>
-                                            <option>New York</option>
-                                        </select>
-                                    </form>
-                                </div>
                                 <div class="header-action-icon-2">
                                     <a href="{% url 'shop:compare' %}">
                                         <img class="svgInject" alt="Nest" src="{% static 'imgs/theme/icons/icon-compare.svg' %}" />
@@ -273,9 +243,9 @@
                                             <li>
                                                 <a href="{% url 'accounts:account' %}"><i class="fi fi-rs-user mr-10"></i>My Account</a>
                                             </li>
-                                            <li>
-                                                <a href="{% url 'accounts:account' %}"><i class="fi fi-rs-location-alt mr-10"></i>Order Tracking</a>
-                                            </li>
+                                            {% if not user.is_authenticated or user.role != 'vendor' %}<li>
+                                                <a href="{% url 'accounts:account' %}#track-orders"><i class="fi fi-rs-location-alt mr-10"></i>Order Tracking</a>
+                                            </li>{% endif %}
                                             <li>
                                                 <a href="{% url 'accounts:account' %}"><i class="fi fi-rs-label mr-10"></i>My Voucher</a>
                                             </li>
@@ -314,68 +284,22 @@
                             </a>
                             <div class="categories-dropdown-wrap categories-dropdown-active-large font-heading">
                                 <div class="d-flex categori-dropdown-inner">
-                                    <ul>
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-1.svg' %}" alt="" />Milks and Dairies</a>
-                                        </li>
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-2.svg' %}" alt="" />Clothing & beauty</a>
-                                        </li>
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-3.svg' %}" alt="" />Pet Foods & Toy</a>
-                                        </li>
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-4.svg' %}" alt="" />Baking material</a>
-                                        </li>
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-5.svg' %}" alt="" />Fresh Fruit</a>
-                                        </li>
-                                    </ul>
-                                    <ul class="end">
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-6.svg' %}" alt="" />Wines & Drinks</a>
-                                        </li>
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-7.svg' %}" alt="" />Fresh Seafood</a>
-                                        </li>
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-8.svg' %}" alt="" />Fast food</a>
-                                        </li>
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-9.svg' %}" alt="" />Vegetables</a>
-                                        </li>
-                                        <li>
-                                            <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/category-10.svg' %}" alt="" />Bread and Juice</a>
-                                        </li>
-                                    </ul>
+                                    <ul class="js-header-categories-col-1"></ul>
+                                    <ul class="end js-header-categories-col-2"></ul>
                                 </div>
-                                <div class="more_slide_open" style="display: none">
+                                <div class="more_slide_open js-header-categories-more-wrap" style="display: none">
                                     <div class="d-flex categori-dropdown-inner">
-                                        <ul>
-                                            <li>
-                                                <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/icon-1.svg' %}" alt="" />Milks and Dairies</a>
-                                            </li>
-                                            <li>
-                                                <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/icon-2.svg' %}" alt="" />Clothing & beauty</a>
-                                            </li>
-                                        </ul>
-                                        <ul class="end">
-                                            <li>
-                                                <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/icon-3.svg' %}" alt="" />Wines & Drinks</a>
-                                            </li>
-                                            <li>
-                                                <a href="shop-grid-right.html"> <img src="{% static 'imgs/theme/icons/icon-4.svg' %}" alt="" />Fresh Seafood</a>
-                                            </li>
-                                        </ul>
+                                        <ul class="js-header-categories-more-col-1"></ul>
+                                        <ul class="end js-header-categories-more-col-2"></ul>
                                     </div>
                                 </div>
-                                <div class="more_categories"><span class="icon"></span> <span class="heading-sm-1">Show more...</span></div>
+                                <div class="more_categories js-header-categories-toggle" style="display: none"><span class="icon"></span> <span class="heading-sm-1">Show more...</span></div>
                             </div>
                         </div>
                         <div class="main-menu main-menu-padding-1 main-menu-lh-2 d-none d-lg-block font-heading">
                             <nav>
                                 <ul>
-                                    <li class="hot-deals"><img src="{% static 'imgs/theme/icons/icon-hot.svg' %}" alt="hot deals" /><a href="shop-grid-right.html">Deals</a></li>
+                                    <li class="hot-deals"><img src="{% static 'imgs/theme/icons/icon-hot.svg' %}" alt="hot deals" /><a href="{% url 'shop:filter' %}">Deals</a></li>
                                     <li>
                                         <a class="active" href="{% url 'website:home' %}">Home</a>
                                     </li>
@@ -392,52 +316,28 @@
                                             <li><a href="{% url 'shop:compare' %}">Shop – Compare</a></li>
                                         </ul>
                                     </li>
+                                    {% if user.is_authenticated and user.role == 'vendor' %}
                                     <li>
                                         <a href="{% url 'website:home' %}#">Vendors <i class="fi-rs-angle-down"></i></a>
                                         <ul class="sub-menu">
-                                            <li><a href="{% url 'vendors:list' %}">Vendors List</a></li>
+                                            <li><a href="{% url 'vendors:list' %}">Vendor List</a></li>
                                             <li><a href="{% url 'vendors:guide' %}">Vendor Guide</a></li>
                                         </ul>
                                     </li>
-                                    <li class="position-static">
+                                    {% else %}
+                                    <li>
+                                        <a href="{% url 'vendors:list' %}">Vendors</a>
+                                    </li>
+                                    {% endif %}
+                                    {% comment %} <li class="position-static">
                                         <a href="{% url 'website:home' %}#">Mega menu <i class="fi-rs-angle-down"></i></a>
                                         <ul class="mega-menu">
-                                            <li class="sub-mega-menu sub-mega-menu-width-22">
-                                                <a class="menu-title" href="{% url 'website:home' %}#">Fruit & Vegetables</a>
-                                                <ul>
-                                                    <li><a href="shop-product-right.html">Meat & Poultry</a></li>
-                                                    <li><a href="shop-product-right.html">Fresh Vegetables</a></li>
-                                                    <li><a href="shop-product-right.html">Herbs & Seasonings</a></li>
-                                                    <li><a href="shop-product-right.html">Cuts & Sprouts</a></li>
-                                                    <li><a href="shop-product-right.html">Exotic Fruits & Veggies</a></li>
-                                                    <li><a href="shop-product-right.html">Packaged Produce</a></li>
-                                                </ul>
-                                            </li>
-                                            <li class="sub-mega-menu sub-mega-menu-width-22">
-                                                <a class="menu-title" href="{% url 'website:home' %}#">Breakfast & Dairy</a>
-                                                <ul>
-                                                    <li><a href="shop-product-right.html">Milk & Flavoured Milk</a></li>
-                                                    <li><a href="shop-product-right.html">Butter and Margarine</a></li>
-                                                    <li><a href="shop-product-right.html">Eggs Substitutes</a></li>
-                                                    <li><a href="shop-product-right.html">Marmalades</a></li>
-                                                    <li><a href="shop-product-right.html">Sour Cream</a></li>
-                                                    <li><a href="shop-product-right.html">Cheese</a></li>
-                                                </ul>
-                                            </li>
-                                            <li class="sub-mega-menu sub-mega-menu-width-22">
-                                                <a class="menu-title" href="{% url 'website:home' %}#">Meat & Seafood</a>
-                                                <ul>
-                                                    <li><a href="shop-product-right.html">Breakfast Sausage</a></li>
-                                                    <li><a href="shop-product-right.html">Dinner Sausage</a></li>
-                                                    <li><a href="shop-product-right.html">Chicken</a></li>
-                                                    <li><a href="shop-product-right.html">Sliced Deli Meat</a></li>
-                                                    <li><a href="shop-product-right.html">Wild Caught Fillets</a></li>
-                                                    <li><a href="shop-product-right.html">Crab and Shellfish</a></li>
-                                                </ul>
-                                            </li>
+                                            <li class="sub-mega-menu sub-mega-menu-width-22 js-mega-menu-slot" style="display:none"></li>
+                                            <li class="sub-mega-menu sub-mega-menu-width-22 js-mega-menu-slot" style="display:none"></li>
+                                            <li class="sub-mega-menu sub-mega-menu-width-22 js-mega-menu-slot" style="display:none"></li>
                                             <li class="sub-mega-menu sub-mega-menu-width-34">
                                                 <div class="menu-banner-wrap">
-                                                    <a href="shop-product-right.html"><img src="{% static 'imgs/banner/banner-menu.png' %}" alt="Nest" /></a>
+                                                    <a href="{% url 'shop:filter' %}"><img src="{% static 'imgs/banner/banner-menu.png' %}" alt="Nest" /></a>
                                                     <div class="menu-banner-content">
                                                         <h4>Hot deals</h4>
                                                         <h3>
@@ -448,7 +348,7 @@
                                                             <span class="new-price text-success">Save to 50%</span>
                                                         </div>
                                                         <div class="menu-banner-btn">
-                                                            <a href="shop-product-right.html">Shop now</a>
+                                                            <a href="{% url 'shop:filter' %}">Shop now</a>
                                                         </div>
                                                     </div>
                                                     <div class="menu-banner-discount">
@@ -460,7 +360,7 @@
                                                 </div>
                                             </li>
                                         </ul>
-                                    </li>
+                                    </li> {% endcomment %}
                                     <li>
                                         <a href="{% url 'blog:category_list' %}">Blog</a>
                                     </li>
@@ -553,43 +453,33 @@
                                     <li><a href="{% url 'shop:compare' %}">Shop – Compare</a></li>
                                 </ul>
                             </li>
+                            {% if user.is_authenticated and user.role == 'vendor' %}
                             <li class="menu-item-has-children">
                                 <a href="{% url 'website:home' %}#">Vendors</a>
                                 <ul class="dropdown">
-                                    <li><a href="{% url 'vendors:list' %}">Vendors List</a></li>
+                                    <li><a href="{% url 'vendors:list' %}">Vendor List</a></li>
                                     <li><a href="{% url 'vendors:guide' %}">Vendor Guide</a></li>
-                                    <li><a href="{% url 'dashboard:dashboard' %}">Vendor Dashboard</a></li>
                                 </ul>
                             </li>
+                            {% else %}
+                            <li class="menu-item-has-children">
+                                <a href="{% url 'vendors:list' %}">Vendors</a>
+                            </li>
+                            {% endif %}
                             <li class="menu-item-has-children">
                                 <a href="{% url 'website:home' %}#">Mega menu</a>
                                 <ul class="dropdown">
-                                    <li class="menu-item-has-children">
-                                        <a href="{% url 'website:home' %}#">Women's Fashion</a>
-                                        <ul class="dropdown">
-                                            <li><a href="shop-product-right.html">Dresses</a></li>
-                                            <li><a href="shop-product-right.html">Blouses & Shirts</a></li>
-                                            <li><a href="shop-product-right.html">Hoodies & Sweatshirts</a></li>
-                                            <li><a href="shop-product-right.html">Women's Sets</a></li>
-                                        </ul>
+                                    <li class="menu-item-has-children js-mega-menu-mobile-slot" style="display:none">
+                                        <a href="{% url 'website:home' %}#" class="js-mega-menu-mobile-link">Category</a>
+                                        <ul class="dropdown js-mega-menu-mobile-children"></ul>
                                     </li>
-                                    <li class="menu-item-has-children">
-                                        <a href="{% url 'website:home' %}#">Men's Fashion</a>
-                                        <ul class="dropdown">
-                                            <li><a href="shop-product-right.html">Jackets</a></li>
-                                            <li><a href="shop-product-right.html">Casual Faux Leather</a></li>
-                                            <li><a href="shop-product-right.html">Genuine Leather</a></li>
-                                        </ul>
+                                    <li class="menu-item-has-children js-mega-menu-mobile-slot" style="display:none">
+                                        <a href="{% url 'website:home' %}#" class="js-mega-menu-mobile-link">Category</a>
+                                        <ul class="dropdown js-mega-menu-mobile-children"></ul>
                                     </li>
-                                    <li class="menu-item-has-children">
-                                        <a href="{% url 'website:home' %}#">Technology</a>
-                                        <ul class="dropdown">
-                                            <li><a href="shop-product-right.html">Gaming Laptops</a></li>
-                                            <li><a href="shop-product-right.html">Ultraslim Laptops</a></li>
-                                            <li><a href="shop-product-right.html">Tablets</a></li>
-                                            <li><a href="shop-product-right.html">Laptop Accessories</a></li>
-                                            <li><a href="shop-product-right.html">Tablet Accessories</a></li>
-                                        </ul>
+                                    <li class="menu-item-has-children js-mega-menu-mobile-slot" style="display:none">
+                                        <a href="{% url 'website:home' %}#" class="js-mega-menu-mobile-link">Category</a>
+                                        <ul class="dropdown js-mega-menu-mobile-children"></ul>
                                     </li>
                                 </ul>
                             </li>

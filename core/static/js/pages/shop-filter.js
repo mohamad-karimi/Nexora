@@ -210,7 +210,12 @@
     var section = document.querySelector(".js-onsale-section");
     var container = document.querySelector(".js-onsale-products");
     if (!section || !container) return;
-    Api.get("products/", { ordering: "-created_date", page_size: 50 }).then(function (data) {
+    // Deepest discount first: the API applies the ordering
+    // (discount_percent, descending), we only display what it returns.
+    // is_on_sale still needs a client-side check because it also
+    // accounts for discount_end (an expired discount keeps its old
+    // discount_percent but is no longer actually "on sale").
+    Api.get("products/", { ordering: "-discount_percent", page_size: 50 }).then(function (data) {
       var onSale = data.results.filter(function (p) {
         return p.is_on_sale;
       }).slice(0, 4);

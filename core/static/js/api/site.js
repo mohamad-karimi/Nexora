@@ -432,10 +432,257 @@
         event.preventDefault();
         var input = form.querySelector(".js-search-input");
         var query = input ? input.value.trim() : "";
+        var categorySelect = form.querySelector(".js-header-category-select");
+        var category = categorySelect ? categorySelect.value : "";
         var url = form.getAttribute("action") || "/shop/grid-left/";
-        window.location.href = query ? url + "?q=" + encodeURIComponent(query) : url;
+        var params = [];
+        if (query) params.push("q=" + encodeURIComponent(query));
+        if (category) params.push("category=" + encodeURIComponent(category));
+        window.location.href = params.length ? url + "?" + params.join("&") : url;
       });
     });
+  }
+
+  /**
+   * Fallback icons for categories that don't have an image uploaded
+   * yet, cycled by position so the "Browse All Categories" dropdown
+   * keeps the same visual rhythm as the original static markup.
+   */
+  var HEADER_CATEGORY_FALLBACK_ICONS = [
+    "category-1.svg",
+    "category-2.svg",
+    "category-3.svg",
+    "category-4.svg",
+    "category-5.svg",
+    "category-6.svg",
+    "category-7.svg",
+    "category-8.svg",
+    "category-9.svg",
+    "category-10.svg",
+  ];
+
+  function categoryIconUrl(category, index) {
+    if (category.image) return category.image;
+    var name = HEADER_CATEGORY_FALLBACK_ICONS[index % HEADER_CATEGORY_FALLBACK_ICONS.length];
+    return "/static/imgs/theme/icons/" + name;
+  }
+
+  function categoryListItemHtml(category, index) {
+    var esc = escapeHtml;
+    return (
+      "<li><a href=\"/shop/filter/?category=" +
+      encodeURIComponent(category.slug) +
+      "\"> <img src=\"" +
+      categoryIconUrl(category, index) +
+      "\" alt=\"\" />" +
+      esc(category.name) +
+      "</a></li>"
+    );
+  }
+
+  /**
+   * Populates the "Browse All Categories" mega-dropdown and the
+   * category <select> next to the header Search box from real
+   * category data (/api/v1/categories/), replacing the old hardcoded
+   * demo markup. Keeps the original two-column-plus-"show more"
+   * layout: first 10 categories split 5/5 across the two visible
+   * columns, anything beyond that goes in the collapsible
+   * "more_slide_open" panel (split evenly across its two columns),
+   * and the "Show more..." toggle only appears when there is
+   * something to show.
+   */
+  function loadHeaderCategories() {
+    var hasDropdown = document.querySelector(".js-header-categories-col-1");
+    var selects = document.querySelectorAll(".js-header-category-select");
+    if (!hasDropdown && selects.length === 0) return;
+
+    window.Api.get("categories/", { page_size: 200, ordering: "name" })
+      .then(function (data) {
+        var categories = data.results || [];
+
+        selects.forEach(function (select) {
+          var optionsHtml = '<option value="">All Categories</option>';
+          categories.forEach(function (category) {
+            optionsHtml +=
+              '<option value="' +
+              escapeHtml(category.slug) +
+              '">' +
+              escapeHtml(category.name) +
+              "</option>";
+          });
+          select.innerHTML = optionsHtml;
+        });
+
+        if (!hasDropdown) return;
+
+        var visible = categories.slice(0, 10);
+        var overflow = categories.slice(10);
+
+        var col1 = document.querySelector(".js-header-categories-col-1");
+        var col2 = document.querySelector(".js-header-categories-col-2");
+        var splitPoint = Math.ceil(visible.length / 2);
+        if (col1) {
+          col1.innerHTML = visible
+            .slice(0, splitPoint)
+            .map(function (category, index) {
+              return categoryListItemHtml(category, index);
+            })
+            .join("");
+        }
+        if (col2) {
+          col2.innerHTML = visible
+            .slice(splitPoint)
+            .map(function (category, index) {
+              return categoryListItemHtml(category, splitPoint + index);
+            })
+            .join("");
+        }
+
+        var moreCol1 = document.querySelector(".js-header-categories-more-col-1");
+        var moreCol2 = document.querySelector(".js-header-categories-more-col-2");
+        var moreSplit = Math.ceil(overflow.length / 2);
+        if (moreCol1) {
+          moreCol1.innerHTML = overflow
+            .slice(0, moreSplit)
+            .map(function (category, index) {
+              return categoryListItemHtml(category, index);
+            })
+            .join("");
+        }
+        if (moreCol2) {
+          moreCol2.innerHTML = overflow
+            .slice(moreSplit)
+            .map(function (category, index) {
+              return categoryListItemHtml(category, moreSplit + index);
+            })
+            .join("");
+        }
+
+        var toggle = document.querySelector(".js-header-categories-toggle");
+        if (toggle) {
+          toggle.style.display = overflow.length ? "" : "none";
+        }
+      })
+      .catch(function () {
+        // Leave the dropdown/select empty rather than showing stale
+        // demo data if the API call fails.
+      });
+  }
+
+  /**
+   * Populates the desktop "Mega menu" columns and the mobile Mega
+   * menu accordion from real category data (/api/v1/categories/),
+   * replacing the old hardcoded demo categories/links. Only real
+   * top-level categories are shown (as many as there are slots, up
+   * to 3); a category's real children (if any) become its
+   * sub-menu. A category with no children renders as a plain link
+   * (mobile: its now-pointless expand arrow + empty dropdown are
+   * removed). Unused slots are hidden rather than left showing
+   * stale/fake content.
+   */
+  function megaMenuLinkHtml(slug) {
+    return "/shop/filter/?category=" + encodeURIComponent(slug);
+  }
+
+  function loadMegaMenu() {
+    var desktopSlots = document.querySelectorAll(".js-mega-menu-slot");
+    var mobileSlots = document.querySelectorAll(".js-mega-menu-mobile-slot");
+    if (!desktopSlots.length && !mobileSlots.length) return;
+
+    window.Api.get("categories/", { page_size: 200, ordering: "name" })
+      .then(function (data) {
+        var categories = data.results || [];
+        var childrenByParent = {};
+        categories.forEach(function (category) {
+          if (category.parent) {
+            childrenByParent[category.parent] = childrenByParent[category.parent] || [];
+            childrenByParent[category.parent].push(category);
+          }
+        });
+        var topLevel = categories.filter(function (category) {
+          return !category.parent;
+        });
+        var slotCount = Math.max(desktopSlots.length, mobileSlots.length) || 3;
+        var featured = topLevel.slice(0, slotCount);
+
+        desktopSlots.forEach(function (slot, index) {
+          var category = featured[index];
+          if (!category) {
+            slot.style.display = "none";
+            slot.innerHTML = "";
+            return;
+          }
+          var children = childrenByParent[category.id] || [];
+          var titleHtml =
+            '<a class="menu-title" href="' +
+            megaMenuLinkHtml(category.slug) +
+            '">' +
+            escapeHtml(category.name) +
+            "</a>";
+          var childrenHtml = children.length
+            ? "<ul>" +
+              children
+                .map(function (child) {
+                  return (
+                    '<li><a href="' +
+                    megaMenuLinkHtml(child.slug) +
+                    '">' +
+                    escapeHtml(child.name) +
+                    "</a></li>"
+                  );
+                })
+                .join("") +
+              "</ul>"
+            : "";
+          slot.innerHTML = titleHtml + childrenHtml;
+          slot.style.display = "";
+        });
+
+        mobileSlots.forEach(function (slot, index) {
+          var category = featured[index];
+          if (!category) {
+            slot.style.display = "none";
+            return;
+          }
+          var link = slot.querySelector(".js-mega-menu-mobile-link");
+          var childrenUl = slot.querySelector(".js-mega-menu-mobile-children");
+          var children = childrenByParent[category.id] || [];
+          if (link) {
+            link.textContent = category.name;
+            link.setAttribute("href", megaMenuLinkHtml(category.slug));
+          }
+          if (childrenUl) {
+            if (children.length) {
+              childrenUl.innerHTML = children
+                .map(function (child) {
+                  return (
+                    '<li><a href="' +
+                    megaMenuLinkHtml(child.slug) +
+                    '">' +
+                    escapeHtml(child.name) +
+                    "</a></li>"
+                  );
+                })
+                .join("");
+            } else {
+              // No real subcategories: drop the now-pointless expand
+              // control and empty dropdown so this becomes a plain link.
+              var expand = slot.querySelector(".menu-expand");
+              if (expand) expand.remove();
+              childrenUl.remove();
+            }
+          }
+          slot.style.display = "";
+        });
+      })
+      .catch(function () {
+        desktopSlots.forEach(function (slot) {
+          slot.style.display = "none";
+        });
+        mobileSlots.forEach(function (slot) {
+          slot.style.display = "none";
+        });
+      });
   }
 
   /**
@@ -476,6 +723,8 @@
     wireMiniCartRemove();
     wireSearchForms();
     wireProductActions();
+    loadHeaderCategories();
+    loadMegaMenu();
     loadMe();
   });
 
