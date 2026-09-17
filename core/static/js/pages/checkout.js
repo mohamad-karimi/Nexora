@@ -116,6 +116,47 @@
     box.textContent = message || "";
   }
 
+  /**
+   * "Already have an account?" and "Create an account?" are guest-only
+   * affordances. Checkout requires a verified, logged-in user to reach
+   * this page in the first place (see CheckoutView / the cart & order
+   * APIs), so once the real auth state loads there is never a signed-in
+   * visitor for whom these should show. Driven off Site.isAuthenticated()
+   * (real session state), not any local/frontend flag.
+   */
+  function applyAuthVisibility() {
+    var isAuthenticated = Site.isAuthenticated();
+    var guestLogin = document.querySelector(".js-checkout-guest-login");
+    var createAccount = document.querySelector(".js-checkout-create-account");
+    if (guestLogin) guestLogin.style.display = isAuthenticated ? "none" : "";
+    if (createAccount) createAccount.style.display = isAuthenticated ? "none" : "";
+  }
+
+  /**
+   * Deterministic checkbox -> collapsible-panel wiring. Previously this
+   * relied on Bootstrap's data-bs-toggle="collapse" bound to the <label>,
+   * which only fires when the label TEXT is clicked -- clicking the
+   * checkbox square itself changed `checked` without opening/closing the
+   * panel, so the two could visibly desync. Binding directly to the
+   * checkbox's `change` event keeps them in lockstep regardless of where
+   * the user clicks (checkbox or label).
+   */
+  function wireCollapseToggles() {
+    document.querySelectorAll(".js-collapse-toggle").forEach(function (label) {
+      var targetId = label.getAttribute("data-collapse-target");
+      var target = targetId && document.getElementById(targetId);
+      var checkboxId = label.getAttribute("for");
+      var checkbox = checkboxId && document.getElementById(checkboxId);
+      if (!target || !checkbox) return;
+
+      function sync() {
+        target.classList.toggle("show", checkbox.checked);
+      }
+      checkbox.addEventListener("change", sync);
+      sync();
+    });
+  }
+
   function placeOrder() {
     if (!currentCart || !currentCart.items.length) {
       showError("Your cart is empty.");
@@ -157,17 +198,23 @@
         window.location.href = "/orders/invoice/" + encodeURIComponent(order.order_number) + "/";
       })
       .catch(function (error) {
+        if (error.status === 401 || error.status === 403) {
+          Site.goToLogin();
+          return;
+        }
         showError(error.message || "Could not place order.");
       });
   }
 
   document.addEventListener("DOMContentLoaded", function () {
     wireCoupon();
+    wireCollapseToggles();
     document.getElementById("js-place-order").addEventListener("click", function (e) {
       e.preventDefault();
       placeOrder();
     });
     Site.ready().then(function () {
+      applyAuthVisibility();
       loadCart();
       loadAddress();
     });

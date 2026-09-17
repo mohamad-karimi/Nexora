@@ -4676,6 +4676,8 @@ table.no-border td, table.no-border th, table.no-border thead {
   display: flex;
 }
 .apply-coupon input {
+  flex: 1;
+  min-width: 0;
   height: 51px;
   border-radius: 10px 0 0 10px;
   background-image: url("../imgs/theme/icons/coupon.png");
@@ -4688,6 +4690,13 @@ table.no-border td, table.no-border th, table.no-border thead {
   height: 51px;
   border-radius: 0 10px 10px 0;
   background-color: #253D4E;
+  padding: 0 20px;
+  font-size: 14px;
+  line-height: 51px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .apply-coupon button:hover {
   background-color: #3BB77E;
