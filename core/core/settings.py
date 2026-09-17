@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-from datetime import timedelta
 from pathlib import Path
 from decouple import config
 
@@ -33,6 +32,17 @@ ALLOWED_HOSTS = config(
     cast=lambda v: [s.strip() for s in v.split(",")],
 )
 
+# django.contrib.sites -- backs the Sitemap/RSS-feed absolute-URL
+# resolution (django.contrib.sitemaps and django.contrib.syndication
+# both build links from the current Site's domain). The domain/display
+# name are read from the environment so nothing is hardcoded here; the
+# defaults below only apply to a bare local dev checkout with no .env
+# override, and are written into the Site row by the
+# website 0005_configure_site data migration.
+SITE_ID = 1
+SITE_DOMAIN = config("SITE_DOMAIN", default="localhost:8000")
+SITE_DISPLAY_NAME = config("SITE_DISPLAY_NAME", default="Nexora (Local)")
+
 
 # Application definition
 
@@ -43,6 +53,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
+    "django.contrib.sitemaps",
 
     # Third-party
     "rest_framework",
@@ -169,18 +181,11 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
 
 # Django REST Framework
-# The main frontend is a server-rendered site with fetch()-based AJAX
-# calls from the same origin, authenticated with the existing Django
-# session/cookie (SessionAuthentication). JWTAuthentication is layered
-# in alongside it -- never instead of it -- for the API/other clients
-# (see SIMPLE_JWT below and api/v1/auth/token/*). JWTAuthentication is
-# listed first only so that a request carrying a Bearer token is
-# identified by it; a request with no Authorization header falls
-# through to SessionAuthentication exactly as before, so nothing about
-# the existing session-based login/flows changes.
+# The frontend is a server-rendered site with fetch()-based AJAX calls
+# from the same origin, so we authenticate with the existing Django
+# session/cookie (no separate token/JWT system is introduced).
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
@@ -200,51 +205,19 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
-# djangorestframework-simplejwt (JWT auth for the API/other clients --
-# see the note on REST_FRAMEWORK above; this does not replace the
-# session-based login used by the site itself).
-#
-# SIGNING_KEY is intentionally left unset here: SimpleJWT then falls
-# back to settings.SECRET_KEY, which is already read from the project's
-# environment via django-decouple (see SECRET_KEY above) and is never
-# hardcoded. Lifetimes are configurable via the environment too, with
-# the same safe defaults SimpleJWT itself ships with.
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(
-        minutes=config("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", default=15, cast=int)
-    ),
-    "REFRESH_TOKEN_LIFETIME": timedelta(
-        days=config("JWT_REFRESH_TOKEN_LIFETIME_DAYS", default=7, cast=int)
-    ),
-    # No rotation/blacklisting: the project doesn't otherwise use a
-    # token-blacklist store, and introducing one is out of scope here --
-    # tokens simply expire on their own via the lifetimes above.
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": False,
-    "UPDATE_LAST_LOGIN": False,
-    "ALGORITHM": "HS256",
-    "AUTH_HEADER_TYPES": ("Bearer",),
-    "USER_ID_FIELD": "id",
-    "USER_ID_CLAIM": "user_id",
-}
-
 # drf-spectacular (OpenAPI / Swagger / Redoc)
 # https://drf-spectacular.readthedocs.io/en/latest/settings.html
 SPECTACULAR_SETTINGS = {
     "TITLE": "Nexora API",
     "DESCRIPTION": (
         "Official REST API for the Nexora multi-vendor grocery marketplace.\n\n"
-        "The API supports two authentication methods side by side:\n\n"
-        "- **Session cookie** -- used by Nexora's own server-rendered "
-        "frontend via same-origin fetch() calls. To try authenticated "
-        "endpoints from this page this way, log in through the site at "
-        "`/accounts/login/` (or call `POST /api/v1/auth/login/`) in the "
-        "same browser session first, then send the `X-CSRFToken` header "
-        "with unsafe (POST/PATCH/PUT/DELETE) requests.\n"
-        "- **JWT Bearer token** -- used by the API/other (non-browser) "
-        "clients. Call `POST /api/v1/auth/token/` with a username/password "
-        "to get an `access`/`refresh` token pair, then click **Authorize** "
-        "above and enter `<access token>` to try protected endpoints here."
+        "The API is consumed by Nexora's own server-rendered frontend via "
+        "same-origin fetch() calls, authenticated through the standard Django "
+        "session cookie (see the `sessionid` and `csrftoken` cookies). "
+        "To try authenticated endpoints from this page, log in through the "
+        "site at `/accounts/login/` (or call `POST /api/v1/auth/login/`) in "
+        "the same browser session first, then send the `X-CSRFToken` header "
+        "with unsafe (POST/PATCH/PUT/DELETE) requests."
     ),
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
@@ -257,7 +230,7 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
     "SORT_OPERATIONS": False,
     "TAGS": [
-        {"name": "Auth", "description": "Registration, session login/logout, JWT token issuance, and the current user's profile."},
+        {"name": "Auth", "description": "Registration, session login/logout and the current user's profile."},
         {"name": "Catalog", "description": "Browsing categories, tags and products."},
         {"name": "Reviews", "description": "Product reviews."},
         {"name": "Vendors", "description": "Marketplace vendors (sellers)."},

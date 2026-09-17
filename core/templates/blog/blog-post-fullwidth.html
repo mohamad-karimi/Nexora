@@ -21,6 +21,10 @@
 </style>
 {% endblock %}
 
+{% block extra_head %}
+<link rel="canonical" href="{{ canonical_url }}" />
+{% endblock %}
+
 {% block content %}
     <main class="main">
         <div class="page-content mb-50">

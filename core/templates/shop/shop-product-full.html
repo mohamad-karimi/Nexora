@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block extra_head %}
+<link rel="canonical" href="{{ canonical_url }}" />
+{% endblock %}
+
 {% block content %}
     <main class="main">
         <div class="page-header breadcrumb-wrap">

@@ -18,11 +18,23 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include
+
+from blog.sitemaps import PostSitemap
+from shop.sitemaps import ProductSitemap
+from website.sitemaps import StaticViewSitemap
+
+sitemaps = {
+    "static": StaticViewSitemap,
+    "products": ProductSitemap,
+    "blog": PostSitemap,
+}
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include('api.urls')),
+    path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
     path("", include('website.urls')),
     path("", include('accounts.urls')),
     path("blog/", include('blog.urls')),
