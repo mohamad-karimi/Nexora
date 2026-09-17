@@ -1,6 +1,18 @@
 from rest_framework import serializers
 
-from website.models import ContactMessage
+from website.models import ContactMessage, HomeBanner, HomeSlide
+
+
+class HomeSlideSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomeSlide
+        fields = ["id", "title", "description", "image", "ordering"]
+
+
+class HomeBannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomeBanner
+        fields = ["id", "title", "image", "link_url", "ordering"]
 
 
 class ContactMessageSerializer(serializers.ModelSerializer):

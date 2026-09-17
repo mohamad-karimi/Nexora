@@ -203,9 +203,115 @@
     });
   }
 
+  /**
+   * Hero slider ("home-slider" section). The template ships the
+   * original 2 static slides as a fallback so `main.js`'s unconditional
+   * `$(".hero-slider-1").slick(...)` call (which runs synchronously,
+   * before this page's async API calls can possibly resolve) always
+   * has something valid to initialize on. Once the real slide data
+   * arrives, the running Slick instance is torn down and rebuilt with
+   * the same options main.js used, now showing the DB-backed slides.
+   */
+  function slideHtml(slide) {
+    var esc = Site.escapeHtml;
+    var titleHtml = String(slide.title || "").split("\n").map(esc).join("<br />");
+    return (
+      '<div class="single-hero-slider single-animation-wrap" style="background-image: url(' +
+      (slide.image || "") +
+      ')">' +
+      '<div class="slider-content">' +
+      '<h1 class="display-2 mb-40">' +
+      titleHtml +
+      "</h1>" +
+      (slide.description ? '<p class="mb-65">' + esc(slide.description) + "</p>" : "") +
+      '<form class="form-subcriber d-flex">' +
+      '<input type="email" placeholder="Your emaill address" />' +
+      '<button class="btn" type="submit">Subscribe</button>' +
+      "</form>" +
+      "</div>" +
+      "</div>"
+    );
+  }
+
+  function loadHeroSlider() {
+    var wrap = document.querySelector(".hero-slider-1");
+    if (!wrap) return;
+    Api.get("home-slides/").then(function (slides) {
+      if (!slides || !slides.length) return; // keep the fallback slides already in the DOM
+      var jq = window.jQuery;
+      var isSlick = jq && jq.fn && jq.fn.slick && jq(wrap).hasClass("slick-initialized");
+      if (isSlick) jq(wrap).slick("unslick");
+      wrap.innerHTML = slides.map(slideHtml).join("");
+      if (jq && jq.fn && jq.fn.slick) {
+        jq(wrap).slick({
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          fade: true,
+          loop: true,
+          dots: true,
+          arrows: true,
+          prevArrow: '<span class="slider-btn slider-prev"><i class="fi-rs-angle-left"></i></span>',
+          nextArrow: '<span class="slider-btn slider-next"><i class="fi-rs-angle-right"></i></span>',
+          appendArrows: ".hero-slider-1-arrow",
+          autoplay: true,
+        });
+      }
+    });
+  }
+
+  /**
+   * Banners 3-up ("banners mb-25" section). The row is empty in the
+   * template (same pattern as .js-featured-categories) since, unlike
+   * the hero slider, nothing else on the page initializes against
+   * this markup, so it's safe to render it purely from the API.
+   * Only the first 3 active banners are used -- the layout is a fixed
+   * 3-column row -- and each position keeps its original column/delay
+   * classes so the responsive behaviour is unchanged.
+   */
+  var BANNER_COL_CLASSES = ["col-lg-4 col-md-6", "col-lg-4 col-md-6", "col-lg-4 d-md-none d-lg-flex"];
+  var BANNER_DELAYS = ["0", ".2s", ".4s"];
+
+  function bannerHtml(banner, index) {
+    var esc = Site.escapeHtml;
+    var titleHtml = String(banner.title || "").split("\n").map(esc).join("<br />");
+    var url = banner.link_url || "/shop/filter/";
+    var colClass = BANNER_COL_CLASSES[index];
+    var delay = BANNER_DELAYS[index];
+    var imgClass = index === 2 ? "banner-img mb-sm-0" : "banner-img";
+    return (
+      '<div class="' +
+      colClass +
+      '">' +
+      '<div class="' +
+      imgClass +
+      ' wow animate__animated animate__fadeInUp" data-wow-delay="' +
+      delay +
+      '">' +
+      (banner.image ? '<img src="' + banner.image + '" alt="" />' : "") +
+      '<div class="banner-text">' +
+      "<h4>" +
+      titleHtml +
+      "</h4>" +
+      '<a href="' +
+      esc(url) +
+      '" class="btn btn-xs">Shop Now <i class="fi-rs-arrow-small-right"></i></a>' +
+      "</div></div></div>"
+    );
+  }
+
+  function loadBanners() {
+    var row = document.querySelector(".js-home-banners");
+    if (!row) return;
+    Api.get("home-banners/").then(function (banners) {
+      row.innerHTML = (banners || []).slice(0, 3).map(bannerHtml).join("");
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     Site.ready().then(function () {
+      loadHeroSlider();
       loadFeaturedCategories();
+      loadBanners();
       loadPopularProductsTabs();
       loadBestSalesTabs();
       loadOnSaleProducts();

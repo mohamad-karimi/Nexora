@@ -31,6 +31,8 @@ from api.v1.views.vendors import (
 )
 from api.v1.views.website import (
     ContactMessageView,
+    HomeBannerViewSet,
+    HomeSlideViewSet,
     VendorGuideContactMessageView,
 )
 
@@ -46,6 +48,8 @@ router.register("orders", OrderViewSet, basename="order")
 router.register("blog/categories", BlogCategoryViewSet, basename="blog-category")
 router.register("blog/tags", BlogTagViewSet, basename="blog-tag")
 router.register("blog/posts", BlogPostViewSet, basename="blog-post")
+router.register("home-slides", HomeSlideViewSet, basename="home-slide")
+router.register("home-banners", HomeBannerViewSet, basename="home-banner")
 
 app_name = "api_v1"
 

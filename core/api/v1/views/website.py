@@ -1,12 +1,46 @@
-from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.v1.permissions import IsVendor, IsVerified
-from api.v1.serializers.website import ContactMessageSerializer
-from website.models import ContactMessage
+from api.v1.serializers.website import (
+    ContactMessageSerializer,
+    HomeBannerSerializer,
+    HomeSlideSerializer,
+)
+from website.models import ContactMessage, HomeBanner, HomeSlide
+
+
+@extend_schema_view(
+    list=extend_schema(summary="List active homepage slider slides"),
+    retrieve=extend_schema(summary="Get a homepage slider slide"),
+)
+@extend_schema(tags=["Website"])
+class HomeSlideViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only listing of the homepage hero slider's active slides, in display order."""
+
+    serializer_class = HomeSlideSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return HomeSlide.objects.filter(is_active=True).order_by("ordering", "id")
+
+
+@extend_schema_view(
+    list=extend_schema(summary="List active homepage banners"),
+    retrieve=extend_schema(summary="Get a homepage banner"),
+)
+@extend_schema(tags=["Website"])
+class HomeBannerViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only listing of the homepage 3-up banners section's active tiles, in display order."""
+
+    serializer_class = HomeBannerSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return HomeBanner.objects.filter(is_active=True).order_by("ordering", "id")
 
 
 @extend_schema(tags=["Website"])

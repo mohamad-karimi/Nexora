@@ -1,8 +1,10 @@
 import importlib
+from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -254,3 +256,141 @@ class ProductPublishedBackfillMigrationTests(TestCase):
         draft_before.refresh_from_db()
         self.assertTrue(published_before.published)
         self.assertFalse(draft_before.published)
+
+
+class DealsOfTheDayAPITests(APITestCase):
+    """
+    Coverage for the homepage "Deals Of The Day" section, which the
+    client (static/js/pages/home.js -> loadOnSaleProducts) builds by
+    fetching GET /api/v1/products/ and filtering the results down to
+    ``is_on_sale``. There is no server-side "on sale" filter, so
+    what's actually being verified is the data the client relies on:
+    ``is_on_sale`` is computed correctly (and, in particular, flips
+    back to False once ``discount_end`` passes -- the exact scenario
+    that was making the section render empty), and the fields the
+    deal card needs (``final_price``, ``discount_percent``, image,
+    slug, vendor, category) are present in the API response.
+    """
+
+    def setUp(self):
+        self.category = Category.objects.create(name="Groceries")
+        vendor_user = make_user("vera", role=User.Role.VENDOR)
+        self.vendor = vendor_user.vendor_profile
+        self.list_url = reverse("api:api_v1:product-list")
+
+    def test_product_with_active_discount_is_on_sale(self):
+        product = make_product(
+            self.vendor,
+            self.category,
+            sku="DEAL-ACTIVE",
+            price="20.00",
+            discount_percent=25,
+            discount_end=timezone.now() + timedelta(days=3),
+            status=Product.Status.PUBLISHED,
+            published=True,
+        )
+        product.refresh_from_db()  # price comes back as Decimal, not the input str
+
+        self.assertTrue(product.is_on_sale)
+        self.assertEqual(product.final_price, 15)
+
+    def test_product_with_expired_discount_end_is_not_on_sale(self):
+        """Reproduces the reported "Deals Of The Day is empty" state: a
+        discount whose end date has already passed must not count as
+        on sale, even though discount_percent is still set."""
+        product = make_product(
+            self.vendor,
+            self.category,
+            sku="DEAL-EXPIRED",
+            price="20.00",
+            discount_percent=25,
+            discount_end=timezone.now() - timedelta(days=1),
+            status=Product.Status.PUBLISHED,
+            published=True,
+        )
+
+        self.assertFalse(product.is_on_sale)
+        self.assertEqual(product.final_price, product.price)
+
+    def test_product_with_no_discount_percent_is_not_on_sale(self):
+        product = make_product(
+            self.vendor,
+            self.category,
+            sku="DEAL-NONE",
+            price="20.00",
+            discount_percent=0,
+            status=Product.Status.PUBLISHED,
+            published=True,
+        )
+
+        self.assertFalse(product.is_on_sale)
+
+    def test_products_api_exposes_fields_the_deal_card_needs(self):
+        make_product(
+            self.vendor,
+            self.category,
+            sku="DEAL-API",
+            price="20.00",
+            discount_percent=25,
+            discount_end=timezone.now() + timedelta(days=3),
+            status=Product.Status.PUBLISHED,
+            published=True,
+        )
+
+        response = self.client.get(self.list_url, {"page_size": 50})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data["results"]
+        self.assertEqual(len(results), 1)
+        item = results[0]
+        self.assertTrue(item["is_on_sale"])
+        self.assertEqual(float(item["final_price"]), 15.0)
+        self.assertEqual(item["discount_percent"], 25)
+        for field in ("slug", "name", "image", "category", "vendor", "final_price", "price"):
+            self.assertIn(field, item)
+
+    def test_only_active_deals_are_returned_by_client_side_on_sale_filter(self):
+        """The client fetches page_size=50 products ordered by
+        -created_date and filters to is_on_sale client-side (see
+        loadOnSaleProducts in home.js / shop-filter.js). Confirms that
+        filter, applied to the API's own output, keeps only the
+        genuinely active deal and drops the expired and non-discounted
+        ones."""
+        make_product(
+            self.vendor,
+            self.category,
+            name="Active Deal Product",
+            sku="DEAL-ACTIVE-2",
+            price="10.00",
+            discount_percent=10,
+            discount_end=timezone.now() + timedelta(days=1),
+            status=Product.Status.PUBLISHED,
+            published=True,
+        )
+        make_product(
+            self.vendor,
+            self.category,
+            name="Expired Deal Product",
+            sku="DEAL-EXPIRED-2",
+            price="10.00",
+            discount_percent=10,
+            discount_end=timezone.now() - timedelta(days=1),
+            status=Product.Status.PUBLISHED,
+            published=True,
+        )
+        make_product(
+            self.vendor,
+            self.category,
+            name="No Deal Product",
+            sku="DEAL-NONE-2",
+            price="10.00",
+            discount_percent=0,
+            status=Product.Status.PUBLISHED,
+            published=True,
+        )
+
+        response = self.client.get(self.list_url, {"page_size": 50})
+        on_sale = [p for p in response.data["results"] if p["is_on_sale"]]
+
+        self.assertEqual(len(on_sale), 1)
+        self.assertEqual(on_sale[0]["discount_percent"], 10)
