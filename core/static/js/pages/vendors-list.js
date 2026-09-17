@@ -5,7 +5,11 @@
   var grid = document.querySelector(".js-vendor-grid");
   if (!grid) return;
 
-  var state = { search: "", page: 1, page_size: 8 };
+  // page_size starts at 50 to match the "Show:" dropdown's default
+  // selection (marked .active in the template); ordering left unset so
+  // the API's own default (store_name, see VendorViewSet.ordering)
+  // applies, matching the "Sort by: Name" default option.
+  var state = { search: "", page: 1, page_size: 50, ordering: undefined };
 
   function cardHtml(v) {
     var esc = Site.escapeHtml;
@@ -71,15 +75,58 @@
       search: state.search || undefined,
       page: state.page,
       page_size: state.page_size,
+      ordering: state.ordering || undefined,
     }).then(render);
   }
 
+  function setActive(container, link) {
+    container.querySelectorAll("a").forEach(function (a) {
+      a.classList.remove("active");
+    });
+    link.classList.add("active");
+  }
+
   document.addEventListener("click", function (e) {
-    var link = e.target.closest(".js-vpage");
-    if (link) {
+    var pageLink = e.target.closest(".js-vpage");
+    if (pageLink) {
       e.preventDefault();
-      state.page = parseInt(link.getAttribute("data-page"), 10) || 1;
+      state.page = parseInt(pageLink.getAttribute("data-page"), 10) || 1;
       load();
+      return;
+    }
+
+    var showLink = e.target.closest(".js-show-option");
+    if (showLink) {
+      e.preventDefault();
+      // "All" reuses the API's max_page_size (see StandardPagination) as
+      // its real, supported upper bound -- not an unlimited/fake fetch.
+      state.page_size =
+        parseInt(showLink.getAttribute("data-page-size"), 10) || state.page_size;
+      state.page = 1;
+      setActive(showLink.closest(".sort-by-dropdown"), showLink);
+      var showLabel = document.querySelector(".js-show-label");
+      if (showLabel) {
+        var showText =
+          showLink.getAttribute("data-page-size-label") || showLink.textContent.trim();
+        showLabel.innerHTML = " " + showText + ' <i class="fi-rs-angle-small-down"></i>';
+      }
+      load();
+      return;
+    }
+
+    var sortLink = e.target.closest(".js-sort-option");
+    if (sortLink) {
+      e.preventDefault();
+      state.ordering = sortLink.getAttribute("data-ordering") || undefined;
+      state.page = 1;
+      setActive(sortLink.closest(".sort-by-dropdown"), sortLink);
+      var sortLabel = document.querySelector(".js-sort-label");
+      if (sortLabel) {
+        sortLabel.innerHTML =
+          " " + sortLink.textContent.trim() + ' <i class="fi-rs-angle-small-down"></i>';
+      }
+      load();
+      return;
     }
   });
 

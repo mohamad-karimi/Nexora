@@ -32,7 +32,7 @@
                     <div class="col-12 col-lg-8 mx-auto">
                         <div class="shop-product-fillter">
                             <div class="totall-product">
-                                <p>We have <strong class="text-brand">780</strong> vendors now</p>
+                                <p>We have <strong class="text-brand">0</strong> vendors now</p>
                             </div>
                             <div class="sort-by-product-area">
                                 <div class="sort-by-cover mr-10">
@@ -41,16 +41,16 @@
                                             <span><i class="fi-rs-apps"></i>Show:</span>
                                         </div>
                                         <div class="sort-by-dropdown-wrap">
-                                            <span> 50 <i class="fi-rs-angle-small-down"></i></span>
+                                            <span class="js-show-label"> 50 <i class="fi-rs-angle-small-down"></i></span>
                                         </div>
                                     </div>
                                     <div class="sort-by-dropdown">
                                         <ul>
-                                            <li><a class="active" href="{% url 'vendors:list' %}#">50</a></li>
-                                            <li><a href="{% url 'vendors:list' %}#">100</a></li>
-                                            <li><a href="{% url 'vendors:list' %}#">150</a></li>
-                                            <li><a href="{% url 'vendors:list' %}#">200</a></li>
-                                            <li><a href="{% url 'vendors:list' %}#">All</a></li>
+                                            <li><a class="js-show-option active" href="#" data-page-size="50">50</a></li>
+                                            <li><a class="js-show-option" href="#" data-page-size="100">100</a></li>
+                                            <li><a class="js-show-option" href="#" data-page-size="150">150</a></li>
+                                            <li><a class="js-show-option" href="#" data-page-size="200">200</a></li>
+                                            <li><a class="js-show-option" href="#" data-page-size="200" data-page-size-label="All">All</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -60,16 +60,14 @@
                                             <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
                                         </div>
                                         <div class="sort-by-dropdown-wrap">
-                                            <span> Featured <i class="fi-rs-angle-small-down"></i></span>
+                                            <span class="js-sort-label"> Name <i class="fi-rs-angle-small-down"></i></span>
                                         </div>
                                     </div>
                                     <div class="sort-by-dropdown">
                                         <ul>
-                                            <li><a class="active" href="{% url 'vendors:list' %}#">Mall</a></li>
-                                            <li><a href="{% url 'vendors:list' %}#">Featured</a></li>
-                                            <li><a href="{% url 'vendors:list' %}#">Preferred</a></li>
-                                            <li><a href="{% url 'vendors:list' %}#">Total items</a></li>
-                                            <li><a href="{% url 'vendors:list' %}#">Avg. Rating</a></li>
+                                            <li><a class="js-sort-option active" href="#" data-ordering="store_name">Name</a></li>
+                                            <li><a class="js-sort-option" href="#" data-ordering="-created_date">Newest</a></li>
+                                            <li><a class="js-sort-option" href="#" data-ordering="-product_count">Total items</a></li>
                                         </ul>
                                     </div>
                                 </div>
