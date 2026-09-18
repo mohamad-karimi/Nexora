@@ -12,6 +12,11 @@ from api.v1.views.accounts import (
     ResetPasswordView,
     VerifyEmailCodeView,
 )
+from api.v1.views.auth_jwt import (
+    JWTTokenObtainPairView,
+    JWTTokenRefreshView,
+    JWTTokenVerifyView,
+)
 from api.v1.views.blog import CategoryViewSet as BlogCategoryViewSet
 from api.v1.views.blog import PostViewSet as BlogPostViewSet
 from api.v1.views.blog import TagViewSet as BlogTagViewSet
@@ -83,6 +88,21 @@ urlpatterns = [
         "auth/reset-password/",
         ResetPasswordView.as_view(),
         name="auth-reset-password",
+    ),
+    path(
+        "auth/token/",
+        JWTTokenObtainPairView.as_view(),
+        name="auth-token-obtain",
+    ),
+    path(
+        "auth/token/refresh/",
+        JWTTokenRefreshView.as_view(),
+        name="auth-token-refresh",
+    ),
+    path(
+        "auth/token/verify/",
+        JWTTokenVerifyView.as_view(),
+        name="auth-token-verify",
     ),
     path("cart/", CartView.as_view(), name="cart"),
     path(

@@ -115,7 +115,23 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            # Same dedup approach used elsewhere in the project (see
+            # vendors/migrations/0002_backfill_vendor_profiles.py):
+            # append a numeric suffix on collision, since slug is
+            # unique=True and two products can easily share a name.
+            base_slug = slugify(self.name) or "product"
+            slug = base_slug
+            suffix = 2
+            qs = Product.objects.filter(slug=slug)
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            while qs.exists():
+                slug = f"{base_slug}-{suffix}"
+                suffix += 1
+                qs = Product.objects.filter(slug=slug)
+                if self.pk:
+                    qs = qs.exclude(pk=self.pk)
+            self.slug = slug
         super().save(*args, **kwargs)
 
     @property

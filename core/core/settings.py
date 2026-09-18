@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 from decouple import config
 
@@ -58,6 +59,7 @@ INSTALLED_APPS = [
 
     # Third-party
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "django_filters",
     "drf_spectacular",
 
@@ -194,10 +196,21 @@ SERVER_EMAIL = EMAIL_HOST_USER
 
 # Django REST Framework
 # The frontend is a server-rendered site with fetch()-based AJAX calls
-# from the same origin, so we authenticate with the existing Django
-# session/cookie (no separate token/JWT system is introduced).
+# from the same origin, authenticated with the existing Django
+# session/cookie. Alongside that, a stateless JWT surface (see
+# api.v1.views.auth_jwt / POST /api/v1/auth/token/) is available for
+# the API/other (non-browser) clients -- both authentication schemes
+# are accepted on every endpoint.
 REST_FRAMEWORK = {
+    # JWTAuthentication first: DRF's 401-vs-403 fallback (APIView.
+    # handle_exception) only looks at the *first* configured
+    # authenticator's WWW-Authenticate header when deciding whether an
+    # unauthenticated/invalid request gets 401 or 403.
+    # SessionAuthentication doesn't provide one, so if it were listed
+    # first every unauthenticated request -- JWT or session alike --
+    # would incorrectly get downgraded to 403.
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
@@ -215,6 +228,24 @@ REST_FRAMEWORK = {
     ]
     + (["rest_framework.renderers.BrowsableAPIRenderer"] if DEBUG else []),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# djangorestframework-simplejwt -- backs the stateless JWT auth surface
+# (POST /api/v1/auth/token/, .../refresh/, .../verify/). Access tokens
+# are short-lived; refresh tokens rotate on use and the token that was
+# just used is blacklisted, so a leaked/stolen refresh token can't be
+# replayed after its holder (or an attacker who captured it) uses it
+# once. This requires rest_framework_simplejwt.token_blacklist in
+# INSTALLED_APPS (see above) -- without it, RefreshToken.for_user()
+# still tries to record an outstanding-token row internally and blows
+# up with "OutstandingToken has no attribute 'objects'", since that
+# model is only a real (non-abstract) table when the app is installed.
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 # drf-spectacular (OpenAPI / Swagger / Redoc)

@@ -10,6 +10,7 @@ from api.v1.serializers.website import (
     HomeBannerSerializer,
     HomeSlideSerializer,
 )
+from vendors.models import Vendor
 from website.models import ContactMessage, HomeBanner, HomeSlide
 
 
@@ -90,9 +91,16 @@ class VendorGuideContactMessageView(APIView):
     def post(self, request):
         serializer = ContactMessageSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        # Looked up fresh from the DB rather than via
+        # `request.user.vendor_profile` -- the reverse-O2O accessor
+        # caches on the user instance, so if that profile row was
+        # deleted after the cache was already populated (e.g. earlier
+        # in the same request/test), the cached-but-stale object would
+        # be an unsaved instance rather than None.
+        vendor = Vendor.objects.filter(user=request.user).first()
         serializer.save(
             user=request.user,
-            vendor=getattr(request.user, "vendor_profile", None),
+            vendor=vendor,
             source=ContactMessage.Source.VENDOR_GUIDE,
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
