@@ -5790,6 +5790,17 @@ h6.post-title {
   color: #3BB77E;
   background-color: none;
 }
+.header-info > ul > li > ul li.language-dropdown-current span {
+  display: block;
+  padding: 5px;
+  color: #3BB77E;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.header-info > ul > li > ul li.language-dropdown-current i {
+  margin-right: 5px;
+  font-size: 11px;
+}
 .header-info > ul > li > ul li a img {
   max-width: 15px;
   display: inline-block;

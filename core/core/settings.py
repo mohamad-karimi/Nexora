@@ -95,6 +95,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "core.context_processors.site_locale",
             ],
         },
     },
@@ -143,6 +144,17 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
+
+# The storefront's only supported currency. Every price in the
+# database (Product.price, cart/order totals, etc.) is a plain
+# DecimalField denominated in this currency -- there is no per-item
+# currency field or conversion table, so this is the single source
+# of truth the header's Currency indicator (see
+# core.context_processors.site_locale) reads from. Introducing a
+# second currency would require a real conversion/rounding source
+# and currency-aware fields on Product/Cart/Order first.
+DEFAULT_CURRENCY = "USD"
+DEFAULT_CURRENCY_SYMBOL = "$"
 
 
 # Static files (CSS, JavaScript, Images)
