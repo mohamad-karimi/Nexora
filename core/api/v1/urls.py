@@ -21,7 +21,11 @@ from api.v1.views.blog import CategoryViewSet as BlogCategoryViewSet
 from api.v1.views.blog import PostViewSet as BlogPostViewSet
 from api.v1.views.blog import TagViewSet as BlogTagViewSet
 from api.v1.views.cart import CartItemViewSet, CartView
-from api.v1.views.orders import AddressViewSet, CouponValidateView, OrderViewSet
+from api.v1.views.orders import (
+    AddressViewSet,
+    CouponValidateView,
+    OrderViewSet,
+)
 from api.v1.views.shop import (
     CategoryViewSet,
     ProductViewSet,
@@ -126,7 +130,9 @@ urlpatterns = [
         name="vendor-dashboard-orders",
     ),
     path(
-        "coupons/validate/", CouponValidateView.as_view(), name="coupon-validate"
+        "coupons/validate/",
+        CouponValidateView.as_view(),
+        name="coupon-validate",
     ),
     path("contact/", ContactMessageView.as_view(), name="contact-message"),
     path(

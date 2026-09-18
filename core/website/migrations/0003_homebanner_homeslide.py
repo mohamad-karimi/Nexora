@@ -6,40 +6,80 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('website', '0002_contactmessage_source_contactmessage_vendor'),
+        ("website", "0002_contactmessage_source_contactmessage_vendor"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='HomeBanner',
+            name="HomeBanner",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.TextField(help_text='One line per <br /> break in the banner heading.')),
-                ('image', models.ImageField(upload_to='banners/')),
-                ('link_url', models.CharField(blank=True, help_text='Optional. Defaults to the shop listing page when blank.', max_length=255)),
-                ('ordering', models.PositiveIntegerField(default=0)),
-                ('is_active', models.BooleanField(default=True)),
-                ('created_date', models.DateTimeField(auto_now_add=True)),
-                ('update_date', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "title",
+                    models.TextField(
+                        help_text="One line per <br /> break in the banner heading."
+                    ),
+                ),
+                ("image", models.ImageField(upload_to="banners/")),
+                (
+                    "link_url",
+                    models.CharField(
+                        blank=True,
+                        help_text="Optional. Defaults to the shop listing page when blank.",
+                        max_length=255,
+                    ),
+                ),
+                ("ordering", models.PositiveIntegerField(default=0)),
+                ("is_active", models.BooleanField(default=True)),
+                ("created_date", models.DateTimeField(auto_now_add=True)),
+                ("update_date", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'ordering': ['ordering', 'id'],
+                "ordering": ["ordering", "id"],
             },
         ),
         migrations.CreateModel(
-            name='HomeSlide',
+            name="HomeSlide",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.TextField(help_text='One line per <br /> break in the slide heading.')),
-                ('description', models.CharField(blank=True, help_text="Slide's supporting text line.", max_length=255)),
-                ('image', models.ImageField(upload_to='sliders/')),
-                ('ordering', models.PositiveIntegerField(default=0)),
-                ('is_active', models.BooleanField(default=True)),
-                ('created_date', models.DateTimeField(auto_now_add=True)),
-                ('update_date', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "title",
+                    models.TextField(
+                        help_text="One line per <br /> break in the slide heading."
+                    ),
+                ),
+                (
+                    "description",
+                    models.CharField(
+                        blank=True,
+                        help_text="Slide's supporting text line.",
+                        max_length=255,
+                    ),
+                ),
+                ("image", models.ImageField(upload_to="sliders/")),
+                ("ordering", models.PositiveIntegerField(default=0)),
+                ("is_active", models.BooleanField(default=True)),
+                ("created_date", models.DateTimeField(auto_now_add=True)),
+                ("update_date", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'ordering': ['ordering', 'id'],
+                "ordering": ["ordering", "id"],
             },
         ),
     ]

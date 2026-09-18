@@ -5,7 +5,13 @@ from .models import Vendor
 
 @admin.register(Vendor)
 class VendorAdmin(admin.ModelAdmin):
-    list_display = ("store_name", "user", "phone", "is_approved", "created_date")
+    list_display = (
+        "store_name",
+        "user",
+        "phone",
+        "is_approved",
+        "created_date",
+    )
     list_filter = ("is_approved",)
     search_fields = ("store_name", "user__username", "phone", "email")
     prepopulated_fields = {"slug": ("store_name",)}

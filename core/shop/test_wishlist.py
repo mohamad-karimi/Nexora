@@ -60,7 +60,10 @@ class WishlistAPITests(APITestCase):
         self.assertEqual(len(listed.data["results"]), 1)
 
         deleted = self.client.delete(
-            reverse("api:api_v1:wishlist-detail", kwargs={"pk": created.data["id"]})
+            reverse(
+                "api:api_v1:wishlist-detail",
+                kwargs={"pk": created.data["id"]},
+            )
         )
         self.assertEqual(deleted.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Wishlist.objects.count(), 0)

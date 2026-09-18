@@ -20,7 +20,9 @@ from website.models import ContactMessage, HomeBanner, HomeSlide
 )
 @extend_schema(tags=["Website"])
 class HomeSlideViewSet(viewsets.ReadOnlyModelViewSet):
-    """Read-only listing of the homepage hero slider's active slides, in display order."""
+    """Read-only listing of the homepage hero slider's active
+    slides, in display order.
+    """
 
     serializer_class = HomeSlideSerializer
     pagination_class = None
@@ -35,7 +37,9 @@ class HomeSlideViewSet(viewsets.ReadOnlyModelViewSet):
 )
 @extend_schema(tags=["Website"])
 class HomeBannerViewSet(viewsets.ReadOnlyModelViewSet):
-    """Read-only listing of the homepage 3-up banners section's active tiles, in display order."""
+    """Read-only listing of the homepage 3-up banners section's
+    active tiles, in display order.
+    """
 
     serializer_class = HomeBannerSerializer
     pagination_class = None

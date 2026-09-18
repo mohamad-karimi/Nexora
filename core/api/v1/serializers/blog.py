@@ -25,7 +25,9 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class AuthorMinimalSerializer(serializers.ModelSerializer):
-    """Same display-name fallback as shop's ReviewSerializer.get_user_display_name."""
+    """Same display-name fallback as shop's
+    ReviewSerializer.get_user_display_name.
+    """
 
     display_name = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
@@ -113,7 +115,11 @@ class PostDetailSerializer(PostListSerializer):
     tags = TagSerializer(many=True, read_only=True)
 
     class Meta(PostListSerializer.Meta):
-        fields = PostListSerializer.Meta.fields + ["content", "update_date", "tags"]
+        fields = PostListSerializer.Meta.fields + [
+            "content",
+            "update_date",
+            "tags",
+        ]
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -132,7 +138,13 @@ class CommentSerializer(serializers.ModelSerializer):
             "published",
             "created_date",
         ]
-        read_only_fields = ["id", "post", "is_approved", "published", "created_date"]
+        read_only_fields = [
+            "id",
+            "post",
+            "is_approved",
+            "published",
+            "created_date",
+        ]
 
     def validate_content(self, value):
         if not value.strip():
@@ -140,7 +152,8 @@ class CommentSerializer(serializers.ModelSerializer):
         return value.strip()
 
     def get_user_display_name(self, obj):
-        display_name = getattr(obj.user, "profile", None) and obj.user.profile.display_name
+        profile = getattr(obj.user, "profile", None)
+        display_name = profile and profile.display_name
         return display_name or obj.user.username
 
     def get_user_avatar(self, obj):

@@ -145,9 +145,7 @@ class VendorGuideContactAPITests(APITestCase):
         self.assertEqual(ContactMessage.objects.count(), 0)
 
     def test_public_contact_endpoint_still_records_source_contact(self):
-        response = self.client.post(
-            reverse("api:api_v1:contact-message"), self.payload
-        )
+        response = self.client.post(reverse("api:api_v1:contact-message"), self.payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         message = ContactMessage.objects.get()
         self.assertEqual(message.source, ContactMessage.Source.CONTACT_PAGE)

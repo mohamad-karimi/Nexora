@@ -37,7 +37,14 @@ class HeaderLanguageCurrencyTests(TestCase):
 
         self.assertContains(response, language_name)
         # No fake languages the project doesn't actually support.
-        for fake in ("Français", "Deutsch", "Pусский", ">French<", ">German<", ">Spanish<"):
+        for fake in (
+            "Français",
+            "Deutsch",
+            "Pусский",
+            ">French<",
+            ">German<",
+            ">Spanish<",
+        ):
             self.assertNotIn(fake, content)
 
     def test_desktop_header_shows_only_the_real_active_currency(self):
@@ -78,7 +85,7 @@ class HeaderLanguageCurrencyTests(TestCase):
 
         start = content.find("Language / Currency")
         self.assertNotEqual(start, -1)
-        section = content[start:start + 400]
+        section = content[start : start + 400]
 
         self.assertIn(language_name, section)
         self.assertIn(settings.DEFAULT_CURRENCY, section)
@@ -87,7 +94,9 @@ class HeaderLanguageCurrencyTests(TestCase):
         # The leaf options themselves must not be links to nowhere.
         self.assertNotIn('<a href="/#">English', section)
 
-    def test_language_and_currency_indicators_are_consistent_across_pages(self):
+    def test_language_and_currency_indicators_are_consistent_across_pages(
+        self,
+    ):
         """
         Since there's no per-request language/currency state to
         persist (only one of each is ever supported), the header

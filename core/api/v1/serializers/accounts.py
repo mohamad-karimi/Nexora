@@ -40,27 +40,42 @@ class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
         validators=[validate_password],
-        help_text="Must satisfy Django's password validators (length, similarity, common-password checks, etc).",
+        help_text=(
+            "Must satisfy Django's password validators (length, "
+            "similarity, common-password checks, etc)."
+        ),
     )
     first_name = serializers.CharField(
-        write_only=True, required=False, allow_blank=True,
-        help_text="Optional; used to seed the new user's profile display name.",
+        write_only=True,
+        required=False,
+        allow_blank=True,
+        help_text=("Optional; used to seed the new user's profile " "display name."),
     )
     last_name = serializers.CharField(
-        write_only=True, required=False, allow_blank=True,
-        help_text="Optional; used to seed the new user's profile display name.",
+        write_only=True,
+        required=False,
+        allow_blank=True,
+        help_text=("Optional; used to seed the new user's profile " "display name."),
     )
     security_code = serializers.CharField(
         write_only=True,
-        help_text="Must match the code shown on the registration page for the current session.",
+        help_text=(
+            "Must match the code shown on the registration page "
+            "for the current session."
+        ),
     )
     agree_terms = serializers.BooleanField(
         write_only=True,
-        help_text="Must be true; the user must accept the Terms & Policy to register.",
+        help_text=(
+            "Must be true; the user must accept the Terms & " "Policy to register."
+        ),
     )
     account_type = serializers.ChoiceField(
         write_only=True,
-        choices=[(User.Role.CUSTOMER, "Customer"), (User.Role.VENDOR, "Vendor")],
+        choices=[
+            (User.Role.CUSTOMER, "Customer"),
+            (User.Role.VENDOR, "Vendor"),
+        ],
         default=User.Role.CUSTOMER,
         help_text="Which kind of account to create: customer or vendor.",
     )
@@ -125,15 +140,21 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
-    password = serializers.CharField(trim_whitespace=False, style={"input_type": "password"})
+    password = serializers.CharField(
+        trim_whitespace=False, style={"input_type": "password"}
+    )
     security_code = serializers.CharField(
         write_only=True,
-        help_text="Must match the code shown on the login page for the current session.",
+        help_text=(
+            "Must match the code shown on the login page for " "the current session."
+        ),
     )
 
     def validate_security_code(self, value):
         request = self.context.get("request")
-        expected = request.session.get(LOGIN_SECURITY_CODE_SESSION_KEY) if request else None
+        expected = (
+            request.session.get(LOGIN_SECURITY_CODE_SESSION_KEY) if request else None
+        )
         if not expected or value.strip() != expected:
             raise serializers.ValidationError("The security code is incorrect.")
         return value
@@ -150,7 +171,9 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField(
-        help_text="If an account with this email exists, a reset link is sent to it.",
+        help_text=(
+            "If an account with this email exists, a reset " "link is sent to it."
+        ),
     )
 
 

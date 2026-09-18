@@ -5,7 +5,10 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from django.test import TestCase
 
-from accounts.constants import LOGIN_SECURITY_CODE_SESSION_KEY, SECURITY_CODE_SESSION_KEY
+from accounts.constants import (
+    LOGIN_SECURITY_CODE_SESSION_KEY,
+    SECURITY_CODE_SESSION_KEY,
+)
 
 User = get_user_model()
 
@@ -31,7 +34,10 @@ class ChangePasswordAPITests(APITestCase):
     def test_change_password_succeeds_with_correct_old_password(self):
         response = self.client.post(
             self.url,
-            {"old_password": "OldPassw0rd!", "new_password": "BrandNewPassw0rd!"},
+            {
+                "old_password": "OldPassw0rd!",
+                "new_password": "BrandNewPassw0rd!",
+            },
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertNotIn("password", response.data or {})
@@ -57,7 +63,10 @@ class ChangePasswordAPITests(APITestCase):
         self.client.force_authenticate(user=None)
         response = self.client.post(
             self.url,
-            {"old_password": "OldPassw0rd!", "new_password": "BrandNewPassw0rd!"},
+            {
+                "old_password": "OldPassw0rd!",
+                "new_password": "BrandNewPassw0rd!",
+            },
         )
         self.assertIn(
             response.status_code,
@@ -80,7 +89,11 @@ class LogoutAndMeSecurityTests(APITestCase):
     def test_patch_me_cannot_change_username_or_role(self):
         response = self.client.patch(
             reverse("api:api_v1:auth-me"),
-            {"username": "hacker", "role": User.Role.ADMIN, "first_name": "Ada"},
+            {
+                "username": "hacker",
+                "role": User.Role.ADMIN,
+                "first_name": "Ada",
+            },
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -94,7 +107,8 @@ class LogoutAndMeSecurityTests(APITestCase):
         user = make_user("logoutuser")
         client.force_login(user)
         self.assertEqual(
-            client.get(reverse("api:api_v1:auth-me")).status_code, status.HTTP_200_OK
+            client.get(reverse("api:api_v1:auth-me")).status_code,
+            status.HTTP_200_OK,
         )
 
         response = client.post(reverse("api:api_v1:auth-logout"))

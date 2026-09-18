@@ -27,7 +27,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("name", models.CharField(max_length=150, unique=True)),
-                ("slug", models.SlugField(blank=True, max_length=170, unique=True)),
+                (
+                    "slug",
+                    models.SlugField(blank=True, max_length=170, unique=True),
+                ),
             ],
             options={
                 "verbose_name_plural": "Categories",
@@ -47,7 +50,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("title", models.CharField(max_length=255)),
-                ("slug", models.SlugField(blank=True, max_length=280, unique=True)),
+                (
+                    "slug",
+                    models.SlugField(blank=True, max_length=280, unique=True),
+                ),
                 ("excerpt", models.CharField(blank=True, max_length=500)),
                 ("content", models.TextField(blank=True)),
                 (

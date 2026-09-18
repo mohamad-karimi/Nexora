@@ -13,7 +13,9 @@ class Review(models.Model):
     """
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reviews"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="reviews",
     )
     product = models.ForeignKey(
         "shop.Product", on_delete=models.CASCADE, related_name="reviews"
@@ -23,7 +25,8 @@ class Review(models.Model):
     )
     comment = models.TextField(blank=True)
     is_approved = models.BooleanField(
-        default=False, help_text="Reviews are moderated before they go public."
+        default=False,
+        help_text="Reviews are moderated before they go public.",
     )
     created_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now=True)
@@ -32,7 +35,8 @@ class Review(models.Model):
         ordering = ["-created_date"]
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "product"], name="unique_review_per_user_product"
+                fields=["user", "product"],
+                name="unique_review_per_user_product",
             )
         ]
 

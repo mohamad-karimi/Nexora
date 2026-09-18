@@ -29,7 +29,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("name", models.CharField(max_length=100, unique=True)),
-                ("slug", models.SlugField(blank=True, max_length=120, unique=True)),
+                (
+                    "slug",
+                    models.SlugField(blank=True, max_length=120, unique=True),
+                ),
             ],
             options={
                 "ordering": ["name"],
@@ -48,7 +51,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("name", models.CharField(max_length=150, unique=True)),
-                ("slug", models.SlugField(blank=True, max_length=170, unique=True)),
+                (
+                    "slug",
+                    models.SlugField(blank=True, max_length=170, unique=True),
+                ),
                 (
                     "image",
                     models.ImageField(blank=True, null=True, upload_to="categories/"),
@@ -85,11 +91,20 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("name", models.CharField(max_length=255)),
-                ("slug", models.SlugField(blank=True, max_length=280, unique=True)),
-                ("short_description", models.CharField(blank=True, max_length=500)),
+                (
+                    "slug",
+                    models.SlugField(blank=True, max_length=280, unique=True),
+                ),
+                (
+                    "short_description",
+                    models.CharField(blank=True, max_length=500),
+                ),
                 ("description", models.TextField(blank=True)),
                 ("sku", models.CharField(max_length=64, unique=True)),
-                ("price", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "price",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
                 (
                     "discount_percent",
                     models.PositiveSmallIntegerField(
@@ -337,7 +352,8 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="wishlist",
             constraint=models.UniqueConstraint(
-                fields=("user", "product"), name="unique_wishlist_user_product"
+                fields=("user", "product"),
+                name="unique_wishlist_user_product",
             ),
         ),
     ]

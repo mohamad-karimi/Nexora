@@ -12,7 +12,10 @@ from api.v1.serializers.shop import (
     ProductDetailSerializer,
     ProductListSerializer,
 )
-from api.v1.serializers.vendors import VendorOrderItemSerializer, VendorSerializer
+from api.v1.serializers.vendors import (
+    VendorOrderItemSerializer,
+    VendorSerializer,
+)
 from orders.models import Order, OrderItem
 from shop.models import Product
 from vendors.models import Vendor
@@ -45,9 +48,7 @@ class VendorViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return Vendor.objects.filter(is_approved=True).annotate(
-            product_count=Count(
-                "products", filter=Q(products__published=True)
-            )
+            product_count=Count("products", filter=Q(products__published=True))
         )
 
 
@@ -68,7 +69,11 @@ class VendorDashboardMixin:
 @extend_schema_view(
     get=extend_schema(
         summary="List your products",
-        description="Paginated list of the current vendor's own products (any status), for the Vendor Dashboard's \"Your Products\" grid.",
+        description=(
+            "Paginated list of the current vendor's own "
+            "products (any status), for the Vendor Dashboard's "
+            '"Your Products" grid.'
+        ),
     ),
     post=extend_schema(
         summary="Create a product",
@@ -112,7 +117,9 @@ class VendorDashboardProductsView(VendorDashboardMixin, generics.ListCreateAPIVi
                     "reviews__score", filter=Q(reviews__is_approved=True)
                 ),
                 review_count=Count(
-                    "reviews", filter=Q(reviews__is_approved=True), distinct=True
+                    "reviews",
+                    filter=Q(reviews__is_approved=True),
+                    distinct=True,
                 ),
             )
             .order_by("-created_date")
@@ -124,9 +131,7 @@ class VendorDashboardProductsView(VendorDashboardMixin, generics.ListCreateAPIVi
         # and only place `vendor` gets set on a vendor-created product.
         vendor = self.get_vendor()
         if vendor is None:
-            raise PermissionDenied(
-                "Your account does not have a vendor profile yet."
-            )
+            raise PermissionDenied("Your account does not have a vendor profile yet.")
         serializer.save(vendor=vendor)
 
     def create(self, request, *args, **kwargs):
@@ -226,7 +231,9 @@ class VendorDashboardProductDetailView(
 
 @extend_schema(tags=["Vendors"])
 class VendorDashboardBestSellersView(VendorDashboardMixin, generics.ListAPIView):
-    """The current vendor's top 3 products by units sold, for the Vendor Dashboard sidebar."""
+    """The current vendor's top 3 products by units sold, for
+    the Vendor Dashboard sidebar.
+    """
 
     serializer_class = ProductListSerializer
     pagination_class = None
@@ -244,7 +251,9 @@ class VendorDashboardBestSellersView(VendorDashboardMixin, generics.ListAPIView)
                     "reviews__score", filter=Q(reviews__is_approved=True)
                 ),
                 review_count=Count(
-                    "reviews", filter=Q(reviews__is_approved=True), distinct=True
+                    "reviews",
+                    filter=Q(reviews__is_approved=True),
+                    distinct=True,
                 ),
                 units_sold=Coalesce(
                     Sum(
@@ -260,7 +269,9 @@ class VendorDashboardBestSellersView(VendorDashboardMixin, generics.ListAPIView)
 
 @extend_schema(tags=["Vendors"])
 class VendorDashboardOrderItemsView(VendorDashboardMixin, generics.ListAPIView):
-    """Paginated order line items for the current vendor's own products, most recent first."""
+    """Paginated order line items for the current vendor's own
+    products, most recent first.
+    """
 
     serializer_class = VendorOrderItemSerializer
     pagination_class = StandardPagination

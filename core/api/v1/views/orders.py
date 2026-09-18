@@ -1,4 +1,9 @@
-from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema, extend_schema_view
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiResponse,
+    extend_schema,
+    extend_schema_view,
+)
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -42,7 +47,12 @@ class AddressViewSet(viewsets.ModelViewSet):
         self.get_object()  # 404s if this address isn't the current user's
         if Address.objects.filter(user=request.user).count() <= 1:
             return Response(
-                {"detail": "Please add another address before deleting your current address."},
+                {
+                    "detail": (
+                        "Please add another address before "
+                        "deleting your current address."
+                    )
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         return super().destroy(request, *args, **kwargs)
@@ -70,7 +80,10 @@ class CouponValidateView(APIView):
                 examples=[
                     OpenApiExample(
                         "Not found",
-                        value={"detail": "Invalid coupon code.", "is_valid": False},
+                        value={
+                            "detail": "Invalid coupon code.",
+                            "is_valid": False,
+                        },
                     )
                 ],
             ),
@@ -91,7 +104,7 @@ class CouponValidateView(APIView):
 @extend_schema_view(
     list=extend_schema(
         summary="List the current user's orders",
-        description="Returns the current user's order history, most recent first.",
+        description=("Returns the current user's order history, most " "recent first."),
     ),
     retrieve=extend_schema(
         summary="Get an order",
@@ -111,7 +124,9 @@ class CouponValidateView(APIView):
 )
 @extend_schema(tags=["Orders"])
 class OrderViewSet(viewsets.ReadOnlyModelViewSet):
-    """Read-only access to the current user's orders, plus checkout via `create`."""
+    """Read-only access to the current user's orders, plus
+    checkout via `create`.
+    """
 
     lookup_field = "order_number"
     permission_classes = [IsVerified]
@@ -132,6 +147,4 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
-        return Response(
-            OrderSerializer(order).data, status=status.HTTP_201_CREATED
-        )
+        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)

@@ -12,7 +12,9 @@ class HomeSlide(models.Model):
     two lines).
     """
 
-    title = models.TextField(help_text="One line per <br /> break in the slide heading.")
+    title = models.TextField(
+        help_text="One line per <br /> break in the slide heading."
+    )
     description = models.CharField(
         max_length=255, blank=True, help_text="Slide's supporting text line."
     )
@@ -38,7 +40,9 @@ class HomeBanner(models.Model):
     listing page, exactly like the original static "Shop Now" links.
     """
 
-    title = models.TextField(help_text="One line per <br /> break in the banner heading.")
+    title = models.TextField(
+        help_text="One line per <br /> break in the banner heading."
+    )
     image = models.ImageField(upload_to="banners/")
     link_url = models.CharField(
         max_length=255,
@@ -84,7 +88,9 @@ class ContactMessage(models.Model):
         null=True,
         blank=True,
         related_name="contact_messages",
-        help_text="Set when the message was submitted by a vendor (vendors/guide).",
+        help_text=(
+            "Set when the message was submitted by a vendor " "(vendors/guide)."
+        ),
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

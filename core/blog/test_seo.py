@@ -61,4 +61,6 @@ class BlogFeedTests(TestCase):
         item_link = channel.find("item/link").text
 
         self.assertTrue(link.startswith("http://") or link.startswith("https://"))
-        self.assertTrue(item_link.startswith("http://") or item_link.startswith("https://"))
+        self.assertTrue(
+            item_link.startswith("http://") or item_link.startswith("https://")
+        )

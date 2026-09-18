@@ -33,16 +33,16 @@ from shop.models import Category, Product, Review, Tag, Wishlist
 )
 @extend_schema(tags=["Catalog"])
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
-    """Read-only listing/detail of product categories, with a live product count."""
+    """Read-only listing/detail of product categories, with a
+    live product count.
+    """
 
     serializer_class = CategorySerializer
     lookup_field = "slug"
 
     def get_queryset(self):
         return Category.objects.annotate(
-            product_count=Count(
-                "products", filter=Q(products__published=True)
-            )
+            product_count=Count("products", filter=Q(products__published=True))
         ).order_by("name")
 
 
@@ -75,7 +75,10 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     ),
     retrieve=extend_schema(
         summary="Get a product",
-        description="Looked up by `slug`, not the numeric id. Returns the extended detail representation.",
+        description=(
+            "Looked up by `slug`, not the numeric id. Returns "
+            "the extended detail representation."
+        ),
     ),
 )
 @extend_schema(tags=["Catalog"])
@@ -119,7 +122,9 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
                     "reviews__score", filter=Q(reviews__is_approved=True)
                 ),
                 review_count=Count(
-                    "reviews", filter=Q(reviews__is_approved=True), distinct=True
+                    "reviews",
+                    filter=Q(reviews__is_approved=True),
+                    distinct=True,
                 ),
             )
         )
@@ -137,7 +142,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             # product's existence isn't revealed to anyone but its
             # owner/staff.
             raise Http404(
-                f"No {queryset.model._meta.object_name} matches the given query."
+                f"No {queryset.model._meta.object_name} matches " f"the given query."
             )
 
         self.check_object_permissions(self.request, obj)
@@ -178,7 +183,9 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
                 examples=[
                     OpenApiExample(
                         "Anonymous POST",
-                        value={"detail": "Authentication required to leave a review."},
+                        value={
+                            "detail": ("Authentication required to " "leave a review.")
+                        },
                     )
                 ],
             ),
@@ -193,9 +200,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             if not (request.user.is_authenticated):
                 queryset = queryset.filter(is_approved=True)
             else:
-                queryset = queryset.filter(
-                    Q(is_approved=True) | Q(user=request.user)
-                )
+                queryset = queryset.filter(Q(is_approved=True) | Q(user=request.user))
             page = self.paginate_queryset(queryset.order_by("-created_date"))
             serializer = ReviewSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
@@ -217,9 +222,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
                 "is_approved": False,
             },
         )
-        return Response(
-            ReviewSerializer(review).data, status=status.HTTP_201_CREATED
-        )
+        return Response(ReviewSerializer(review).data, status=status.HTTP_201_CREATED)
 
     @extend_schema(
         tags=["Catalog"],
@@ -271,7 +274,10 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     list=extend_schema(summary="List the current user's wishlist"),
     create=extend_schema(
         summary="Add a product to the wishlist",
-        description="Idempotent: adding a product already on the wishlist just returns the existing entry.",
+        description=(
+            "Idempotent: adding a product already on the "
+            "wishlist just returns the existing entry."
+        ),
     ),
     destroy=extend_schema(summary="Remove a product from the wishlist"),
 )

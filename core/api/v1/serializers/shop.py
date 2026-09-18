@@ -76,9 +76,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "product", "is_approved", "created_date"]
 
     def get_user_display_name(self, obj):
-        display_name = (
-            getattr(obj.user, "profile", None) and obj.user.profile.display_name
-        )
+        profile = getattr(obj.user, "profile", None)
+        display_name = profile and profile.display_name
         return display_name or obj.user.username
 
 

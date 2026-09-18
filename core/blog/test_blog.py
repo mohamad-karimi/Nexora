@@ -62,7 +62,10 @@ class BlogVisibilityTests(BlogAPITestBase):
 
     def test_published_detail_includes_content_and_tags(self):
         response = self.client.get(
-            reverse("api:api_v1:blog-post-detail", kwargs={"slug": self.published.slug})
+            reverse(
+                "api:api_v1:blog-post-detail",
+                kwargs={"slug": self.published.slug},
+            )
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["content"], self.published.content)
@@ -70,10 +73,16 @@ class BlogVisibilityTests(BlogAPITestBase):
 
     def test_draft_and_archived_posts_are_not_retrievable(self):
         draft = self.client.get(
-            reverse("api:api_v1:blog-post-detail", kwargs={"slug": self.draft.slug})
+            reverse(
+                "api:api_v1:blog-post-detail",
+                kwargs={"slug": self.draft.slug},
+            )
         )
         archived = self.client.get(
-            reverse("api:api_v1:blog-post-detail", kwargs={"slug": self.archived.slug})
+            reverse(
+                "api:api_v1:blog-post-detail",
+                kwargs={"slug": self.archived.slug},
+            )
         )
         self.assertEqual(draft.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(archived.status_code, status.HTTP_404_NOT_FOUND)
@@ -81,7 +90,10 @@ class BlogVisibilityTests(BlogAPITestBase):
     def test_author_cannot_open_own_draft_via_public_api(self):
         self.client.force_authenticate(user=self.author)
         response = self.client.get(
-            reverse("api:api_v1:blog-post-detail", kwargs={"slug": self.draft.slug})
+            reverse(
+                "api:api_v1:blog-post-detail",
+                kwargs={"slug": self.draft.slug},
+            )
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -102,12 +114,14 @@ class BlogVisibilityTests(BlogAPITestBase):
     def test_tag_filter_and_search(self):
         tagged = self.client.get(self.list_url, {"tag": self.tag.slug})
         self.assertEqual(
-            [item["slug"] for item in tagged.data["results"]], ["published-post"]
+            [item["slug"] for item in tagged.data["results"]],
+            ["published-post"],
         )
 
         search = self.client.get(self.list_url, {"search": "sourdough"})
         self.assertEqual(
-            [item["slug"] for item in search.data["results"]], ["published-post"]
+            [item["slug"] for item in search.data["results"]],
+            ["published-post"],
         )
 
         miss = self.client.get(self.list_url, {"search": "unrelated-token"})
@@ -118,12 +132,16 @@ class BlogCommentTests(BlogAPITestBase):
     def setUp(self):
         super().setUp()
         self.comments_url = reverse(
-            "api:api_v1:blog-post-comments", kwargs={"slug": self.published.slug}
+            "api:api_v1:blog-post-comments",
+            kwargs={"slug": self.published.slug},
         )
 
     def test_anonymous_can_list_published_comments_only(self):
         Comment.objects.create(
-            post=self.published, user=self.reader, content="Visible", published=True
+            post=self.published,
+            user=self.reader,
+            content="Visible",
+            published=True,
         )
         Comment.objects.create(
             post=self.published,
@@ -183,9 +201,7 @@ class BlogCommentTests(BlogAPITestBase):
 
     def test_cannot_comment_on_a_draft_post(self):
         self.client.force_authenticate(user=self.reader)
-        url = reverse(
-            "api:api_v1:blog-post-comments", kwargs={"slug": self.draft.slug}
-        )
+        url = reverse("api:api_v1:blog-post-comments", kwargs={"slug": self.draft.slug})
         response = self.client.post(url, {"content": "Nope"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -197,10 +213,12 @@ class BlogLikeAndBookmarkTests(BlogAPITestBase):
             "api:api_v1:blog-post-like", kwargs={"slug": self.published.slug}
         )
         self.bookmark_url = reverse(
-            "api:api_v1:blog-post-bookmark", kwargs={"slug": self.published.slug}
+            "api:api_v1:blog-post-bookmark",
+            kwargs={"slug": self.published.slug},
         )
         self.detail_url = reverse(
-            "api:api_v1:blog-post-detail", kwargs={"slug": self.published.slug}
+            "api:api_v1:blog-post-detail",
+            kwargs={"slug": self.published.slug},
         )
 
     def test_anonymous_cannot_like_or_bookmark(self):
@@ -215,12 +233,16 @@ class BlogLikeAndBookmarkTests(BlogAPITestBase):
         self.assertEqual(on.status_code, status.HTTP_200_OK)
         self.assertTrue(on.data["liked"])
         self.assertEqual(on.data["like_count"], 1)
-        self.assertTrue(PostLike.objects.filter(user=self.reader, post=self.published).exists())
+        self.assertTrue(
+            PostLike.objects.filter(user=self.reader, post=self.published).exists()
+        )
 
         off = self.client.post(self.like_url)
         self.assertFalse(off.data["liked"])
         self.assertEqual(off.data["like_count"], 0)
-        self.assertFalse(PostLike.objects.filter(user=self.reader, post=self.published).exists())
+        self.assertFalse(
+            PostLike.objects.filter(user=self.reader, post=self.published).exists()
+        )
 
     def test_bookmark_toggles_independently_of_like(self):
         self.client.force_authenticate(user=self.reader)
@@ -267,7 +289,10 @@ class BlogLikeAndBookmarkTests(BlogAPITestBase):
             reverse("api:api_v1:blog-post-like", kwargs={"slug": self.draft.slug})
         )
         bookmark = self.client.post(
-            reverse("api:api_v1:blog-post-bookmark", kwargs={"slug": self.draft.slug})
+            reverse(
+                "api:api_v1:blog-post-bookmark",
+                kwargs={"slug": self.draft.slug},
+            )
         )
         self.assertEqual(like.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(bookmark.status_code, status.HTTP_404_NOT_FOUND)

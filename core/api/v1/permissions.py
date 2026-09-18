@@ -47,8 +47,5 @@ class IsVendor(BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        return bool(
-            user
-            and user.is_authenticated
-            and user.role == get_user_model().Role.VENDOR
-        )
+        is_vendor = user and user.role == get_user_model().Role.VENDOR
+        return bool(user and user.is_authenticated and is_vendor)

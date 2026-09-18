@@ -40,6 +40,7 @@ def make_user(username, role=User.Role.CUSTOMER):
         is_verified=True,
     )
 
+
 class HeaderVendorMenuTests(TestCase):
     """The 'Vendors' header item has two mutually exclusive shapes:
     a plain link (anonymous/Customer) or a dropdown with exactly
@@ -69,7 +70,9 @@ class HeaderVendorMenuTests(TestCase):
         self.assertNotIn("Vendors List", content)
         self.assertNotIn(self.vendor_guide_url, content)
 
-    def test_vendor_sees_a_dropdown_with_only_vendor_list_and_vendor_guide(self):
+    def test_vendor_sees_a_dropdown_with_only_vendor_list_and_vendor_guide(
+        self,
+    ):
         self.client.force_login(make_user("vince", role=User.Role.VENDOR))
         response = self.client.get(self.home_url)
         content = response.content.decode()
@@ -103,7 +106,9 @@ class HeaderVendorGuideVisibilityTests(TestCase):
         response = self.client.get(reverse("website:home"))
         self.assertContains(response, self.guide_url)
 
-    def test_backend_permission_is_still_enforced_independently_of_the_link(self):
+    def test_backend_permission_is_still_enforced_independently_of_the_link(
+        self,
+    ):
         # The link being hidden in the template must never be the only
         # thing standing between a customer and the page itself.
         self.client.force_login(make_user("carol"))
@@ -145,7 +150,9 @@ class HeaderCategoryDropdownAPITests(APITestCase):
         response = self.client.get(reverse("api:api_v1:category-list"))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        results = response.data["results"] if "results" in response.data else response.data
+        results = (
+            response.data["results"] if "results" in response.data else response.data
+        )
         slugs = {item["slug"] for item in results}
         self.assertIn("milks-and-dairies", slugs)
         self.assertIn("fresh-fruit", slugs)
@@ -156,7 +163,9 @@ class HeaderCategoryDropdownAPITests(APITestCase):
 
         response = self.client.get(reverse("api:api_v1:category-list"))
 
-        results = response.data["results"] if "results" in response.data else response.data
+        results = (
+            response.data["results"] if "results" in response.data else response.data
+        )
         names = [item["name"] for item in results]
         self.assertEqual(names, sorted(names))
 

@@ -126,7 +126,8 @@ class Comment(models.Model):
     )
     content = models.TextField()
     is_approved = models.BooleanField(
-        default=False, help_text="Comments are moderated before they go public."
+        default=False,
+        help_text="Comments are moderated before they go public.",
     )
     published = models.BooleanField(
         default=True,
@@ -185,7 +186,9 @@ class PostLike(models.Model):
         on_delete=models.CASCADE,
         related_name="post_likes",
     )
-    post = models.ForeignKey("blog.Post", on_delete=models.CASCADE, related_name="likes")
+    post = models.ForeignKey(
+        "blog.Post", on_delete=models.CASCADE, related_name="likes"
+    )
     created_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:

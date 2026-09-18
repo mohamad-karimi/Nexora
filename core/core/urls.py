@@ -33,16 +33,16 @@ sitemaps = {
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include('api.urls')),
+    path("api/", include("api.urls")),
     path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
-    path("", include('website.urls')),
-    path("", include('accounts.urls')),
-    path("blog/", include('blog.urls')),
-    path("shop/", include('shop.urls')),
-    path("vendors/", include('vendors.urls')),
-    path("cart/", include('cart.urls')),
-    path("orders/", include('orders.urls')),
-    path("dashboard/", include('dashboard.urls')),
+    path("", include("website.urls")),
+    path("", include("accounts.urls")),
+    path("blog/", include("blog.urls")),
+    path("shop/", include("shop.urls")),
+    path("vendors/", include("vendors.urls")),
+    path("cart/", include("cart.urls")),
+    path("orders/", include("orders.urls")),
+    path("dashboard/", include("dashboard.urls")),
 ]
 
 if settings.DEBUG:

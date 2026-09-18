@@ -24,8 +24,13 @@ class SitemapTests(TestCase):
     def test_static_public_pages_are_listed(self):
         response = self.client.get(self.url)
         body = response.content.decode()
-        for name in ("website:home", "website:about", "website:contact",
-                     "website:privacy_policy", "website:terms"):
+        for name in (
+            "website:home",
+            "website:about",
+            "website:contact",
+            "website:privacy_policy",
+            "website:terms",
+        ):
             self.assertIn(f"{settings.SITE_DOMAIN}{reverse(name)}", body)
 
     def test_published_product_is_listed(self):
@@ -33,7 +38,11 @@ class SitemapTests(TestCase):
         vendor_user = make_user("sitemap-vendor", role=User.Role.VENDOR)
         vendor = vendor_user.vendor_profile
         product = make_product(
-            vendor, category, sku="SKU-SM-1", slug="sitemap-visible", published=True
+            vendor,
+            category,
+            sku="SKU-SM-1",
+            slug="sitemap-visible",
+            published=True,
         )
 
         response = self.client.get(self.url)
@@ -45,7 +54,11 @@ class SitemapTests(TestCase):
         vendor_user = make_user("sitemap-vendor-2", role=User.Role.VENDOR)
         vendor = vendor_user.vendor_profile
         product = make_product(
-            vendor, category, sku="SKU-SM-2", slug="sitemap-hidden", published=False
+            vendor,
+            category,
+            sku="SKU-SM-2",
+            slug="sitemap-hidden",
+            published=False,
         )
 
         response = self.client.get(self.url)
@@ -103,7 +116,14 @@ class RobotsTxtTests(TestCase):
     def test_private_paths_are_disallowed(self):
         response = self.client.get(self.url)
         body = response.content.decode()
-        for path in ("/admin/", "/api/", "/cart/", "/orders/", "/dashboard/", "/account/"):
+        for path in (
+            "/admin/",
+            "/api/",
+            "/cart/",
+            "/orders/",
+            "/dashboard/",
+            "/account/",
+        ):
             self.assertIn(f"Disallow: {path}", body)
 
     def test_sitemap_url_uses_configured_domain_not_hardcoded(self):

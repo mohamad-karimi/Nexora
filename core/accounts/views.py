@@ -45,11 +45,8 @@ class VendorRequiredMixin(VerifiedRequiredMixin):
 
     def dispatch(self, request, *args, **kwargs):
         user = request.user
-        if (
-            user.is_authenticated
-            and user.is_verified
-            and user.role != User.Role.VENDOR
-        ):
+        is_non_vendor = user.role != User.Role.VENDOR
+        if user.is_authenticated and user.is_verified and is_non_vendor:
             raise PermissionDenied("This page is only available to vendor accounts.")
         # Anonymous -> login redirect, unverified -> verification page,
         # both handled by the mixins above.

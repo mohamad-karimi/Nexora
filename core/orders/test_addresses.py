@@ -87,7 +87,9 @@ class AddressAPITests(APITestCase):
 
     def test_can_delete_an_address_when_another_remains(self):
         first = self.client.post(self.list_url, address_payload(city="Tehran"))
-        self.client.post(self.list_url, address_payload(city="Isfahan", postal_code="2"))
+        self.client.post(
+            self.list_url, address_payload(city="Isfahan", postal_code="2")
+        )
         url = reverse("api:api_v1:address-detail", kwargs={"pk": first.data["id"]})
 
         response = self.client.delete(url)

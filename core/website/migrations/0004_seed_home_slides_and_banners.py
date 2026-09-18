@@ -66,7 +66,9 @@ def seed_home_content(apps, schema_editor):
 
     if not HomeSlide.objects.exists():
         for slide in SLIDES:
-            image_path = _copy_static_to_media(slide["source"], "sliders", slide["filename"])
+            image_path = _copy_static_to_media(
+                slide["source"], "sliders", slide["filename"]
+            )
             HomeSlide.objects.create(
                 title=slide["title"],
                 description=slide["description"],
@@ -77,7 +79,9 @@ def seed_home_content(apps, schema_editor):
 
     if not HomeBanner.objects.exists():
         for banner in BANNERS:
-            image_path = _copy_static_to_media(banner["source"], "banners", banner["filename"])
+            image_path = _copy_static_to_media(
+                banner["source"], "banners", banner["filename"]
+            )
             HomeBanner.objects.create(
                 title=banner["title"],
                 image=image_path,

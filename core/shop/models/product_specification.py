@@ -16,7 +16,9 @@ class ProductSpecification(models.Model):
     """
 
     product = models.ForeignKey(
-        "shop.Product", on_delete=models.CASCADE, related_name="specifications"
+        "shop.Product",
+        on_delete=models.CASCADE,
+        related_name="specifications",
     )
     name = models.CharField(max_length=100)
     value = models.CharField(max_length=255)

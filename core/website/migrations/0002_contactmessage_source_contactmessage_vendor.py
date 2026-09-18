@@ -7,19 +7,34 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('vendors', '0001_initial'),
-        ('website', '0001_initial'),
+        ("vendors", "0001_initial"),
+        ("website", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='contactmessage',
-            name='source',
-            field=models.CharField(choices=[('contact', 'Contact page'), ('vendor_guide', 'Vendor guide')], default='contact', help_text='Which form the message came from.', max_length=20),
+            model_name="contactmessage",
+            name="source",
+            field=models.CharField(
+                choices=[
+                    ("contact", "Contact page"),
+                    ("vendor_guide", "Vendor guide"),
+                ],
+                default="contact",
+                help_text="Which form the message came from.",
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='contactmessage',
-            name='vendor',
-            field=models.ForeignKey(blank=True, help_text='Set when the message was submitted by a vendor (vendors/guide).', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='contact_messages', to='vendors.vendor'),
+            model_name="contactmessage",
+            name="vendor",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Set when the message was submitted by a vendor (vendors/guide).",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="contact_messages",
+                to="vendors.vendor",
+            ),
         ),
     ]

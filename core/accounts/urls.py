@@ -12,6 +12,14 @@ urlpatterns = [
         views.EmailVerificationPendingView.as_view(),
         name="email_verification_pending",
     ),
-    path("forgot-password/", views.ForgotPasswordView.as_view(), name="forgot_password"),
-    path("reset-password/", views.ResetPasswordView.as_view(), name="reset_password"),
+    path(
+        "forgot-password/",
+        views.ForgotPasswordView.as_view(),
+        name="forgot_password",
+    ),
+    path(
+        "reset-password/",
+        views.ResetPasswordView.as_view(),
+        name="reset_password",
+    ),
 ]

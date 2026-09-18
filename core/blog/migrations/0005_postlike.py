@@ -45,7 +45,8 @@ class Migration(migrations.Migration):
                 "ordering": ["-created_date"],
                 "constraints": [
                     models.UniqueConstraint(
-                        fields=("user", "post"), name="unique_like_per_user_post"
+                        fields=("user", "post"),
+                        name="unique_like_per_user_post",
                     )
                 ],
             },

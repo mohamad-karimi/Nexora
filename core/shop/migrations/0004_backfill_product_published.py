@@ -22,9 +22,7 @@ def unset_published(apps, schema_editor):
     # Reversing this migration only undoes what it did -- it does not
     # touch rows an admin has since published by hand.
     Product = apps.get_model("shop", "Product")
-    Product.objects.filter(status="published", published=True).update(
-        published=False
-    )
+    Product.objects.filter(status="published", published=True).update(published=False)
 
 
 class Migration(migrations.Migration):

@@ -56,13 +56,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sites",
     "django.contrib.sitemaps",
-
     # Third-party
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "django_filters",
     "drf_spectacular",
-
     # My app
     "accounts",
     "website",
@@ -273,14 +271,32 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
     "SORT_OPERATIONS": False,
     "TAGS": [
-        {"name": "Auth", "description": "Registration, session login/logout and the current user's profile."},
-        {"name": "Catalog", "description": "Browsing categories, tags and products."},
+        {
+            "name": "Auth",
+            "description": "Registration, session login/logout and the current user's profile.",
+        },
+        {
+            "name": "Catalog",
+            "description": "Browsing categories, tags and products.",
+        },
         {"name": "Reviews", "description": "Product reviews."},
         {"name": "Vendors", "description": "Marketplace vendors (sellers)."},
-        {"name": "Wishlist", "description": "The current user's saved/favourite products."},
-        {"name": "Cart", "description": "The current user's shopping cart and its line items."},
-        {"name": "Addresses", "description": "The current user's shipping/billing addresses."},
+        {
+            "name": "Wishlist",
+            "description": "The current user's saved/favourite products.",
+        },
+        {
+            "name": "Cart",
+            "description": "The current user's shopping cart and its line items.",
+        },
+        {
+            "name": "Addresses",
+            "description": "The current user's shipping/billing addresses.",
+        },
         {"name": "Coupons", "description": "Discount coupon validation."},
-        {"name": "Orders", "description": "Checkout and the current user's order history."},
+        {
+            "name": "Orders",
+            "description": "Checkout and the current user's order history.",
+        },
     ],
 }

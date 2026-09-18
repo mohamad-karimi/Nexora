@@ -1,4 +1,4 @@
-from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import mixins, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -21,7 +21,10 @@ class CartView(APIView):
 
     @extend_schema(
         summary="Get the current user's cart",
-        description="Returns the current user's cart, creating an empty one if none exists yet.",
+        description=(
+            "Returns the current user's cart, creating an "
+            "empty one if none exists yet."
+        ),
         responses={200: CartSerializer},
     )
     def get(self, request):
@@ -57,7 +60,9 @@ class CartView(APIView):
     ),
     partial_update=extend_schema(
         summary="Update a cart item's quantity",
-        description="Partially updates a cart line item (typically just `quantity`).",
+        description=(
+            "Partially updates a cart line item (typically " "just `quantity`)."
+        ),
         responses={200: CartSerializer},
     ),
     destroy=extend_schema(
@@ -72,7 +77,9 @@ class CartItemViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    """Create/update/delete individual line items of the current user's cart."""
+    """Create/update/delete individual line items of the
+    current user's cart.
+    """
 
     serializer_class = CartItemSerializer
     permission_classes = [IsVerified]
@@ -88,12 +95,12 @@ class CartItemViewSet(
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        item = serializer.save()
+        serializer.save()
         cart = get_or_create_cart(request.user)
         return Response(CartSerializer(cart).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
-        response = super().update(request, *args, **kwargs)
+        super().update(request, *args, **kwargs)
         cart = get_or_create_cart(request.user)
         return Response(CartSerializer(cart).data)
 

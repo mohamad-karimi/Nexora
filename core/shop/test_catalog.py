@@ -3,7 +3,13 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from shop.models import Category, Product, ProductImage, ProductSpecification, Tag
+from shop.models import (
+    Category,
+    Product,
+    ProductImage,
+    ProductSpecification,
+    Tag,
+)
 
 User = get_user_model()
 
@@ -74,9 +80,7 @@ class ProductCatalogAPITests(APITestCase):
         )
 
     def test_ordering_by_price_and_pagination(self):
-        response = self.client.get(
-            self.list_url, {"ordering": "price", "page_size": 1}
-        )
+        response = self.client.get(self.list_url, {"ordering": "price", "page_size": 1})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 2)
         self.assertEqual(len(response.data["results"]), 1)
@@ -90,14 +94,19 @@ class ProductCatalogAPITests(APITestCase):
 
     def test_detail_includes_images_and_specifications(self):
         ProductImage.objects.create(
-            product=self.in_stock, image="products/gallery/granola.png", alt_text="side"
+            product=self.in_stock,
+            image="products/gallery/granola.png",
+            alt_text="side",
         )
         ProductSpecification.objects.create(
             product=self.in_stock, name="Weight", value="500g"
         )
 
         response = self.client.get(
-            reverse("api:api_v1:product-detail", kwargs={"slug": self.in_stock.slug})
+            reverse(
+                "api:api_v1:product-detail",
+                kwargs={"slug": self.in_stock.slug},
+            )
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["sku"], "CAT-1")
@@ -106,7 +115,9 @@ class ProductCatalogAPITests(APITestCase):
         self.assertTrue(response.data["in_stock"])
 
     def test_unapproved_vendor_products_still_follow_published_flag(self):
-        """Public listing is gated on Product.published, not Vendor.is_approved."""
+        """Public listing is gated on Product.published, not
+        Vendor.is_approved.
+        """
         self.vendor_a.vendor_profile.is_approved = False
         self.vendor_a.vendor_profile.save()
 

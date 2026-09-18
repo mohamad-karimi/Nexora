@@ -8,24 +8,39 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0002_profile'),
+        ("accounts", "0002_profile"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='EmailVerificationCode',
+            name="EmailVerificationCode",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code_hash', models.CharField(max_length=128)),
-                ('attempts', models.PositiveSmallIntegerField(default=0)),
-                ('last_sent_at', models.DateTimeField()),
-                ('expires_at', models.DateTimeField()),
-                ('created_date', models.DateTimeField(auto_now_add=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='email_verification_code', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("code_hash", models.CharField(max_length=128)),
+                ("attempts", models.PositiveSmallIntegerField(default=0)),
+                ("last_sent_at", models.DateTimeField()),
+                ("expires_at", models.DateTimeField()),
+                ("created_date", models.DateTimeField(auto_now_add=True)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="email_verification_code",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Email verification code',
-                'verbose_name_plural': 'Email verification codes',
+                "verbose_name": "Email verification code",
+                "verbose_name_plural": "Email verification codes",
             },
         ),
     ]

@@ -47,7 +47,9 @@ class CouponSerializer(serializers.ModelSerializer):
 class CouponValidateSerializer(serializers.Serializer):
     """Request body for `POST /api/v1/coupons/validate/` (schema/docs only)."""
 
-    code = serializers.CharField(help_text="The coupon code to look up (case-insensitive).")
+    code = serializers.CharField(
+        help_text="The coupon code to look up (case-insensitive)."
+    )
 
 
 class OrderItemVendorSerializer(serializers.ModelSerializer):
@@ -133,12 +135,17 @@ class OrderCreateSerializer(serializers.Serializer):
         queryset=Address.objects.all(),
         required=False,
         allow_null=True,
-        help_text="ID of the billing address. Defaults to the shipping address when omitted.",
+        help_text=(
+            "ID of the billing address. Defaults to the "
+            "shipping address when omitted."
+        ),
     )
     coupon_code = serializers.CharField(
         required=False,
         allow_blank=True,
-        help_text="Optional discount coupon code, validated and applied at checkout.",
+        help_text=(
+            "Optional discount coupon code, validated and " "applied at checkout."
+        ),
     )
     payment_method = serializers.ChoiceField(
         choices=Payment.Method.choices,
@@ -169,7 +176,8 @@ class OrderCreateSerializer(serializers.Serializer):
         for item in cart.items.select_related("product"):
             if item.quantity > item.product.stock:
                 raise serializers.ValidationError(
-                    f'Only {item.product.stock} of "{item.product.name}" left in stock.'
+                    f"Only {item.product.stock} of "
+                    f'"{item.product.name}" left in stock.'
                 )
 
         coupon = None
@@ -178,7 +186,9 @@ class OrderCreateSerializer(serializers.Serializer):
             try:
                 coupon = Coupon.objects.get(code__iexact=code)
             except Coupon.DoesNotExist:
-                raise serializers.ValidationError({"coupon_code": "Invalid coupon code."})
+                raise serializers.ValidationError(
+                    {"coupon_code": "Invalid coupon code."}
+                )
             if not coupon.is_valid:
                 raise serializers.ValidationError(
                     {"coupon_code": "This coupon is not valid right now."}

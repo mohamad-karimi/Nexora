@@ -35,7 +35,7 @@ class OTPError(Exception):
 def _generate_code():
     # secrets.randbelow is a CSPRNG (unlike `random`), so the code is not
     # guessable; zero-padded so e.g. 483 -> "000483".
-    upper = 10 ** EMAIL_OTP_LENGTH
+    upper = 10**EMAIL_OTP_LENGTH
     return str(secrets.randbelow(upper)).zfill(EMAIL_OTP_LENGTH)
 
 
@@ -124,9 +124,7 @@ def resend_email_verification(request):
     """
     user = get_pending_verification_user(request)
     if user is None:
-        raise OTPError(
-            "Your verification session has expired. Please register again."
-        )
+        raise OTPError("Your verification session has expired. Please register again.")
 
     otp = EmailVerificationCode.objects.filter(user=user).first()
     if otp is not None:

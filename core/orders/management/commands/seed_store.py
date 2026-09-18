@@ -5,7 +5,7 @@ end-to-end (list views, relations, computed properties, constraints).
 
 Usage:
     python manage.py seed_store            # seed (skips if already seeded)
-    python manage.py seed_store --flush     # wipe previously-seeded data, then reseed
+    python manage.py seed_store --flush     # wipe existing seed data, reseed
 
 Notes:
 - Image fields are filled with small generated placeholder PNGs (via
@@ -52,7 +52,14 @@ CUSTOMER_USERNAMES = [
     "daniel_customer",
 ]
 
-PLACEHOLDER_COLORS = ["4caf50", "ff9800", "2196f3", "e91e63", "795548", "009688"]
+PLACEHOLDER_COLORS = [
+    "4caf50",
+    "ff9800",
+    "2196f3",
+    "e91e63",
+    "795548",
+    "009688",
+]
 
 
 def placeholder_image(label, size=(500, 500)):
@@ -75,7 +82,7 @@ VENDOR_DATA = [
         "email": "green_farm@nexora.test",
         "store_name": "Green Farm Grocery",
         "phone": "+15550100",
-        "description": "Farm-fresh produce and dairy, sourced from local growers.",
+        "description": ("Farm-fresh produce and dairy, sourced from local growers."),
     },
     {
         "username": "daily_bites",
@@ -132,7 +139,10 @@ CATEGORY_DATA = [
         "name": "Baking Material",
         "description": "Flour, sugar and other baking essentials.",
     },
-    {"name": "Pet Foods", "description": "Food and treats for cats and dogs."},
+    {
+        "name": "Pet Foods",
+        "description": "Food and treats for cats and dogs.",
+    },
 ]
 
 TAG_NAMES = [
@@ -329,11 +339,41 @@ REVIEW_DATA = [
         "Tastes fresh, delivered cold. Will buy again.",
         True,
     ),
-    ("DAI-MILK-1L", "bob_customer", 4, "Good quality but a bit pricey.", True),
-    ("FRU-APL-1KG", "chloe_customer", 5, "Crisp and sweet, kids love them.", True),
-    ("FRU-APL-1KG", "daniel_customer", 3, "Half the batch was bruised.", False),
-    ("SNK-ALM-200", "alice_customer", 5, "Great snack, nicely roasted.", True),
-    ("SNK-CHP-150", "bob_customer", 4, "Classic taste, good portion size.", True),
+    (
+        "DAI-MILK-1L",
+        "bob_customer",
+        4,
+        "Good quality but a bit pricey.",
+        True,
+    ),
+    (
+        "FRU-APL-1KG",
+        "chloe_customer",
+        5,
+        "Crisp and sweet, kids love them.",
+        True,
+    ),
+    (
+        "FRU-APL-1KG",
+        "daniel_customer",
+        3,
+        "Half the batch was bruised.",
+        False,
+    ),
+    (
+        "SNK-ALM-200",
+        "alice_customer",
+        5,
+        "Great snack, nicely roasted.",
+        True,
+    ),
+    (
+        "SNK-CHP-150",
+        "bob_customer",
+        4,
+        "Classic taste, good portion size.",
+        True,
+    ),
     (
         "PET-DOG-3KG",
         "chloe_customer",
@@ -341,7 +381,13 @@ REVIEW_DATA = [
         "My dog loves it, coat looks healthier already.",
         True,
     ),
-    ("VEG-SPN-250", "daniel_customer", 2, "Arrived wilted, not very fresh.", False),
+    (
+        "VEG-SPN-250",
+        "daniel_customer",
+        2,
+        "Arrived wilted, not very fresh.",
+        False,
+    ),
 ]
 
 WISHLIST_DATA = [
@@ -396,13 +442,14 @@ class Command(BaseCommand):
         if options["flush"]:
             self._flush()
 
-        if (
-            not options["flush"]
-            and Vendor.objects.filter(user__username=VENDOR_USERNAMES[0]).exists()
-        ):
+        already_seeded = Vendor.objects.filter(
+            user__username=VENDOR_USERNAMES[0]
+        ).exists()
+        if not options["flush"] and already_seeded:
             self.stdout.write(
                 self.style.WARNING(
-                    "Seed data already present - skipping. Re-run with --flush to reseed."
+                    "Seed data already present - skipping. "
+                    "Re-run with --flush to reseed."
                 )
             )
             return
@@ -521,11 +568,14 @@ class Command(BaseCommand):
         categories = {}
         for data in CATEGORY_DATA:
             category, _ = Category.objects.get_or_create(
-                name=data["name"], defaults={"description": data["description"]}
+                name=data["name"],
+                defaults={"description": data["description"]},
             )
             if not category.image:
                 category.image.save(
-                    f"{category.slug}.png", placeholder_image(category.name), save=True
+                    f"{category.slug}.png",
+                    placeholder_image(category.name),
+                    save=True,
                 )
             categories[data["name"]] = category
         return categories
@@ -563,9 +613,14 @@ class Command(BaseCommand):
                     "vendor": vendor,
                     "category": category,
                     "name": data["name"],
-                    "short_description": f"{data['name']} - sourced by {vendor.store_name}.",
-                    "description": f"{data['name']} available at {vendor.store_name}. "
-                    "Quality checked before dispatch.",
+                    "short_description": (
+                        f"{data['name']} - sourced by " f"{vendor.store_name}."
+                    ),
+                    "description": (
+                        f"{data['name']} available at "
+                        f"{vendor.store_name}. Quality checked "
+                        "before dispatch."
+                    ),
                     "price": Decimal(data["price"]),
                     "discount_percent": discount_percent,
                     "discount_end": discount_end,
@@ -582,7 +637,9 @@ class Command(BaseCommand):
                     product.tags.set([tags[name] for name in data["tags"]])
 
                 product.image.save(
-                    f"{product.slug}.png", placeholder_image(product.name), save=True
+                    f"{product.slug}.png",
+                    placeholder_image(product.name),
+                    save=True,
                 )
                 for n in range(2):
                     ProductImage.objects.create(
@@ -606,7 +663,11 @@ class Command(BaseCommand):
             Review.objects.get_or_create(
                 user=customers_by_username[username],
                 product=products[sku],
-                defaults={"score": score, "comment": comment, "is_approved": approved},
+                defaults={
+                    "score": score,
+                    "comment": comment,
+                    "is_approved": approved,
+                },
             )
 
     def _seed_wishlist(self, customers, products):
@@ -669,7 +730,9 @@ class Command(BaseCommand):
             session_key="demo-guest-session-key-0001"
         )
         CartItem.objects.get_or_create(
-            cart=guest_cart, product=products["FRU-KIW-500"], defaults={"quantity": 1}
+            cart=guest_cart,
+            product=products["FRU-KIW-500"],
+            defaults={"quantity": 1},
         )
 
     def _seed_orders(self, customers, addresses, coupons, products):
@@ -706,7 +769,11 @@ class Command(BaseCommand):
             user=daniel,
             address=addresses["daniel_customer"],
             coupon=coupons["SUMMER20"],
-            items=[("BAK-FLR-1KG", 3), ("BAK-SUG-900", 2), ("BAK-PDR-100", 1)],
+            items=[
+                ("BAK-FLR-1KG", 3),
+                ("BAK-SUG-900", 2),
+                ("BAK-PDR-100", 1),
+            ],
             products=products,
             status=Order.Status.PENDING,
             shipping_cost=Decimal("3.00"),
@@ -746,7 +813,10 @@ class Command(BaseCommand):
         for sku, qty in items:
             product = products[sku]
             OrderItem.objects.create(
-                order=order, product=product, quantity=qty, unit_price=product.price
+                order=order,
+                product=product,
+                quantity=qty,
+                unit_price=product.price,
             )
 
         discount_amount = Decimal("0")

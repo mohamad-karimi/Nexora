@@ -15,11 +15,15 @@ class CartItemSerializer(serializers.ModelSerializer):
         help_text="ID of the product to add/reference.",
     )
     unit_price = serializers.DecimalField(
-        max_digits=10, decimal_places=2, read_only=True,
+        max_digits=10,
+        decimal_places=2,
+        read_only=True,
         help_text="Snapshot of the product's price at the time it was added.",
     )
     subtotal = serializers.DecimalField(
-        max_digits=10, decimal_places=2, read_only=True,
+        max_digits=10,
+        decimal_places=2,
+        read_only=True,
         help_text="unit_price * quantity.",
     )
 
@@ -45,9 +49,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         # back to the existing instance's product/quantity - otherwise
         # the stock check below would silently be skipped on updates.
         product = attrs.get("product") or getattr(self.instance, "product", None)
-        quantity = attrs.get(
-            "quantity", getattr(self.instance, "quantity", 1)
-        )
+        quantity = attrs.get("quantity", getattr(self.instance, "quantity", 1))
         if product and product.stock < quantity:
             raise serializers.ValidationError(
                 {"quantity": f"Only {product.stock} item(s) left in stock."}

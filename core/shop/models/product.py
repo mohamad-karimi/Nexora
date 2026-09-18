@@ -57,19 +57,27 @@ class Product(models.Model):
         default=0, validators=[MaxValueValidator(100)]
     )
     discount_end = models.DateTimeField(
-        null=True, blank=True, help_text="When the current discount stops applying."
+        null=True,
+        blank=True,
+        help_text="When the current discount stops applying.",
     )
     stock = models.PositiveIntegerField(default=0)
 
     image = models.ImageField(upload_to="products/", blank=True, null=True)
     product_type = models.CharField(
-        max_length=100, blank=True, help_text='Free-form label, e.g. "Organic".'
+        max_length=100,
+        blank=True,
+        help_text='Free-form label, e.g. "Organic".',
     )
     manufacture_date = models.DateField(
-        null=True, blank=True, help_text="Manufacturing date, for perishable goods."
+        null=True,
+        blank=True,
+        help_text="Manufacturing date, for perishable goods.",
     )
     shelf_life_days = models.PositiveIntegerField(
-        null=True, blank=True, help_text="Shelf life in days from the manufacture date."
+        null=True,
+        blank=True,
+        help_text="Shelf life in days from the manufacture date.",
     )
 
     status = models.CharField(

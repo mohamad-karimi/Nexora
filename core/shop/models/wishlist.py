@@ -21,7 +21,8 @@ class Wishlist(models.Model):
         ordering = ["-created_date"]
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "product"], name="unique_wishlist_user_product"
+                fields=["user", "product"],
+                name="unique_wishlist_user_product",
             )
         ]
 

@@ -9,7 +9,10 @@ TAG_ASSIGNMENTS = {
     "knife-skills-every-home-cook-should-know": ["Knife Skills"],
     "how-to-organize-a-small-pantry": ["Pantry", "Organization"],
     "simple-swaps-to-cut-added-sugar": ["Swaps", "Sugar"],
-    "local-farmers-market-season-kicks-off-early-this-year": ["Farmers", "Market"],
+    "local-farmers-market-season-kicks-off-early-this-year": [
+        "Farmers",
+        "Market",
+    ],
     "how-to-read-nutrition-labels-like-a-pro": ["Nutrition", "Labels"],
     "choosing-the-best-olive-oil-a-buyers-guide": ["Olive Oil", "Shopping"],
 }

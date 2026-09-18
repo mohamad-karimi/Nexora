@@ -1,4 +1,8 @@
-from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiResponse,
+    extend_schema,
+)
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -24,15 +28,24 @@ from api.v1.serializers.auth_jwt import VerifiedTokenObtainPairSerializer
     ),
     responses={
         401: OpenApiResponse(
-            description="Invalid credentials, inactive account, or unverified email.",
+            description=(
+                "Invalid credentials, inactive account, " "or unverified email."
+            ),
             examples=[
                 OpenApiExample(
                     "Invalid credentials",
-                    value={"detail": "No active account found with the given credentials."},
+                    value={
+                        "detail": (
+                            "No active account found with " "the given credentials."
+                        )
+                    },
                 ),
                 OpenApiExample(
                     "Unverified email",
-                    value={"detail": "Please verify your email before logging in.", "code": "unverified"},
+                    value={
+                        "detail": ("Please verify your email before " "logging in."),
+                        "code": "unverified",
+                    },
                 ),
             ],
         ),
@@ -48,7 +61,9 @@ class JWTTokenObtainPairView(TokenObtainPairView):
 @extend_schema(
     tags=["Auth"],
     summary="Refresh a JWT access token",
-    description="Exchanges a valid, unexpired refresh token for a new access token.",
+    description=(
+        "Exchanges a valid, unexpired refresh token for a " "new access token."
+    ),
 )
 class JWTTokenRefreshView(TokenRefreshView):
     """POST /api/v1/auth/token/refresh/ -- {"access": "..."}"""
@@ -59,9 +74,13 @@ class JWTTokenRefreshView(TokenRefreshView):
 @extend_schema(
     tags=["Auth"],
     summary="Verify a JWT token",
-    description="Checks whether a given token (access or refresh) is valid and not expired.",
+    description=(
+        "Checks whether a given token (access or refresh) is " "valid and not expired."
+    ),
 )
 class JWTTokenVerifyView(TokenVerifyView):
-    """POST /api/v1/auth/token/verify/ -- {} on success, 401 if invalid/expired."""
+    """POST /api/v1/auth/token/verify/ -- {} on success, 401
+    if invalid/expired.
+    """
 
     permission_classes = [AllowAny]

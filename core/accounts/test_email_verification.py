@@ -214,9 +214,7 @@ class EmailVerificationOTPTestCase(TestCase):
     # never from the request body -- so one account's pending verification
     # can never be used to verify a different account.
     def test_cannot_verify_a_different_account_via_request_body(self):
-        self._register(
-            username="victim", email="victim@example.com"
-        )
+        self._register(username="victim", email="victim@example.com")
         victim = User.objects.get(username="victim")
         victim_code = self._latest_code(victim)
 
@@ -244,7 +242,11 @@ class EmailVerificationOTPTestCase(TestCase):
         # own session still resolves to the attacker's own pending user.
         response = attacker_client.post(
             VERIFY_URL,
-            {"code": victim_code, "user_id": victim.pk, "email": victim.email},
+            {
+                "code": victim_code,
+                "user_id": victim.pk,
+                "email": victim.email,
+            },
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -259,7 +261,11 @@ class EmailVerificationOTPTestCase(TestCase):
         self._register()
         response = self.client.post(
             LOGIN_URL,
-            {"username": "otpuser1", "password": "S3cure!Passw0rd", "security_code": ""},
+            {
+                "username": "otpuser1",
+                "password": "S3cure!Passw0rd",
+                "security_code": "",
+            },
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

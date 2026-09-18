@@ -25,7 +25,9 @@ class Vendor(models.Model):
     address = models.TextField(blank=True)
     is_approved = models.BooleanField(
         default=False,
-        help_text="Vendors must be approved by an admin before their products go live.",
+        help_text=(
+            "Vendors must be approved by an admin before their " "products go live."
+        ),
     )
     created_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now=True)

@@ -38,7 +38,11 @@ class ProductReviewAPITests(APITestCase):
 
     def test_anonymous_sees_only_approved_reviews(self):
         Review.objects.create(
-            user=self.author, product=self.product, score=5, comment="Great", is_approved=True
+            user=self.author,
+            product=self.product,
+            score=5,
+            comment="Great",
+            is_approved=True,
         )
         Review.objects.create(
             user=self.other,
@@ -91,7 +95,9 @@ class ProductReviewAPITests(APITestCase):
         self.assertFalse(response.data["is_approved"])
         self.assertEqual(response.data["score"], 5)
 
-    def test_submitting_again_updates_the_existing_review_and_resets_approval(self):
+    def test_submitting_again_updates_the_existing_review_and_resets_approval(
+        self,
+    ):
         Review.objects.create(
             user=self.author,
             product=self.product,
@@ -100,10 +106,15 @@ class ProductReviewAPITests(APITestCase):
             is_approved=True,
         )
         self.client.force_authenticate(user=self.author)
-        response = self.client.post(self.url, {"score": 2, "comment": "Changed my mind"})
+        response = self.client.post(
+            self.url, {"score": 2, "comment": "Changed my mind"}
+        )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Review.objects.filter(user=self.author, product=self.product).count(), 1)
+        self.assertEqual(
+            Review.objects.filter(user=self.author, product=self.product).count(),
+            1,
+        )
         review = Review.objects.get()
         self.assertEqual(review.score, 2)
         self.assertEqual(review.comment, "Changed my mind")
@@ -112,21 +123,33 @@ class ProductReviewAPITests(APITestCase):
     def test_client_cannot_self_approve_a_review(self):
         self.client.force_authenticate(user=self.author)
         response = self.client.post(
-            self.url, {"score": 5, "comment": "Approve me", "is_approved": True}
+            self.url,
+            {"score": 5, "comment": "Approve me", "is_approved": True},
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertFalse(Review.objects.get().is_approved)
 
     def test_average_rating_ignores_unapproved_reviews(self):
         Review.objects.create(
-            user=self.author, product=self.product, score=5, comment="A", is_approved=True
+            user=self.author,
+            product=self.product,
+            score=5,
+            comment="A",
+            is_approved=True,
         )
         Review.objects.create(
-            user=self.other, product=self.product, score=1, comment="B", is_approved=False
+            user=self.other,
+            product=self.product,
+            score=1,
+            comment="B",
+            is_approved=False,
         )
 
         response = self.client.get(
-            reverse("api:api_v1:product-detail", kwargs={"slug": self.product.slug})
+            reverse(
+                "api:api_v1:product-detail",
+                kwargs={"slug": self.product.slug},
+            )
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["average_rating"], 5)

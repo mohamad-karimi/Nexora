@@ -87,7 +87,9 @@ class HomeBannerAPITests(APITestCase):
     def test_banner_link_url_is_optional(self):
         HomeBanner.objects.create(title="No link", image="banners/x.png")
         HomeBanner.objects.create(
-            title="With link", image="banners/y.png", link_url="/shop/filter/?category=fruit"
+            title="With link",
+            image="banners/y.png",
+            link_url="/shop/filter/?category=fruit",
         )
 
         response = self.client.get(self.url)
@@ -122,7 +124,9 @@ class ContactMessageAPITests(APITestCase):
 
     def test_authenticated_user_submission_is_linked_to_their_account(self):
         user = User.objects.create_user(
-            username="jane", email="jane@example.com", password="StrongPass123!"
+            username="jane",
+            email="jane@example.com",
+            password="StrongPass123!",
         )
         self.client.force_authenticate(user=user)
 

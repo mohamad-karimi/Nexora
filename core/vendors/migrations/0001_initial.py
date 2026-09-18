@@ -27,7 +27,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("store_name", models.CharField(max_length=255)),
-                ("slug", models.SlugField(blank=True, max_length=280, unique=True)),
+                (
+                    "slug",
+                    models.SlugField(blank=True, max_length=280, unique=True),
+                ),
                 (
                     "logo",
                     models.ImageField(

@@ -57,7 +57,11 @@ class ProductFacetsAPITests(APITestCase):
         make_product(self.vendor, self.category, sku="P-3", price="42.00")
         # Unpublished -- must not widen the range.
         make_product(
-            self.vendor, self.category, sku="P-4", price="999.00", published=False
+            self.vendor,
+            self.category,
+            sku="P-4",
+            price="999.00",
+            published=False,
         )
 
         response = self.client.get(self.url)
@@ -75,10 +79,15 @@ class ProductFacetsAPITests(APITestCase):
         self.assertIsNone(response.data["price"]["min"])
         self.assertIsNone(response.data["price"]["max"])
 
-    def test_color_counts_are_real_and_only_actually_occurring_colors_appear(self):
+    def test_color_counts_are_real_and_only_actually_occurring_colors_appear(
+        self,
+    ):
         for i in range(7):
             make_product(
-                self.vendor, self.category, sku=f"RED-{i}", color=Product.Color.RED
+                self.vendor,
+                self.category,
+                sku=f"RED-{i}",
+                color=Product.Color.RED,
             )
         for i in range(3):
             make_product(
@@ -117,7 +126,7 @@ class ProductFacetsAPITests(APITestCase):
         colors = {c["value"]: c["count"] for c in response.data["colors"]}
         self.assertEqual(colors["red"], 1)
 
-    def test_condition_counts_are_real_and_only_actually_occurring_conditions_appear(
+    def test_condition_counts_only_include_occurring_conditions(
         self,
     ):
         for i in range(5):
@@ -165,9 +174,7 @@ class ProductFacetsAPITests(APITestCase):
         )
 
         list_url = reverse("api:api_v1:product-list")
-        response = self.client.get(
-            list_url, {"color": "red", "condition": "new"}
-        )
+        response = self.client.get(list_url, {"color": "red", "condition": "new"})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
@@ -224,9 +231,13 @@ class ShopPriceFilterAPITests(APITestCase):
         self.vendor = make_vendor("priya", "Priya's Store")
         self.category = Category.objects.create(name="Groceries")
         self.list_url = reverse("api:api_v1:product-list")
-        self.cheap = make_product(self.vendor, self.category, sku="CHEAP", price="10.00")
+        self.cheap = make_product(
+            self.vendor, self.category, sku="CHEAP", price="10.00"
+        )
         self.mid = make_product(self.vendor, self.category, sku="MID", price="50.00")
-        self.pricey = make_product(self.vendor, self.category, sku="PRICEY", price="90.00")
+        self.pricey = make_product(
+            self.vendor, self.category, sku="PRICEY", price="90.00"
+        )
 
     def test_changing_from_only_filters_by_min_price(self):
         response = self.client.get(self.list_url, {"min_price": "40"})
@@ -251,9 +262,15 @@ class ShopPriceFilterAPITests(APITestCase):
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(response.data["results"][0]["slug"], self.mid.slug)
 
-    def test_unpublished_products_never_appear_regardless_of_price_range(self):
+    def test_unpublished_products_never_appear_regardless_of_price_range(
+        self,
+    ):
         hidden = make_product(
-            self.vendor, self.category, sku="HIDDEN", price="50.00", published=False
+            self.vendor,
+            self.category,
+            sku="HIDDEN",
+            price="50.00",
+            published=False,
         )
 
         response = self.client.get(
@@ -288,7 +305,12 @@ class ShopPriceFilterAPITests(APITestCase):
     def test_price_range_combines_with_pagination(self):
         response = self.client.get(
             self.list_url,
-            {"min_price": "0", "max_price": "1000", "page_size": 1, "page": 2},
+            {
+                "min_price": "0",
+                "max_price": "1000",
+                "page_size": 1,
+                "page": 2,
+            },
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

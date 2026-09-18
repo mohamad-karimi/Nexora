@@ -384,14 +384,17 @@ class OrderOwnershipTests(CheckoutAPITestBase):
 
     def test_orders_are_read_only_after_create(self):
         url = reverse(
-            "api:api_v1:order-detail", kwargs={"order_number": self.order_number}
+            "api:api_v1:order-detail",
+            kwargs={"order_number": self.order_number},
         )
         patch_response = self.client.patch(
             url, {"status": Order.Status.DELIVERED}, format="json"
         )
         delete_response = self.client.delete(url)
         self.assertEqual(patch_response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-        self.assertEqual(delete_response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(
+            delete_response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED
+        )
         self.assertEqual(Order.objects.get().status, Order.Status.PENDING)
 
     def test_numeric_id_is_not_a_valid_lookup(self):

@@ -41,7 +41,10 @@ class Migration(migrations.Migration):
                         ]
                     ),
                 ),
-                ("valid_from", models.DateTimeField(default=django.utils.timezone.now)),
+                (
+                    "valid_from",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
                 ("valid_to", models.DateTimeField()),
                 (
                     "usage_limit",
@@ -90,7 +93,10 @@ class Migration(migrations.Migration):
                 ("city", models.CharField(max_length=100)),
                 ("postal_code", models.CharField(max_length=20)),
                 ("address_line1", models.CharField(max_length=255)),
-                ("address_line2", models.CharField(blank=True, max_length=255)),
+                (
+                    "address_line2",
+                    models.CharField(blank=True, max_length=255),
+                ),
                 ("company", models.CharField(blank=True, max_length=150)),
                 ("additional_information", models.TextField(blank=True)),
                 ("is_default", models.BooleanField(default=False)),
@@ -139,7 +145,10 @@ class Migration(migrations.Migration):
                     "discount_amount",
                     models.DecimalField(decimal_places=2, default=0, max_digits=10),
                 ),
-                ("total_amount", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "total_amount",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
                 (
                     "status",
                     models.CharField(
@@ -155,7 +164,10 @@ class Migration(migrations.Migration):
                         max_length=20,
                     ),
                 ),
-                ("tracking_code", models.CharField(blank=True, max_length=100)),
+                (
+                    "tracking_code",
+                    models.CharField(blank=True, max_length=100),
+                ),
                 ("created_date", models.DateTimeField(auto_now_add=True)),
                 ("update_date", models.DateTimeField(auto_now=True)),
                 (
@@ -273,7 +285,10 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("amount", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "amount",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
                 (
                     "transaction_id",
                     models.CharField(

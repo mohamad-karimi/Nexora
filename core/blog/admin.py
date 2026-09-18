@@ -29,7 +29,13 @@ class PostAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ("post", "user", "published", "is_approved", "created_date")
+    list_display = (
+        "post",
+        "user",
+        "published",
+        "is_approved",
+        "created_date",
+    )
     list_filter = ("published", "is_approved")
     list_editable = ("published",)
     search_fields = ("post__title", "user__username", "content")

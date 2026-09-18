@@ -7,7 +7,11 @@ from django.contrib.auth import (
     logout,
     update_session_auth_hash,
 )
-from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiResponse,
+    extend_schema,
+)
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -94,7 +98,10 @@ class VerifyEmailCodeView(APIView):
         responses={
             200: UserSerializer,
             400: OpenApiResponse(
-                description="No pending verification, or an incorrect/expired/exhausted code.",
+                description=(
+                    "No pending verification, or an "
+                    "incorrect/expired/exhausted code."
+                ),
                 examples=[
                     OpenApiExample(
                         "Incorrect code",
@@ -118,7 +125,9 @@ class VerifyEmailCodeView(APIView):
 
 @extend_schema(tags=["Auth"])
 class ResendVerificationEmailView(APIView):
-    """Re-sends the email-verification code (e.g. after the first one expired)."""
+    """Re-sends the email-verification code (e.g. after the
+    first one expired).
+    """
 
     permission_classes = [AllowAny]
 
@@ -136,7 +145,10 @@ class ResendVerificationEmailView(APIView):
         responses={
             200: OpenApiResponse(description="A new code has been sent."),
             400: OpenApiResponse(
-                description="No pending verification for this session, or cooldown not elapsed."
+                description=(
+                    "No pending verification for this session, "
+                    "or cooldown not elapsed."
+                )
             ),
         },
     )
@@ -148,7 +160,11 @@ class ResendVerificationEmailView(APIView):
         except Exception:
             logger.exception("Failed to resend verification code")
             return Response(
-                {"detail": "Could not resend the verification code. Please try again."},
+                {
+                    "detail": (
+                        "Could not resend the verification code. " "Please try again."
+                    )
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -174,7 +190,9 @@ class LoginView(APIView):
         responses={
             200: UserSerializer,
             400: OpenApiResponse(
-                description="Invalid credentials, inactive account, or unverified email.",
+                description=(
+                    "Invalid credentials, inactive account, " "or unverified email."
+                ),
                 examples=[
                     OpenApiExample(
                         "Invalid credentials",
@@ -182,7 +200,9 @@ class LoginView(APIView):
                     ),
                     OpenApiExample(
                         "Unverified email",
-                        value={"detail": "Please verify your email before logging in."},
+                        value={
+                            "detail": ("Please verify your email " "before logging in.")
+                        },
                     ),
                 ],
             ),
@@ -225,7 +245,7 @@ class LogoutView(APIView):
 
     @extend_schema(
         summary="Log out",
-        description="Ends the current user's session. Requires an active session.",
+        description=("Ends the current user's session. Requires an " "active session."),
         request=None,
         responses={204: OpenApiResponse(description="Logged out successfully.")},
     )
@@ -291,7 +311,7 @@ class ChangePasswordView(APIView):
         responses={
             204: OpenApiResponse(description="Password changed successfully."),
             400: OpenApiResponse(
-                description="Current password incorrect, or new password invalid.",
+                description=("Current password incorrect, or new " "password invalid."),
                 examples=[
                     OpenApiExample(
                         "Wrong current password",
@@ -346,10 +366,12 @@ class ForgotPasswordView(APIView):
             try:
                 send_password_reset_email(request, user)
             except Exception:
-                logger.exception("Failed to send password reset email to user %s", user.pk)
+                logger.exception(
+                    "Failed to send password reset email to user %s", user.pk
+                )
 
         return Response(
-            {"detail": "If that email has an account, a reset link has been sent."}
+            {"detail": ("If that email has an account, a reset " "link has been sent.")}
         )
 
 
@@ -371,7 +393,9 @@ class ResetPasswordView(APIView):
         request=ResetPasswordSerializer,
         responses={
             204: OpenApiResponse(description="Password reset successfully."),
-            400: OpenApiResponse(description="Invalid/expired token or invalid password."),
+            400: OpenApiResponse(
+                description="Invalid/expired token or invalid password."
+            ),
         },
     )
     def post(self, request):

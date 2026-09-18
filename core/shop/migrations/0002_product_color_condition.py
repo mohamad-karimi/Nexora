@@ -15,7 +15,11 @@ class Migration(migrations.Migration):
             name="color",
             field=models.CharField(
                 blank=True,
-                choices=[("red", "Red"), ("green", "Green"), ("blue", "Blue")],
+                choices=[
+                    ("red", "Red"),
+                    ("green", "Green"),
+                    ("blue", "Blue"),
+                ],
                 help_text="Optional; powers the storefront's color filter.",
                 max_length=10,
             ),

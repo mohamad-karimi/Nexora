@@ -7,7 +7,9 @@ __all__ = ["Order", "generate_order_number"]
 
 
 def generate_order_number():
-    """Short, unguessable, human-shareable order reference (e.g. on an invoice)."""
+    """Short, unguessable, human-shareable order reference
+    (e.g. on an invoice).
+    """
     return uuid.uuid4().hex[:12].upper()
 
 
@@ -21,14 +23,19 @@ class Order(models.Model):
         REFUNDED = "refunded", "Refunded"
 
     order_number = models.CharField(
-        max_length=20, unique=True, default=generate_order_number, editable=False
+        max_length=20,
+        unique=True,
+        default=generate_order_number,
+        editable=False,
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         related_name="orders",
-        help_text="Kept nullable so order/financial history survives account deletion.",
+        help_text=(
+            "Kept nullable so order/financial history survives " "account deletion."
+        ),
     )
     shipping_address = models.ForeignKey(
         "orders.Address",

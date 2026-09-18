@@ -18,7 +18,10 @@ class ProductFeedTests(TestCase):
 
     def test_feed_returns_200_and_valid_rss(self):
         make_product(
-            self.vendor, self.category, sku="SKU-FEED-1", slug="feed-visible",
+            self.vendor,
+            self.category,
+            sku="SKU-FEED-1",
+            slug="feed-visible",
             published=True,
         )
 
@@ -32,11 +35,17 @@ class ProductFeedTests(TestCase):
 
     def test_only_published_products_are_in_feed(self):
         visible = make_product(
-            self.vendor, self.category, sku="SKU-FEED-2", slug="feed-shown",
+            self.vendor,
+            self.category,
+            sku="SKU-FEED-2",
+            slug="feed-shown",
             published=True,
         )
         hidden = make_product(
-            self.vendor, self.category, sku="SKU-FEED-3", slug="feed-hidden",
+            self.vendor,
+            self.category,
+            sku="SKU-FEED-3",
+            slug="feed-hidden",
             published=False,
         )
 
@@ -48,7 +57,10 @@ class ProductFeedTests(TestCase):
 
     def test_links_are_absolute(self):
         make_product(
-            self.vendor, self.category, sku="SKU-FEED-4", slug="feed-absolute",
+            self.vendor,
+            self.category,
+            sku="SKU-FEED-4",
+            slug="feed-absolute",
             published=True,
         )
 
@@ -59,4 +71,6 @@ class ProductFeedTests(TestCase):
         item_link = channel.find("item/link").text
 
         self.assertTrue(link.startswith("http://") or link.startswith("https://"))
-        self.assertTrue(item_link.startswith("http://") or item_link.startswith("https://"))
+        self.assertTrue(
+            item_link.startswith("http://") or item_link.startswith("https://")
+        )

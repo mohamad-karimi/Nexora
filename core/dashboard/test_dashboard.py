@@ -43,7 +43,8 @@ class VendorDashboardPageAccessTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 302)
         self.assertIn(
-            reverse("accounts:email_verification_pending"), response["Location"]
+            reverse("accounts:email_verification_pending"),
+            response["Location"],
         )
 
     def test_verified_vendor_can_open_dashboard(self):
@@ -66,9 +67,7 @@ class VendorProductEditPageAccessTests(TestCase):
             price="5.00",
             published=False,
         )
-        self.url = reverse(
-            "dashboard:product-edit", kwargs={"slug": self.product.slug}
-        )
+        self.url = reverse("dashboard:product-edit", kwargs={"slug": self.product.slug})
 
     def test_anonymous_visitor_is_redirected_to_login(self):
         response = self.client.get(self.url)
@@ -117,7 +116,8 @@ class CustomerAccountPageAccessTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 302)
         self.assertIn(
-            reverse("accounts:email_verification_pending"), response["Location"]
+            reverse("accounts:email_verification_pending"),
+            response["Location"],
         )
 
 
@@ -154,7 +154,9 @@ class VendorDashboardDataOwnershipAPITests(APITestCase):
         self.assertEqual(response.data["sku"], "OWN-A")
 
         patched = self.client.patch(
-            self.detail_url, {"name": "Renamed A", "price": "11.00"}, format="json"
+            self.detail_url,
+            {"name": "Renamed A", "price": "11.00"},
+            format="json",
         )
         self.assertEqual(patched.status_code, status.HTTP_200_OK)
         self.product_a.refresh_from_db()
@@ -163,10 +165,11 @@ class VendorDashboardDataOwnershipAPITests(APITestCase):
 
     def test_other_vendor_gets_404_for_product_detail_and_edit(self):
         self.client.force_authenticate(user=self.vendor_b)
-        self.assertEqual(self.client.get(self.detail_url).status_code, status.HTTP_404_NOT_FOUND)
-        patched = self.client.patch(
-            self.detail_url, {"name": "Stolen"}, format="json"
+        self.assertEqual(
+            self.client.get(self.detail_url).status_code,
+            status.HTTP_404_NOT_FOUND,
         )
+        patched = self.client.patch(self.detail_url, {"name": "Stolen"}, format="json")
         self.assertEqual(patched.status_code, status.HTTP_404_NOT_FOUND)
         self.product_a.refresh_from_db()
         self.assertEqual(self.product_a.name, "A Product")

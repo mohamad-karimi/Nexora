@@ -101,7 +101,9 @@ class CartCRUDTests(CartAPITestBase):
         self.assertEqual(response.data["total_items"], 2)
         self.assertEqual(Decimal(response.data["subtotal"]), Decimal("20.00"))
 
-    def test_adding_the_same_product_increments_quantity_instead_of_duplicating(self):
+    def test_adding_same_product_increments_quantity_not_duplicate(
+        self,
+    ):
         self.client.post(self.items_url, {"product_id": self.product.id, "quantity": 2})
         response = self.client.post(
             self.items_url, {"product_id": self.product.id, "quantity": 3}
@@ -207,12 +209,18 @@ class CartCRUDTests(CartAPITestBase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Decimal(response.data["items"][0]["unit_price"]), Decimal("5.00"))
+        self.assertEqual(
+            Decimal(response.data["items"][0]["unit_price"]), Decimal("5.00")
+        )
         self.assertEqual(Decimal(response.data["subtotal"]), Decimal("10.00"))
 
     def test_combined_operations_keep_totals_consistent(self):
         extra = make_product(
-            self.vendor, self.category, sku="CART-0003", name="Milk", price="4.00"
+            self.vendor,
+            self.category,
+            sku="CART-0003",
+            name="Milk",
+            price="4.00",
         )
         self.client.post(self.items_url, {"product_id": self.product.id, "quantity": 2})
         add_extra = self.client.post(
@@ -285,5 +293,6 @@ class CartPageAccessTests(CartAPITestBase):
         response = self.client.get(reverse("cart:cart"))
         self.assertEqual(response.status_code, 302)
         self.assertIn(
-            reverse("accounts:email_verification_pending"), response["Location"]
+            reverse("accounts:email_verification_pending"),
+            response["Location"],
         )

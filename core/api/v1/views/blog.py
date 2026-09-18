@@ -114,7 +114,9 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
                 examples=[
                     OpenApiExample(
                         "Anonymous POST",
-                        value={"detail": "Authentication required to leave a comment."},
+                        value={
+                            "detail": ("Authentication required to " "leave a comment.")
+                        },
                     )
                 ],
             ),
@@ -143,9 +145,7 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        serializer = CommentSerializer(
-            data=request.data, context={"request": request}
-        )
+        serializer = CommentSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         # published defaults to True on the model, so the comment is
         # live immediately unless an admin unpublishes it later.
@@ -177,7 +177,9 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
                 examples=[
                     OpenApiExample(
                         "Anonymous POST",
-                        value={"detail": "Authentication required to bookmark a post."},
+                        value={
+                            "detail": ("Authentication required to " "bookmark a post.")
+                        },
                     )
                 ],
             ),

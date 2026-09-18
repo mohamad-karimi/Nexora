@@ -61,7 +61,9 @@ class ProductPublishFlowAPITests(APITestCase):
 
     # 1 & 8 -- creation always lands as published=False, and a vendor
     # cannot force it to True from the request body.
-    def test_created_product_is_unpublished_and_vendor_cannot_force_publish(self):
+    def test_created_product_is_unpublished_and_vendor_cannot_force_publish(
+        self,
+    ):
         self.client.force_authenticate(user=self.vendor_user)
 
         response = self.client.post(
@@ -163,9 +165,7 @@ class ProductPublishFlowAPITests(APITestCase):
     # to do it), the product is visible everywhere public: list,
     # detail, category count.
     def test_published_product_is_visible_in_public_list_and_detail(self):
-        product = make_product(
-            self.vendor, self.category, sku="PUB-1", published=True
-        )
+        product = make_product(self.vendor, self.category, sku="PUB-1", published=True)
 
         list_response = self.client.get(reverse("api:api_v1:product-list"))
         detail_response = self.client.get(
@@ -194,7 +194,8 @@ class ProductPublishFlowAPITests(APITestCase):
 
         response = self.client.get(
             reverse(
-                "api:api_v1:category-detail", kwargs={"slug": self.category.slug}
+                "api:api_v1:category-detail",
+                kwargs={"slug": self.category.slug},
             )
         )
 
@@ -248,9 +249,7 @@ class ProductPublishedBackfillMigrationTests(TestCase):
             published=False,
         )
 
-        backfill_module.backfill_published(
-            apps=_FakeAppsRegistry(), schema_editor=None
-        )
+        backfill_module.backfill_published(apps=_FakeAppsRegistry(), schema_editor=None)
 
         published_before.refresh_from_db()
         draft_before.refresh_from_db()
@@ -346,10 +345,20 @@ class DealsOfTheDayAPITests(APITestCase):
         self.assertTrue(item["is_on_sale"])
         self.assertEqual(float(item["final_price"]), 15.0)
         self.assertEqual(item["discount_percent"], 25)
-        for field in ("slug", "name", "image", "category", "vendor", "final_price", "price"):
+        for field in (
+            "slug",
+            "name",
+            "image",
+            "category",
+            "vendor",
+            "final_price",
+            "price",
+        ):
             self.assertIn(field, item)
 
-    def test_only_active_deals_are_returned_by_client_side_on_sale_filter(self):
+    def test_only_active_deals_are_returned_by_client_side_on_sale_filter(
+        self,
+    ):
         """The client fetches page_size=50 products ordered by
         -created_date and filters to is_on_sale client-side (see
         loadOnSaleProducts in home.js / shop-filter.js). Confirms that
