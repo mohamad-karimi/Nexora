@@ -16,7 +16,9 @@ def create_missing_vendor_profiles(apps, schema_editor):
     User = apps.get_model(*settings.AUTH_USER_MODEL.split("."))
     Vendor = apps.get_model("vendors", "Vendor")
 
-    for user in User.objects.filter(role="vendor", vendor_profile__isnull=True):
+    for user in User.objects.filter(
+        role="vendor", vendor_profile__isnull=True
+    ):
         store_name = f"{user.username}'s Store"
         base_slug = slugify(store_name) or f"vendor-{user.pk}"
         slug = base_slug

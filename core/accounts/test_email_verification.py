@@ -57,7 +57,9 @@ class EmailVerificationOTPTestCase(TestCase):
         what the user would type in, never guessed."""
         body = mail.outbox[-1].body
         match = re.search(r"\b(\d{6})\b", body)
-        self.assertIsNotNone(match, "verification email did not contain a 6-digit code")
+        self.assertIsNotNone(
+            match, "verification email did not contain a 6-digit code"
+        )
         return match.group(1)
 
     # 1 & 2: Register -> is_verified=False, and a 6-digit code is emailed.
@@ -81,7 +83,9 @@ class EmailVerificationOTPTestCase(TestCase):
         self.assertNotIn("_auth_user_id", self.client.session)
         # The session instead carries a private reference to the pending
         # account for the verify/resend endpoints.
-        self.assertEqual(self.client.session[EMAIL_VERIFICATION_SESSION_KEY], user.pk)
+        self.assertEqual(
+            self.client.session[EMAIL_VERIFICATION_SESSION_KEY], user.pk
+        )
 
     # 3: no JWT verification link anywhere in the email.
     def test_verification_email_contains_no_link(self):
@@ -110,7 +114,9 @@ class EmailVerificationOTPTestCase(TestCase):
         self.assertNotIn(EMAIL_VERIFICATION_SESSION_KEY, self.client.session)
 
         # The code is invalidated (one-time use) immediately on success.
-        self.assertFalse(EmailVerificationCode.objects.filter(user=user).exists())
+        self.assertFalse(
+            EmailVerificationCode.objects.filter(user=user).exists()
+        )
 
         # /account/ (and any other verified-only endpoint) is now reachable
         # without hitting the login page again.
@@ -124,7 +130,9 @@ class EmailVerificationOTPTestCase(TestCase):
         real_code = self._latest_code(user)
         wrong_code = "111111" if real_code != "111111" else "222222"
 
-        response = self.client.post(VERIFY_URL, {"code": wrong_code}, format="json")
+        response = self.client.post(
+            VERIFY_URL, {"code": wrong_code}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", response.data)
 
@@ -168,12 +176,18 @@ class EmailVerificationOTPTestCase(TestCase):
         wrong_code = "111111" if real_code != "111111" else "222222"
 
         for _ in range(EMAIL_OTP_MAX_ATTEMPTS):
-            response = self.client.post(VERIFY_URL, {"code": wrong_code}, format="json")
-            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            response = self.client.post(
+                VERIFY_URL, {"code": wrong_code}, format="json"
+            )
+            self.assertEqual(
+                response.status_code, status.HTTP_400_BAD_REQUEST
+            )
 
         # Even the *correct* code is now rejected -- the code was
         # invalidated by too many failed attempts, not just "still wrong".
-        response = self.client.post(VERIFY_URL, {"code": real_code}, format="json")
+        response = self.client.post(
+            VERIFY_URL, {"code": real_code}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("too many", response.data["detail"].lower())
 
@@ -196,11 +210,15 @@ class EmailVerificationOTPTestCase(TestCase):
         self.assertNotEqual(old_code, new_code)
 
         # The old code no longer verifies the account.
-        old_attempt = self.client.post(VERIFY_URL, {"code": old_code}, format="json")
+        old_attempt = self.client.post(
+            VERIFY_URL, {"code": old_code}, format="json"
+        )
         self.assertEqual(old_attempt.status_code, status.HTTP_400_BAD_REQUEST)
 
         # The new code does.
-        new_attempt = self.client.post(VERIFY_URL, {"code": new_code}, format="json")
+        new_attempt = self.client.post(
+            VERIFY_URL, {"code": new_code}, format="json"
+        )
         self.assertEqual(new_attempt.status_code, status.HTTP_200_OK)
 
     def test_resend_is_rate_limited(self):
@@ -221,7 +239,9 @@ class EmailVerificationOTPTestCase(TestCase):
         # A second, unrelated registration in a fresh (attacker) session.
         attacker_client = APIClient()
         attacker_client.get(self.register_page_url)
-        attacker_security_code = attacker_client.session[SECURITY_CODE_SESSION_KEY]
+        attacker_security_code = attacker_client.session[
+            SECURITY_CODE_SESSION_KEY
+        ]
         attacker_client.post(
             REGISTER_URL,
             {
@@ -278,7 +298,9 @@ class EmailVerificationOTPTestCase(TestCase):
         self._register()
         user = User.objects.get(username="otpuser1")
         # Verify first so login-after-reset would be possible too.
-        self.client.post(VERIFY_URL, {"code": self._latest_code(user)}, format="json")
+        self.client.post(
+            VERIFY_URL, {"code": self._latest_code(user)}, format="json"
+        )
 
         mail.outbox = []
         response = self.client.post(
@@ -289,7 +311,9 @@ class EmailVerificationOTPTestCase(TestCase):
 
         reset_body = mail.outbox[-1].body
         match = re.search(r"token=([^\s&]+)", reset_body)
-        self.assertIsNotNone(match, "password reset email did not contain a token link")
+        self.assertIsNotNone(
+            match, "password reset email did not contain a token link"
+        )
         token = match.group(1)
 
         reset_response = self.client.post(
@@ -301,7 +325,9 @@ class EmailVerificationOTPTestCase(TestCase):
             },
             format="json",
         )
-        self.assertEqual(reset_response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(
+            reset_response.status_code, status.HTTP_204_NO_CONTENT
+        )
 
         user.refresh_from_db()
         self.assertTrue(user.check_password("Br4ndNewPassw0rd!"))

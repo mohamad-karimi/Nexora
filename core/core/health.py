@@ -20,5 +20,8 @@ def health(request):
     except OperationalError:
         db_ok = False
 
-    payload = {"status": "ok" if db_ok else "error", "database": "ok" if db_ok else "error"}
+    payload = {
+        "status": "ok" if db_ok else "error",
+        "database": "ok" if db_ok else "error",
+    }
     return JsonResponse(payload, status=200 if db_ok else 503)

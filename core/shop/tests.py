@@ -36,7 +36,9 @@ def make_product(vendor, category, **kwargs):
         "price": "9.99",
     }
     defaults.update(kwargs)
-    return Product.objects.create(vendor=vendor, category=category, **defaults)
+    return Product.objects.create(
+        vendor=vendor, category=category, **defaults
+    )
 
 
 class ProductPublishFlowAPITests(APITestCase):
@@ -86,7 +88,9 @@ class ProductPublishFlowAPITests(APITestCase):
     # regardless of publish state (must keep working exactly as
     # before -- this endpoint was never the bug).
     def test_vendor_dashboard_lists_own_unpublished_product(self):
-        make_product(self.vendor, self.category, sku="DASH-1", published=False)
+        make_product(
+            self.vendor, self.category, sku="DASH-1", published=False
+        )
         self.client.force_authenticate(user=self.vendor_user)
 
         response = self.client.get(self.create_url)
@@ -103,7 +107,9 @@ class ProductPublishFlowAPITests(APITestCase):
         self.client.force_authenticate(user=self.vendor_user)
 
         response = self.client.get(
-            reverse("api:api_v1:product-detail", kwargs={"slug": product.slug})
+            reverse(
+                "api:api_v1:product-detail", kwargs={"slug": product.slug}
+            )
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -119,7 +125,9 @@ class ProductPublishFlowAPITests(APITestCase):
         self.client.force_authenticate(user=staff)
 
         response = self.client.get(
-            reverse("api:api_v1:product-detail", kwargs={"slug": product.slug})
+            reverse(
+                "api:api_v1:product-detail", kwargs={"slug": product.slug}
+            )
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -132,7 +140,9 @@ class ProductPublishFlowAPITests(APITestCase):
         self.client.force_authenticate(user=self.other_vendor_user)
 
         response = self.client.get(
-            reverse("api:api_v1:product-detail", kwargs={"slug": product.slug})
+            reverse(
+                "api:api_v1:product-detail", kwargs={"slug": product.slug}
+            )
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -144,7 +154,9 @@ class ProductPublishFlowAPITests(APITestCase):
         )
 
         response = self.client.get(
-            reverse("api:api_v1:product-detail", kwargs={"slug": product.slug})
+            reverse(
+                "api:api_v1:product-detail", kwargs={"slug": product.slug}
+            )
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -156,7 +168,9 @@ class ProductPublishFlowAPITests(APITestCase):
         self.client.force_authenticate(user=self.customer)
 
         response = self.client.get(
-            reverse("api:api_v1:product-detail", kwargs={"slug": product.slug})
+            reverse(
+                "api:api_v1:product-detail", kwargs={"slug": product.slug}
+            )
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -165,11 +179,15 @@ class ProductPublishFlowAPITests(APITestCase):
     # to do it), the product is visible everywhere public: list,
     # detail, category count.
     def test_published_product_is_visible_in_public_list_and_detail(self):
-        product = make_product(self.vendor, self.category, sku="PUB-1", published=True)
+        product = make_product(
+            self.vendor, self.category, sku="PUB-1", published=True
+        )
 
         list_response = self.client.get(reverse("api:api_v1:product-list"))
         detail_response = self.client.get(
-            reverse("api:api_v1:product-detail", kwargs={"slug": product.slug})
+            reverse(
+                "api:api_v1:product-detail", kwargs={"slug": product.slug}
+            )
         )
 
         self.assertEqual(list_response.status_code, status.HTTP_200_OK)
@@ -180,7 +198,9 @@ class ProductPublishFlowAPITests(APITestCase):
     # 4/8 -- unpublished products never leak into the public list, no
     # matter who's asking.
     def test_unpublished_product_never_appears_in_public_list(self):
-        make_product(self.vendor, self.category, sku="HIDDEN-1", published=False)
+        make_product(
+            self.vendor, self.category, sku="HIDDEN-1", published=False
+        )
         self.client.force_authenticate(user=self.vendor_user)
 
         response = self.client.get(reverse("api:api_v1:product-list"))
@@ -189,8 +209,12 @@ class ProductPublishFlowAPITests(APITestCase):
         self.assertEqual(response.data["results"], [])
 
     def test_category_product_count_only_counts_published(self):
-        make_product(self.vendor, self.category, sku="COUNT-1", published=True)
-        make_product(self.vendor, self.category, sku="COUNT-2", published=False)
+        make_product(
+            self.vendor, self.category, sku="COUNT-1", published=True
+        )
+        make_product(
+            self.vendor, self.category, sku="COUNT-2", published=False
+        )
 
         response = self.client.get(
             reverse(
@@ -249,7 +273,9 @@ class ProductPublishedBackfillMigrationTests(TestCase):
             published=False,
         )
 
-        backfill_module.backfill_published(apps=_FakeAppsRegistry(), schema_editor=None)
+        backfill_module.backfill_published(
+            apps=_FakeAppsRegistry(), schema_editor=None
+        )
 
         published_before.refresh_from_db()
         draft_before.refresh_from_db()

@@ -86,7 +86,9 @@ class ProductReviewAPITests(APITestCase):
 
     def test_new_review_is_unapproved(self):
         self.client.force_authenticate(user=self.author)
-        response = self.client.post(self.url, {"score": 5, "comment": "Loved it"})
+        response = self.client.post(
+            self.url, {"score": 5, "comment": "Loved it"}
+        )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         review = Review.objects.get()
@@ -112,7 +114,9 @@ class ProductReviewAPITests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(
-            Review.objects.filter(user=self.author, product=self.product).count(),
+            Review.objects.filter(
+                user=self.author, product=self.product
+            ).count(),
             1,
         )
         review = Review.objects.get()

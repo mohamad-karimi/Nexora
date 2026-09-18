@@ -51,7 +51,9 @@ class HeaderVendorMenuTests(TestCase):
         self.home_url = reverse("website:home")
         self.vendors_list_url = reverse("vendors:list")
         self.vendor_guide_url = reverse("vendors:guide")
-        self.plain_vendors_link = f'<a href="{self.vendors_list_url}">Vendors</a>'
+        self.plain_vendors_link = (
+            f'<a href="{self.vendors_list_url}">Vendors</a>'
+        )
 
     def test_anonymous_sees_a_plain_vendors_link_not_a_dropdown(self):
         response = self.client.get(self.home_url)
@@ -151,7 +153,9 @@ class HeaderCategoryDropdownAPITests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = (
-            response.data["results"] if "results" in response.data else response.data
+            response.data["results"]
+            if "results" in response.data
+            else response.data
         )
         slugs = {item["slug"] for item in results}
         self.assertIn("milks-and-dairies", slugs)
@@ -164,7 +168,9 @@ class HeaderCategoryDropdownAPITests(APITestCase):
         response = self.client.get(reverse("api:api_v1:category-list"))
 
         results = (
-            response.data["results"] if "results" in response.data else response.data
+            response.data["results"]
+            if "results" in response.data
+            else response.data
         )
         names = [item["name"] for item in results]
         self.assertEqual(names, sorted(names))
@@ -182,7 +188,9 @@ class HeaderSearchAndCategoryFilterAPITests(APITestCase):
         # role=Vendor auto-creates the Vendor row via vendors.signals --
         # use that row rather than creating a second one (the `user`
         # field is OneToOne, so a second create() would fail).
-        self.vendor = make_user("vendorA", role=User.Role.VENDOR).vendor_profile
+        self.vendor = make_user(
+            "vendorA", role=User.Role.VENDOR
+        ).vendor_profile
         self.cheese = Product.objects.create(
             vendor=self.vendor,
             category=self.dairy,
@@ -244,9 +252,13 @@ class HeaderDealsOrderingAPITests(APITestCase):
     def setUp(self):
         self.url = reverse("api:api_v1:product-list")
         self.category = Category.objects.create(name="Pantry")
-        self.vendor = make_user("vendorB", role=User.Role.VENDOR).vendor_profile
+        self.vendor = make_user(
+            "vendorB", role=User.Role.VENDOR
+        ).vendor_profile
 
-    def make_product(self, name, sku, discount_percent, published=True, price="10.00"):
+    def make_product(
+        self, name, sku, discount_percent, published=True, price="10.00"
+    ):
         return Product.objects.create(
             vendor=self.vendor,
             category=self.category,
@@ -262,11 +274,15 @@ class HeaderDealsOrderingAPITests(APITestCase):
         self.make_product("Big Discount", "SKU-50", 50)
         self.make_product("Medium Discount", "SKU-30", 30)
 
-        response = self.client.get(self.url, {"ordering": "-discount_percent"})
+        response = self.client.get(
+            self.url, {"ordering": "-discount_percent"}
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         names = [item["name"] for item in response.data["results"]]
-        self.assertEqual(names, ["Big Discount", "Medium Discount", "Small Discount"])
+        self.assertEqual(
+            names, ["Big Discount", "Medium Discount", "Small Discount"]
+        )
 
     def test_products_without_a_discount_are_excluded_by_is_on_sale(self):
         # discount_percent defaults to 0 -- is_on_sale (what the Deals
@@ -275,7 +291,9 @@ class HeaderDealsOrderingAPITests(APITestCase):
         no_discount = self.make_product("No Discount", "SKU-0", 0)
 
         response = self.client.get(
-            reverse("api:api_v1:product-detail", kwargs={"slug": no_discount.slug})
+            reverse(
+                "api:api_v1:product-detail", kwargs={"slug": no_discount.slug}
+            )
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -286,7 +304,9 @@ class HeaderDealsOrderingAPITests(APITestCase):
         self.make_product("Hidden Deal", "SKU-99", 90, published=False)
         self.make_product("Visible Deal", "SKU-20", 20, published=True)
 
-        response = self.client.get(self.url, {"ordering": "-discount_percent"})
+        response = self.client.get(
+            self.url, {"ordering": "-discount_percent"}
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         names = [item["name"] for item in response.data["results"]]

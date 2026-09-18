@@ -31,9 +31,15 @@ class VendorOrderItemSerializer(serializers.ModelSerializer):
     to fetch the order separately.
     """
 
-    order_number = serializers.CharField(source="order.order_number", read_only=True)
-    order_status = serializers.CharField(source="order.status", read_only=True)
-    order_date = serializers.DateTimeField(source="order.created_date", read_only=True)
+    order_number = serializers.CharField(
+        source="order.order_number", read_only=True
+    )
+    order_status = serializers.CharField(
+        source="order.status", read_only=True
+    )
+    order_date = serializers.DateTimeField(
+        source="order.created_date", read_only=True
+    )
     total_price = serializers.DecimalField(
         max_digits=10, decimal_places=2, read_only=True
     )

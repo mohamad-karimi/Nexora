@@ -80,7 +80,9 @@ class ProductCatalogAPITests(APITestCase):
         )
 
     def test_ordering_by_price_and_pagination(self):
-        response = self.client.get(self.list_url, {"ordering": "price", "page_size": 1})
+        response = self.client.get(
+            self.list_url, {"ordering": "price", "page_size": 1}
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 2)
         self.assertEqual(len(response.data["results"]), 1)

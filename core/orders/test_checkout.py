@@ -176,7 +176,9 @@ class CheckoutCreateTests(CheckoutAPITestBase):
         self.assertEqual(payment.payment_method, Payment.Method.CARD)
         self.assertEqual(payment.amount, order.total_amount)
 
-        self.assertEqual(CartItem.objects.filter(cart__user=self.user).count(), 0)
+        self.assertEqual(
+            CartItem.objects.filter(cart__user=self.user).count(), 0
+        )
         self.product.refresh_from_db()
         self.assertEqual(self.product.stock, 18)
 
@@ -197,7 +199,9 @@ class CheckoutCreateTests(CheckoutAPITestBase):
         self.assertEqual(item.unit_price, Decimal("10.00"))
 
     def test_billing_address_can_differ_from_shipping(self):
-        billing = make_address(self.user, full_name="Billing Name", city="Isfahan")
+        billing = make_address(
+            self.user, full_name="Billing Name", city="Isfahan"
+        )
 
         response = self.client.post(
             self.orders_url,
@@ -219,9 +223,13 @@ class CheckoutCreateTests(CheckoutAPITestBase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Decimal(response.data["shipping_cost"]), Decimal("5.00"))
+        self.assertEqual(
+            Decimal(response.data["shipping_cost"]), Decimal("5.00")
+        )
         self.assertEqual(Decimal(response.data["subtotal"]), Decimal("20.00"))
-        self.assertEqual(Decimal(response.data["total_amount"]), Decimal("25.00"))
+        self.assertEqual(
+            Decimal(response.data["total_amount"]), Decimal("25.00")
+        )
 
     def test_free_shipping_applies_at_threshold(self):
         self.product.price = Decimal("25.00")
@@ -233,9 +241,13 @@ class CheckoutCreateTests(CheckoutAPITestBase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Decimal(response.data["shipping_cost"]), Decimal("0.00"))
+        self.assertEqual(
+            Decimal(response.data["shipping_cost"]), Decimal("0.00")
+        )
         self.assertEqual(Decimal(response.data["subtotal"]), Decimal("50.00"))
-        self.assertEqual(Decimal(response.data["total_amount"]), Decimal("50.00"))
+        self.assertEqual(
+            Decimal(response.data["total_amount"]), Decimal("50.00")
+        )
 
 
 class CheckoutCouponTests(CheckoutAPITestBase):
@@ -264,8 +276,12 @@ class CheckoutCouponTests(CheckoutAPITestBase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # subtotal 20, shipping 5, 10% of 20 = 2 → total 23
-        self.assertEqual(Decimal(response.data["discount_amount"]), Decimal("2.00"))
-        self.assertEqual(Decimal(response.data["total_amount"]), Decimal("23.00"))
+        self.assertEqual(
+            Decimal(response.data["discount_amount"]), Decimal("2.00")
+        )
+        self.assertEqual(
+            Decimal(response.data["total_amount"]), Decimal("23.00")
+        )
         self.assertEqual(response.data["coupon"]["code"], "SAVE10")
         self.coupon.refresh_from_db()
         self.assertEqual(self.coupon.used_count, 1)
@@ -391,7 +407,9 @@ class OrderOwnershipTests(CheckoutAPITestBase):
             url, {"status": Order.Status.DELIVERED}, format="json"
         )
         delete_response = self.client.delete(url)
-        self.assertEqual(patch_response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(
+            patch_response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED
+        )
         self.assertEqual(
             delete_response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED
         )

@@ -48,8 +48,12 @@ class CartItemSerializer(serializers.ModelSerializer):
         # update/partial_update only `quantity` is usually sent, so fall
         # back to the existing instance's product/quantity - otherwise
         # the stock check below would silently be skipped on updates.
-        product = attrs.get("product") or getattr(self.instance, "product", None)
-        quantity = attrs.get("quantity", getattr(self.instance, "quantity", 1))
+        product = attrs.get("product") or getattr(
+            self.instance, "product", None
+        )
+        quantity = attrs.get(
+            "quantity", getattr(self.instance, "quantity", 1)
+        )
         if product and product.stock < quantity:
             raise serializers.ValidationError(
                 {"quantity": f"Only {product.stock} item(s) left in stock."}
@@ -74,7 +78,9 @@ class CartItemSerializer(serializers.ModelSerializer):
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
     total_items = serializers.IntegerField(read_only=True)
-    subtotal = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    subtotal = serializers.DecimalField(
+        max_digits=10, decimal_places=2, read_only=True
+    )
 
     class Meta:
         model = Cart

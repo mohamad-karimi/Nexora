@@ -30,6 +30,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="product",
-            index=models.Index(fields=["published"], name="shop_product_published_idx"),
+            index=models.Index(
+                fields=["published"], name="shop_product_published_idx"
+            ),
         ),
     ]

@@ -51,7 +51,9 @@ class VendorGuidePageAccessTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "vendors/vendor-guide.html")
         # The form posts to the vendor-only endpoint, not the public one.
-        self.assertContains(response, 'data-contact-endpoint="contact/vendor-guide/"')
+        self.assertContains(
+            response, 'data-contact-endpoint="contact/vendor-guide/"'
+        )
 
 
 class VendorGuideContactAPITests(APITestCase):
@@ -134,7 +136,9 @@ class VendorGuideContactAPITests(APITestCase):
         self.assertEqual(message.user, user)
 
     def test_validation_errors_are_returned_per_field(self):
-        self.client.force_authenticate(user=make_user("vera", role=User.Role.VENDOR))
+        self.client.force_authenticate(
+            user=make_user("vera", role=User.Role.VENDOR)
+        )
 
         response = self.client.post(self.url, {"email": "not-an-email"})
 
@@ -145,7 +149,9 @@ class VendorGuideContactAPITests(APITestCase):
         self.assertEqual(ContactMessage.objects.count(), 0)
 
     def test_public_contact_endpoint_still_records_source_contact(self):
-        response = self.client.post(reverse("api:api_v1:contact-message"), self.payload)
+        response = self.client.post(
+            reverse("api:api_v1:contact-message"), self.payload
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         message = ContactMessage.objects.get()
         self.assertEqual(message.source, ContactMessage.Source.CONTACT_PAGE)
@@ -237,7 +243,9 @@ class VendorProductCreationAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         product = Product.objects.get(sku="HONEY-001")
         self.assertEqual(product.vendor, user.vendor_profile)
-        self.assertEqual(response.data["vendor"]["id"], user.vendor_profile.id)
+        self.assertEqual(
+            response.data["vendor"]["id"], user.vendor_profile.id
+        )
 
     def test_vendor_cannot_assign_product_to_another_vendor(self):
         user = make_user("vera", role=User.Role.VENDOR)

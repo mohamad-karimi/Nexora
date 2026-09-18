@@ -29,21 +29,25 @@ from api.v1.serializers.auth_jwt import VerifiedTokenObtainPairSerializer
     responses={
         401: OpenApiResponse(
             description=(
-                "Invalid credentials, inactive account, " "or unverified email."
+                "Invalid credentials, inactive account, "
+                "or unverified email."
             ),
             examples=[
                 OpenApiExample(
                     "Invalid credentials",
                     value={
                         "detail": (
-                            "No active account found with " "the given credentials."
+                            "No active account found with "
+                            "the given credentials."
                         )
                     },
                 ),
                 OpenApiExample(
                     "Unverified email",
                     value={
-                        "detail": ("Please verify your email before " "logging in."),
+                        "detail": (
+                            "Please verify your email before " "logging in."
+                        ),
                         "code": "unverified",
                     },
                 ),
@@ -62,7 +66,8 @@ class JWTTokenObtainPairView(TokenObtainPairView):
     tags=["Auth"],
     summary="Refresh a JWT access token",
     description=(
-        "Exchanges a valid, unexpired refresh token for a " "new access token."
+        "Exchanges a valid, unexpired refresh token for a "
+        "new access token."
     ),
 )
 class JWTTokenRefreshView(TokenRefreshView):
@@ -75,7 +80,8 @@ class JWTTokenRefreshView(TokenRefreshView):
     tags=["Auth"],
     summary="Verify a JWT token",
     description=(
-        "Checks whether a given token (access or refresh) is " "valid and not expired."
+        "Checks whether a given token (access or refresh) is "
+        "valid and not expired."
     ),
 )
 class JWTTokenVerifyView(TokenVerifyView):

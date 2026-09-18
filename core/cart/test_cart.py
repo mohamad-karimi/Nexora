@@ -30,7 +30,9 @@ def make_product(vendor, category, **kwargs):
         "published": True,
     }
     defaults.update(kwargs)
-    return Product.objects.create(vendor=vendor, category=category, **defaults)
+    return Product.objects.create(
+        vendor=vendor, category=category, **defaults
+    )
 
 
 class CartAPITestBase(APITestCase):
@@ -104,7 +106,9 @@ class CartCRUDTests(CartAPITestBase):
     def test_adding_same_product_increments_quantity_not_duplicate(
         self,
     ):
-        self.client.post(self.items_url, {"product_id": self.product.id, "quantity": 2})
+        self.client.post(
+            self.items_url, {"product_id": self.product.id, "quantity": 2}
+        )
         response = self.client.post(
             self.items_url, {"product_id": self.product.id, "quantity": 3}
         )
@@ -112,12 +116,16 @@ class CartCRUDTests(CartAPITestBase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(len(response.data["items"]), 1)
         self.assertEqual(response.data["items"][0]["quantity"], 5)
-        self.assertEqual(CartItem.objects.filter(cart__user=self.user).count(), 1)
+        self.assertEqual(
+            CartItem.objects.filter(cart__user=self.user).count(), 1
+        )
 
     def test_duplicate_add_is_capped_at_available_stock(self):
         self.product.stock = 4
         self.product.save(update_fields=["stock"])
-        self.client.post(self.items_url, {"product_id": self.product.id, "quantity": 3})
+        self.client.post(
+            self.items_url, {"product_id": self.product.id, "quantity": 3}
+        )
 
         response = self.client.post(
             self.items_url, {"product_id": self.product.id, "quantity": 3}
@@ -189,15 +197,23 @@ class CartCRUDTests(CartAPITestBase):
         self.assertFalse(CartItem.objects.filter(pk=item_id).exists())
 
     def test_clear_cart_removes_every_item(self):
-        extra = make_product(self.vendor, self.category, sku="CART-0002", name="Extra")
-        self.client.post(self.items_url, {"product_id": self.product.id, "quantity": 1})
-        self.client.post(self.items_url, {"product_id": extra.id, "quantity": 2})
+        extra = make_product(
+            self.vendor, self.category, sku="CART-0002", name="Extra"
+        )
+        self.client.post(
+            self.items_url, {"product_id": self.product.id, "quantity": 1}
+        )
+        self.client.post(
+            self.items_url, {"product_id": extra.id, "quantity": 2}
+        )
 
         response = self.client.delete(self.cart_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["items"], [])
-        self.assertEqual(CartItem.objects.filter(cart__user=self.user).count(), 0)
+        self.assertEqual(
+            CartItem.objects.filter(cart__user=self.user).count(), 0
+        )
         self.assertTrue(Cart.objects.filter(user=self.user).exists())
 
     def test_subtotal_uses_sale_price(self):
@@ -222,7 +238,9 @@ class CartCRUDTests(CartAPITestBase):
             name="Milk",
             price="4.00",
         )
-        self.client.post(self.items_url, {"product_id": self.product.id, "quantity": 2})
+        self.client.post(
+            self.items_url, {"product_id": self.product.id, "quantity": 2}
+        )
         add_extra = self.client.post(
             self.items_url, {"product_id": extra.id, "quantity": 3}
         )
@@ -252,21 +270,31 @@ class CartIsolationTests(CartAPITestBase):
 
         self.client.force_authenticate(user=self.user)
         patch_response = self.client.patch(
-            reverse("api:api_v1:cart-item-detail", kwargs={"pk": other_item_id}),
+            reverse(
+                "api:api_v1:cart-item-detail", kwargs={"pk": other_item_id}
+            ),
             {"quantity": 9},
             format="json",
         )
         delete_response = self.client.delete(
-            reverse("api:api_v1:cart-item-detail", kwargs={"pk": other_item_id})
+            reverse(
+                "api:api_v1:cart-item-detail", kwargs={"pk": other_item_id}
+            )
         )
 
-        self.assertEqual(patch_response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(delete_response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(
+            patch_response.status_code, status.HTTP_404_NOT_FOUND
+        )
+        self.assertEqual(
+            delete_response.status_code, status.HTTP_404_NOT_FOUND
+        )
         self.assertEqual(CartItem.objects.get(pk=other_item_id).quantity, 1)
 
     def test_get_cart_never_includes_another_users_items(self):
         self.client.force_authenticate(user=self.other)
-        self.client.post(self.items_url, {"product_id": self.product.id, "quantity": 3})
+        self.client.post(
+            self.items_url, {"product_id": self.product.id, "quantity": 3}
+        )
 
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.cart_url)

@@ -48,7 +48,9 @@ class VendorViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return Vendor.objects.filter(is_approved=True).annotate(
-            product_count=Count("products", filter=Q(products__published=True))
+            product_count=Count(
+                "products", filter=Q(products__published=True)
+            )
         )
 
 
@@ -88,7 +90,9 @@ class VendorDashboardMixin:
     ),
 )
 @extend_schema(tags=["Vendors"])
-class VendorDashboardProductsView(VendorDashboardMixin, generics.ListCreateAPIView):
+class VendorDashboardProductsView(
+    VendorDashboardMixin, generics.ListCreateAPIView
+):
     """
     GET: paginated list of the current vendor's own products (any
     status), for the Vendor Dashboard's "Your Products" grid.
@@ -131,7 +135,9 @@ class VendorDashboardProductsView(VendorDashboardMixin, generics.ListCreateAPIVi
         # and only place `vendor` gets set on a vendor-created product.
         vendor = self.get_vendor()
         if vendor is None:
-            raise PermissionDenied("Your account does not have a vendor profile yet.")
+            raise PermissionDenied(
+                "Your account does not have a vendor profile yet."
+            )
         serializer.save(vendor=vendor)
 
     def create(self, request, *args, **kwargs):
@@ -215,7 +221,9 @@ class VendorDashboardProductDetailView(
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial
+        )
         serializer.is_valid(raise_exception=True)
         # ModelSerializer.update() only ever touches the fields declared
         # on ProductCreateSerializer, so `vendor` and `published` are
@@ -230,7 +238,9 @@ class VendorDashboardProductDetailView(
 
 
 @extend_schema(tags=["Vendors"])
-class VendorDashboardBestSellersView(VendorDashboardMixin, generics.ListAPIView):
+class VendorDashboardBestSellersView(
+    VendorDashboardMixin, generics.ListAPIView
+):
     """The current vendor's top 3 products by units sold, for
     the Vendor Dashboard sidebar.
     """
@@ -258,7 +268,9 @@ class VendorDashboardBestSellersView(VendorDashboardMixin, generics.ListAPIView)
                 units_sold=Coalesce(
                     Sum(
                         "order_items__quantity",
-                        filter=~Q(order_items__order__status=Order.Status.CANCELLED),
+                        filter=~Q(
+                            order_items__order__status=Order.Status.CANCELLED
+                        ),
                     ),
                     0,
                 ),
@@ -268,7 +280,9 @@ class VendorDashboardBestSellersView(VendorDashboardMixin, generics.ListAPIView)
 
 
 @extend_schema(tags=["Vendors"])
-class VendorDashboardOrderItemsView(VendorDashboardMixin, generics.ListAPIView):
+class VendorDashboardOrderItemsView(
+    VendorDashboardMixin, generics.ListAPIView
+):
     """Paginated order line items for the current vendor's own
     products, most recent first.
     """

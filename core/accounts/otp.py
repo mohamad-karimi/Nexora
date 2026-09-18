@@ -95,7 +95,9 @@ def verify_email_code(request, raw_code):
         )
 
     if otp.attempts >= EMAIL_OTP_MAX_ATTEMPTS:
-        raise OTPError("Too many incorrect attempts. Please request a new code.")
+        raise OTPError(
+            "Too many incorrect attempts. Please request a new code."
+        )
 
     if otp.is_expired():
         raise OTPError("This code has expired. Please request a new code.")
@@ -105,7 +107,9 @@ def verify_email_code(request, raw_code):
         otp.save(update_fields=["attempts"])
         remaining = EMAIL_OTP_MAX_ATTEMPTS - otp.attempts
         if remaining <= 0:
-            raise OTPError("Too many incorrect attempts. Please request a new code.")
+            raise OTPError(
+                "Too many incorrect attempts. Please request a new code."
+            )
         raise OTPError("The code you entered is incorrect.")
 
     user.is_verified = True
@@ -124,7 +128,9 @@ def resend_email_verification(request):
     """
     user = get_pending_verification_user(request)
     if user is None:
-        raise OTPError("Your verification session has expired. Please register again.")
+        raise OTPError(
+            "Your verification session has expired. Please register again."
+        )
 
     otp = EmailVerificationCode.objects.filter(user=user).first()
     if otp is not None:

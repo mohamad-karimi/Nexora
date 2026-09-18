@@ -60,7 +60,9 @@ class OrderItemVendorSerializer(serializers.ModelSerializer):
 
 class OrderItemSerializer(serializers.ModelSerializer):
     vendor = OrderItemVendorSerializer(read_only=True)
-    product_slug = serializers.SlugField(source="product.slug", read_only=True)
+    product_slug = serializers.SlugField(
+        source="product.slug", read_only=True
+    )
     total_price = serializers.DecimalField(
         max_digits=10, decimal_places=2, read_only=True
     )
@@ -98,7 +100,9 @@ class OrderSerializer(serializers.ModelSerializer):
     shipping_address = AddressSerializer(read_only=True)
     billing_address = AddressSerializer(read_only=True)
     coupon = CouponSerializer(read_only=True)
-    subtotal = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    subtotal = serializers.DecimalField(
+        max_digits=10, decimal_places=2, read_only=True
+    )
 
     class Meta:
         model = Order
@@ -144,7 +148,8 @@ class OrderCreateSerializer(serializers.Serializer):
         required=False,
         allow_blank=True,
         help_text=(
-            "Optional discount coupon code, validated and " "applied at checkout."
+            "Optional discount coupon code, validated and "
+            "applied at checkout."
         ),
     )
     payment_method = serializers.ChoiceField(
@@ -165,7 +170,9 @@ class OrderCreateSerializer(serializers.Serializer):
     def _check_owner(self, address):
         request = self.context["request"]
         if address.user_id != request.user.id:
-            raise serializers.ValidationError("That address does not belong to you.")
+            raise serializers.ValidationError(
+                "That address does not belong to you."
+            )
 
     def validate(self, attrs):
         request = self.context["request"]
@@ -203,20 +210,24 @@ class OrderCreateSerializer(serializers.Serializer):
         cart = validated_data["cart"]
         coupon = validated_data["coupon"]
         shipping_address = validated_data["shipping_address_id"]
-        billing_address = validated_data.get("billing_address_id") or shipping_address
+        billing_address = (
+            validated_data.get("billing_address_id") or shipping_address
+        )
         payment_method = validated_data["payment_method"]
         user = self.context["request"].user
 
         cart_items = list(cart.items.select_related("product"))
         subtotal = sum((item.subtotal for item in cart_items), Decimal("0"))
         shipping_cost = (
-            Decimal("0") if subtotal >= FREE_SHIPPING_THRESHOLD else FLAT_SHIPPING_COST
+            Decimal("0")
+            if subtotal >= FREE_SHIPPING_THRESHOLD
+            else FLAT_SHIPPING_COST
         )
         discount_amount = Decimal("0")
         if coupon:
-            discount_amount = (subtotal * coupon.discount_percent / 100).quantize(
-                Decimal("0.01")
-            )
+            discount_amount = (
+                subtotal * coupon.discount_percent / 100
+            ).quantize(Decimal("0.01"))
         total_amount = subtotal + shipping_cost - discount_amount
 
         order = Order.objects.create(

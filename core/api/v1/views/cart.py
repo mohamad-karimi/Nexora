@@ -61,7 +61,8 @@ class CartView(APIView):
     partial_update=extend_schema(
         summary="Update a cart item's quantity",
         description=(
-            "Partially updates a cart line item (typically " "just `quantity`)."
+            "Partially updates a cart line item (typically "
+            "just `quantity`)."
         ),
         responses={200: CartSerializer},
     ),
@@ -97,7 +98,9 @@ class CartItemViewSet(
         serializer.is_valid(raise_exception=True)
         serializer.save()
         cart = get_or_create_cart(request.user)
-        return Response(CartSerializer(cart).data, status=status.HTTP_201_CREATED)
+        return Response(
+            CartSerializer(cart).data, status=status.HTTP_201_CREATED
+        )
 
     def update(self, request, *args, **kwargs):
         super().update(request, *args, **kwargs)

@@ -38,7 +38,9 @@ class AuthorMinimalSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "display_name", "avatar", "bio"]
 
     def get_display_name(self, obj):
-        display_name = getattr(obj, "profile", None) and obj.profile.display_name
+        display_name = (
+            getattr(obj, "profile", None) and obj.profile.display_name
+        )
         return display_name or obj.username
 
     def get_avatar(self, obj):

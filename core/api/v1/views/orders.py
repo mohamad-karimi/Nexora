@@ -104,7 +104,9 @@ class CouponValidateView(APIView):
 @extend_schema_view(
     list=extend_schema(
         summary="List the current user's orders",
-        description=("Returns the current user's order history, most " "recent first."),
+        description=(
+            "Returns the current user's order history, most " "recent first."
+        ),
     ),
     retrieve=extend_schema(
         summary="Get an order",
@@ -147,4 +149,6 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
-        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+        return Response(
+            OrderSerializer(order).data, status=status.HTTP_201_CREATED
+        )

@@ -139,11 +139,15 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "shipping_cost",
-                    models.DecimalField(decimal_places=2, default=0, max_digits=10),
+                    models.DecimalField(
+                        decimal_places=2, default=0, max_digits=10
+                    ),
                 ),
                 (
                     "discount_amount",
-                    models.DecimalField(decimal_places=2, default=0, max_digits=10),
+                    models.DecimalField(
+                        decimal_places=2, default=0, max_digits=10
+                    ),
                 ),
                 (
                     "total_amount",

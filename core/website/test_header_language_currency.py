@@ -76,7 +76,9 @@ class HeaderLanguageCurrencyTests(TestCase):
         header_top_right = content[start:end]
 
         self.assertNotIn('href="/#"', header_top_right)
-        self.assertNotIn("href=\"{% url 'website:home' %}#\"", header_top_right)
+        self.assertNotIn(
+            "href=\"{% url 'website:home' %}#\"", header_top_right
+        )
 
     def test_mobile_menu_language_section_has_no_fake_options(self):
         response = self.client.get(self.home_url)
@@ -85,7 +87,7 @@ class HeaderLanguageCurrencyTests(TestCase):
 
         start = content.find("Language / Currency")
         self.assertNotEqual(start, -1)
-        section = content[start : start + 400]
+        section = content[start:start + 400]
 
         self.assertIn(language_name, section)
         self.assertIn(settings.DEFAULT_CURRENCY, section)

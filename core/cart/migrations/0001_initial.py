@@ -29,7 +29,9 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "session_key",
-                    models.CharField(blank=True, max_length=40, null=True, unique=True),
+                    models.CharField(
+                        blank=True, max_length=40, null=True, unique=True
+                    ),
                 ),
                 ("created_date", models.DateTimeField(auto_now_add=True)),
                 ("update_date", models.DateTimeField(auto_now=True)),

@@ -56,7 +56,9 @@ def _decode(token, expected_purpose):
     if not token:
         raise TokenError("Missing token.")
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[JWT_ALGORITHM]
+        )
     except jwt.ExpiredSignatureError:
         raise TokenError("This link has expired.")
     except jwt.InvalidTokenError:
@@ -96,5 +98,7 @@ def get_user_for_password_reset_token(token):
     if payload.get("pwd") != _password_stamp(user):
         # Either the password was already changed with this token (or a
         # newer one), or the token was tampered with.
-        raise TokenError("This link has already been used or is no longer valid.")
+        raise TokenError(
+            "This link has already been used or is no longer valid."
+        )
     return user

@@ -55,7 +55,9 @@ router.register("wishlist", WishlistViewSet, basename="wishlist")
 router.register("cart/items", CartItemViewSet, basename="cart-item")
 router.register("addresses", AddressViewSet, basename="address")
 router.register("orders", OrderViewSet, basename="order")
-router.register("blog/categories", BlogCategoryViewSet, basename="blog-category")
+router.register(
+    "blog/categories", BlogCategoryViewSet, basename="blog-category"
+)
 router.register("blog/tags", BlogTagViewSet, basename="blog-tag")
 router.register("blog/posts", BlogPostViewSet, basename="blog-post")
 router.register("home-slides", HomeSlideViewSet, basename="home-slide")

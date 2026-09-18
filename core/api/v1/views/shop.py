@@ -42,7 +42,9 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return Category.objects.annotate(
-            product_count=Count("products", filter=Q(products__published=True))
+            product_count=Count(
+                "products", filter=Q(products__published=True)
+            )
         ).order_by("name")
 
 
@@ -142,7 +144,8 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             # product's existence isn't revealed to anyone but its
             # owner/staff.
             raise Http404(
-                f"No {queryset.model._meta.object_name} matches " f"the given query."
+                f"No {queryset.model._meta.object_name} matches "
+                f"the given query."
             )
 
         self.check_object_permissions(self.request, obj)
@@ -184,7 +187,10 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
                     OpenApiExample(
                         "Anonymous POST",
                         value={
-                            "detail": ("Authentication required to " "leave a review.")
+                            "detail": (
+                                "Authentication required to "
+                                "leave a review."
+                            )
                         },
                     )
                 ],
@@ -200,7 +206,9 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             if not (request.user.is_authenticated):
                 queryset = queryset.filter(is_approved=True)
             else:
-                queryset = queryset.filter(Q(is_approved=True) | Q(user=request.user))
+                queryset = queryset.filter(
+                    Q(is_approved=True) | Q(user=request.user)
+                )
             page = self.paginate_queryset(queryset.order_by("-created_date"))
             serializer = ReviewSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
@@ -222,7 +230,9 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
                 "is_approved": False,
             },
         )
-        return Response(ReviewSerializer(review).data, status=status.HTTP_201_CREATED)
+        return Response(
+            ReviewSerializer(review).data, status=status.HTTP_201_CREATED
+        )
 
     @extend_schema(
         tags=["Catalog"],
@@ -237,7 +247,9 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=["get"], url_path="facets")
     def facets(self, request):
         base = Product.objects.filter(published=True)
-        bounds = base.aggregate(min_price=Min("price"), max_price=Max("price"))
+        bounds = base.aggregate(
+            min_price=Min("price"), max_price=Max("price")
+        )
 
         def option_counts(field, choices):
             counts = {
@@ -265,7 +277,9 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
                     ),
                 },
                 "colors": option_counts("color", Product.Color.choices),
-                "conditions": option_counts("condition", Product.Condition.choices),
+                "conditions": option_counts(
+                    "condition", Product.Condition.choices
+                ),
             }
         )
 

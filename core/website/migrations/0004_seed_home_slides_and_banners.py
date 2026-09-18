@@ -95,7 +95,9 @@ def unseed_home_content(apps, schema_editor):
     HomeSlide = apps.get_model("website", "HomeSlide")
     HomeBanner = apps.get_model("website", "HomeBanner")
     HomeSlide.objects.filter(title__in=[s["title"] for s in SLIDES]).delete()
-    HomeBanner.objects.filter(title__in=[b["title"] for b in BANNERS]).delete()
+    HomeBanner.objects.filter(
+        title__in=[b["title"] for b in BANNERS]
+    ).delete()
 
 
 class Migration(migrations.Migration):

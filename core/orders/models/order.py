@@ -34,7 +34,8 @@ class Order(models.Model):
         null=True,
         related_name="orders",
         help_text=(
-            "Kept nullable so order/financial history survives " "account deletion."
+            "Kept nullable so order/financial history survives "
+            "account deletion."
         ),
     )
     shipping_address = models.ForeignKey(
@@ -58,8 +59,12 @@ class Order(models.Model):
         related_name="orders",
     )
 
-    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    shipping_cost = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )
+    discount_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
     status = models.CharField(

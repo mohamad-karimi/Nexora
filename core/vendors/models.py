@@ -18,7 +18,9 @@ class Vendor(models.Model):
     )
     store_name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=280, unique=True, blank=True)
-    logo = models.ImageField(upload_to="vendors/logos/", blank=True, null=True)
+    logo = models.ImageField(
+        upload_to="vendors/logos/", blank=True, null=True
+    )
     description = models.TextField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
@@ -26,7 +28,8 @@ class Vendor(models.Model):
     is_approved = models.BooleanField(
         default=False,
         help_text=(
-            "Vendors must be approved by an admin before their " "products go live."
+            "Vendors must be approved by an admin before their "
+            "products go live."
         ),
     )
     created_date = models.DateTimeField(auto_now_add=True)

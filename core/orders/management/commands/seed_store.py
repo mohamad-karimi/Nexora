@@ -82,7 +82,9 @@ VENDOR_DATA = [
         "email": "green_farm@nexora.test",
         "store_name": "Green Farm Grocery",
         "phone": "+15550100",
-        "description": ("Farm-fresh produce and dairy, sourced from local growers."),
+        "description": (
+            "Farm-fresh produce and dairy, sourced from local growers."
+        ),
     },
     {
         "username": "daily_bites",
@@ -467,16 +469,26 @@ class Command(BaseCommand):
             self._seed_carts(customers, products)
             self._seed_orders(customers, addresses, coupons, products)
 
-        self.stdout.write(self.style.SUCCESS("Store data seeded successfully."))
+        self.stdout.write(
+            self.style.SUCCESS("Store data seeded successfully.")
+        )
 
     # -- teardown -----------------------------------------------------
     def _flush(self):
-        Payment.objects.filter(order__user__username__in=CUSTOMER_USERNAMES).delete()
-        OrderItem.objects.filter(order__user__username__in=CUSTOMER_USERNAMES).delete()
+        Payment.objects.filter(
+            order__user__username__in=CUSTOMER_USERNAMES
+        ).delete()
+        OrderItem.objects.filter(
+            order__user__username__in=CUSTOMER_USERNAMES
+        ).delete()
         Order.objects.filter(user__username__in=CUSTOMER_USERNAMES).delete()
-        CartItem.objects.filter(cart__user__username__in=CUSTOMER_USERNAMES).delete()
+        CartItem.objects.filter(
+            cart__user__username__in=CUSTOMER_USERNAMES
+        ).delete()
         Cart.objects.filter(user__username__in=CUSTOMER_USERNAMES).delete()
-        Wishlist.objects.filter(user__username__in=CUSTOMER_USERNAMES).delete()
+        Wishlist.objects.filter(
+            user__username__in=CUSTOMER_USERNAMES
+        ).delete()
         Review.objects.filter(user__username__in=CUSTOMER_USERNAMES).delete()
         ProductSpecification.objects.filter(
             product__sku__in=[p["sku"] for p in PRODUCT_DATA]
@@ -484,14 +496,24 @@ class Command(BaseCommand):
         ProductImage.objects.filter(
             product__sku__in=[p["sku"] for p in PRODUCT_DATA]
         ).delete()
-        Product.objects.filter(sku__in=[p["sku"] for p in PRODUCT_DATA]).delete()
+        Product.objects.filter(
+            sku__in=[p["sku"] for p in PRODUCT_DATA]
+        ).delete()
         Tag.objects.filter(name__in=TAG_NAMES).delete()
-        Category.objects.filter(name__in=[c["name"] for c in CATEGORY_DATA]).delete()
+        Category.objects.filter(
+            name__in=[c["name"] for c in CATEGORY_DATA]
+        ).delete()
         Address.objects.filter(user__username__in=CUSTOMER_USERNAMES).delete()
-        Coupon.objects.filter(code__in=[c["code"] for c in COUPON_DATA]).delete()
+        Coupon.objects.filter(
+            code__in=[c["code"] for c in COUPON_DATA]
+        ).delete()
         Vendor.objects.filter(user__username__in=VENDOR_USERNAMES).delete()
-        User.objects.filter(username__in=VENDOR_USERNAMES + CUSTOMER_USERNAMES).delete()
-        self.stdout.write(self.style.WARNING("Previously-seeded store data removed."))
+        User.objects.filter(
+            username__in=VENDOR_USERNAMES + CUSTOMER_USERNAMES
+        ).delete()
+        self.stdout.write(
+            self.style.WARNING("Previously-seeded store data removed.")
+        )
 
     # -- seeders --------------------------------------------------------
     def _seed_vendors(self):
@@ -556,7 +578,9 @@ class Command(BaseCommand):
                 profile = user.profile
                 profile.first_name = data["first_name"]
                 profile.last_name = data["last_name"]
-                profile.display_name = f"{data['first_name']} {data['last_name']}"
+                profile.display_name = (
+                    f"{data['first_name']} {data['last_name']}"
+                )
                 profile.phone = "+1555020" + str(len(customers))
                 profile.address = "45 Residential Ave"
                 profile.description = "Regular customer."
@@ -603,7 +627,9 @@ class Command(BaseCommand):
             discount_percent = data.get("discount_percent", 0)
             discount_end = None
             if "discount_days" in data:
-                discount_end = timezone.now() + timedelta(days=data["discount_days"])
+                discount_end = timezone.now() + timedelta(
+                    days=data["discount_days"]
+                )
 
             stock = 0 if data.get("stock_zero_demo") else data["stock"]
 
@@ -614,7 +640,8 @@ class Command(BaseCommand):
                     "category": category,
                     "name": data["name"],
                     "short_description": (
-                        f"{data['name']} - sourced by " f"{vendor.store_name}."
+                        f"{data['name']} - sourced by "
+                        f"{vendor.store_name}."
                     ),
                     "description": (
                         f"{data['name']} available at "
@@ -821,9 +848,9 @@ class Command(BaseCommand):
 
         discount_amount = Decimal("0")
         if coupon:
-            discount_amount = (order.subtotal * coupon.discount_percent / 100).quantize(
-                Decimal("0.01")
-            )
+            discount_amount = (
+                order.subtotal * coupon.discount_percent / 100
+            ).quantize(Decimal("0.01"))
 
         order.discount_amount = discount_amount
         order.total_amount = order.subtotal + shipping_cost - discount_amount
@@ -836,6 +863,8 @@ class Command(BaseCommand):
             payment_method=Payment.Method.CARD,
             status=payment_status,
             paid_at=(
-                timezone.now() if payment_status == Payment.Status.SUCCESS else None
+                timezone.now()
+                if payment_status == Payment.Status.SUCCESS
+                else None
             ),
         )

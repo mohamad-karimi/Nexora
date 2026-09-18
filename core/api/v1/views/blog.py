@@ -36,7 +36,9 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return Category.objects.annotate(
-            post_count=Count("posts", filter=Q(posts__status=Post.Status.PUBLISHED))
+            post_count=Count(
+                "posts", filter=Q(posts__status=Post.Status.PUBLISHED)
+            )
         ).order_by("name")
 
 
@@ -115,7 +117,10 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
                     OpenApiExample(
                         "Anonymous POST",
                         value={
-                            "detail": ("Authentication required to " "leave a comment.")
+                            "detail": (
+                                "Authentication required to "
+                                "leave a comment."
+                            )
                         },
                     )
                 ],
@@ -145,7 +150,9 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        serializer = CommentSerializer(data=request.data, context={"request": request})
+        serializer = CommentSerializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         # published defaults to True on the model, so the comment is
         # live immediately unless an admin unpublishes it later.
@@ -170,7 +177,9 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
         responses={
             200: OpenApiResponse(
                 description="Resulting bookmark state.",
-                examples=[OpenApiExample("Toggled on", value={"bookmarked": True})],
+                examples=[
+                    OpenApiExample("Toggled on", value={"bookmarked": True})
+                ],
             ),
             401: OpenApiResponse(
                 description="Authentication required to bookmark a post.",
@@ -178,7 +187,10 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
                     OpenApiExample(
                         "Anonymous POST",
                         value={
-                            "detail": ("Authentication required to " "bookmark a post.")
+                            "detail": (
+                                "Authentication required to "
+                                "bookmark a post."
+                            )
                         },
                     )
                 ],
@@ -194,7 +206,9 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
         post = self.get_object()
-        existing = PostBookmark.objects.filter(user=request.user, post=post).first()
+        existing = PostBookmark.objects.filter(
+            user=request.user, post=post
+        ).first()
         if existing:
             existing.delete()
             return Response({"bookmarked": False})
@@ -217,7 +231,9 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
             200: OpenApiResponse(
                 description="Resulting like state and total count.",
                 examples=[
-                    OpenApiExample("Toggled on", value={"liked": True, "like_count": 4})
+                    OpenApiExample(
+                        "Toggled on", value={"liked": True, "like_count": 4}
+                    )
                 ],
             ),
             401: OpenApiResponse(
@@ -225,7 +241,9 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
                 examples=[
                     OpenApiExample(
                         "Anonymous POST",
-                        value={"detail": "Authentication required to like a post."},
+                        value={
+                            "detail": "Authentication required to like a post."
+                        },
                     )
                 ],
             ),
@@ -240,7 +258,9 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
         post = self.get_object()
-        existing = PostLike.objects.filter(user=request.user, post=post).first()
+        existing = PostLike.objects.filter(
+            user=request.user, post=post
+        ).first()
         if existing:
             existing.delete()
             liked = False

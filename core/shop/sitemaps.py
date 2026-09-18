@@ -13,7 +13,9 @@ class ProductSitemap(Sitemap):
     priority = 0.6
 
     def items(self):
-        return Product.objects.filter(published=True).order_by("-created_date")
+        return Product.objects.filter(published=True).order_by(
+            "-created_date"
+        )
 
     def lastmod(self, product):
         return product.update_date

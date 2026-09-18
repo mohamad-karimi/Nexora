@@ -149,7 +149,9 @@ class JWTTokenRefreshTests(TestCase):
 
     def test_valid_refresh_token_returns_new_access_token(self):
         refresh = RefreshToken.for_user(self.user)
-        response = self.client.post(self.url, {"refresh": str(refresh)}, format="json")
+        response = self.client.post(
+            self.url, {"refresh": str(refresh)}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("access", response.data)
         # The refreshed access token must still resolve to the same user.
@@ -165,7 +167,9 @@ class JWTTokenRefreshTests(TestCase):
     def test_expired_refresh_token_is_rejected(self):
         refresh = RefreshToken.for_user(self.user)
         refresh.set_exp(lifetime=timedelta(seconds=-1))
-        response = self.client.post(self.url, {"refresh": str(refresh)}, format="json")
+        response = self.client.post(
+            self.url, {"refresh": str(refresh)}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -184,17 +188,23 @@ class JWTTokenVerifyTests(TestCase):
 
     def test_valid_token_verifies_successfully(self):
         token = AccessToken.for_user(self.user)
-        response = self.client.post(self.url, {"token": str(token)}, format="json")
+        response = self.client.post(
+            self.url, {"token": str(token)}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_invalid_token_fails_verification(self):
-        response = self.client.post(self.url, {"token": "garbage-token"}, format="json")
+        response = self.client.post(
+            self.url, {"token": "garbage-token"}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_expired_token_fails_verification(self):
         token = AccessToken.for_user(self.user)
         token.set_exp(lifetime=timedelta(seconds=-1))
-        response = self.client.post(self.url, {"token": str(token)}, format="json")
+        response = self.client.post(
+            self.url, {"token": str(token)}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 

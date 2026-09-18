@@ -52,7 +52,9 @@ class WishlistAPITests(APITestCase):
 
     def test_add_list_and_remove_own_item(self):
         self.client.force_authenticate(user=self.user)
-        created = self.client.post(self.list_url, {"product_id": self.product.id})
+        created = self.client.post(
+            self.list_url, {"product_id": self.product.id}
+        )
         self.assertEqual(created.status_code, status.HTTP_201_CREATED)
         self.assertEqual(created.data["product"]["slug"], self.product.slug)
 
@@ -70,8 +72,12 @@ class WishlistAPITests(APITestCase):
 
     def test_adding_the_same_product_twice_is_idempotent(self):
         self.client.force_authenticate(user=self.user)
-        first = self.client.post(self.list_url, {"product_id": self.product.id})
-        second = self.client.post(self.list_url, {"product_id": self.product.id})
+        first = self.client.post(
+            self.list_url, {"product_id": self.product.id}
+        )
+        second = self.client.post(
+            self.list_url, {"product_id": self.product.id}
+        )
         self.assertEqual(first.status_code, status.HTTP_201_CREATED)
         self.assertEqual(second.status_code, status.HTTP_201_CREATED)
         self.assertEqual(first.data["id"], second.data["id"])

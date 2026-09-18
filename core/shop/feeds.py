@@ -19,7 +19,9 @@ class ProductFeed(Feed):
         return reverse("shop:grid_left")
 
     def items(self):
-        return Product.objects.filter(published=True).order_by("-created_date")[:50]
+        return Product.objects.filter(published=True).order_by(
+            "-created_date"
+        )[:50]
 
     def item_title(self, item):
         return item.name

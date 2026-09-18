@@ -28,7 +28,9 @@ class HomeSlideViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        return HomeSlide.objects.filter(is_active=True).order_by("ordering", "id")
+        return HomeSlide.objects.filter(is_active=True).order_by(
+            "ordering", "id"
+        )
 
 
 @extend_schema_view(
@@ -45,7 +47,9 @@ class HomeBannerViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        return HomeBanner.objects.filter(is_active=True).order_by("ordering", "id")
+        return HomeBanner.objects.filter(is_active=True).order_by(
+            "ordering", "id"
+        )
 
 
 @extend_schema(tags=["Website"])
@@ -67,7 +71,9 @@ class ContactMessageView(APIView):
     def post(self, request):
         serializer = ContactMessageSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(user=request.user if request.user.is_authenticated else None)
+        serializer.save(
+            user=request.user if request.user.is_authenticated else None
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 

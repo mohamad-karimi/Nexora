@@ -62,7 +62,9 @@ class RegisterView(APIView):
         responses={201: UserSerializer},
     )
     def post(self, request):
-        serializer = RegisterSerializer(data=request.data, context={"request": request})
+        serializer = RegisterSerializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         try:
@@ -71,8 +73,12 @@ class RegisterView(APIView):
             # Registration must still succeed even if the mail server is
             # unreachable/misconfigured -- the user can request the code
             # again later via Resend Code. (See accounts.otp.)
-            logger.exception("Failed to send verification code to user %s", user.pk)
-        return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+            logger.exception(
+                "Failed to send verification code to user %s", user.pk
+            )
+        return Response(
+            UserSerializer(user).data, status=status.HTTP_201_CREATED
+        )
 
 
 @extend_schema(tags=["Auth"])
@@ -105,7 +111,9 @@ class VerifyEmailCodeView(APIView):
                 examples=[
                     OpenApiExample(
                         "Incorrect code",
-                        value={"detail": "The code you entered is incorrect."},
+                        value={
+                            "detail": "The code you entered is incorrect."
+                        },
                     ),
                 ],
             ),
@@ -115,9 +123,13 @@ class VerifyEmailCodeView(APIView):
         serializer = VerifyEmailCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            user = verify_email_code(request, serializer.validated_data["code"])
+            user = verify_email_code(
+                request, serializer.validated_data["code"]
+            )
         except OTPError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         login(request, user)
         return Response(UserSerializer(user).data)
@@ -156,13 +168,16 @@ class ResendVerificationEmailView(APIView):
         try:
             resend_email_verification(request)
         except OTPError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception:
             logger.exception("Failed to resend verification code")
             return Response(
                 {
                     "detail": (
-                        "Could not resend the verification code. " "Please try again."
+                        "Could not resend the verification code. "
+                        "Please try again."
                     )
                 },
                 status=status.HTTP_400_BAD_REQUEST,
@@ -191,7 +206,8 @@ class LoginView(APIView):
             200: UserSerializer,
             400: OpenApiResponse(
                 description=(
-                    "Invalid credentials, inactive account, " "or unverified email."
+                    "Invalid credentials, inactive account, "
+                    "or unverified email."
                 ),
                 examples=[
                     OpenApiExample(
@@ -201,7 +217,10 @@ class LoginView(APIView):
                     OpenApiExample(
                         "Unverified email",
                         value={
-                            "detail": ("Please verify your email " "before logging in.")
+                            "detail": (
+                                "Please verify your email "
+                                "before logging in."
+                            )
                         },
                     ),
                 ],
@@ -209,7 +228,9 @@ class LoginView(APIView):
         },
     )
     def post(self, request):
-        serializer = LoginSerializer(data=request.data, context={"request": request})
+        serializer = LoginSerializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         user = authenticate(
             request,
@@ -245,9 +266,13 @@ class LogoutView(APIView):
 
     @extend_schema(
         summary="Log out",
-        description=("Ends the current user's session. Requires an " "active session."),
+        description=(
+            "Ends the current user's session. Requires an " "active session."
+        ),
         request=None,
-        responses={204: OpenApiResponse(description="Logged out successfully.")},
+        responses={
+            204: OpenApiResponse(description="Logged out successfully.")
+        },
     )
     def post(self, request):
         logout(request)
@@ -309,13 +334,19 @@ class ChangePasswordView(APIView):
         ),
         request=ChangePasswordSerializer,
         responses={
-            204: OpenApiResponse(description="Password changed successfully."),
+            204: OpenApiResponse(
+                description="Password changed successfully."
+            ),
             400: OpenApiResponse(
-                description=("Current password incorrect, or new " "password invalid."),
+                description=(
+                    "Current password incorrect, or new " "password invalid."
+                ),
                 examples=[
                     OpenApiExample(
                         "Wrong current password",
-                        value={"old_password": "Current password is incorrect."},
+                        value={
+                            "old_password": "Current password is incorrect."
+                        },
                     )
                 ],
             ),
@@ -361,7 +392,9 @@ class ForgotPasswordView(APIView):
         email = serializer.validated_data["email"]
 
         User = get_user_model()
-        user = User.objects.filter(email__iexact=email, is_active=True).first()
+        user = User.objects.filter(
+            email__iexact=email, is_active=True
+        ).first()
         if user is not None:
             try:
                 send_password_reset_email(request, user)
@@ -371,7 +404,12 @@ class ForgotPasswordView(APIView):
                 )
 
         return Response(
-            {"detail": ("If that email has an account, a reset " "link has been sent.")}
+            {
+                "detail": (
+                    "If that email has an account, a reset "
+                    "link has been sent."
+                )
+            }
         )
 
 

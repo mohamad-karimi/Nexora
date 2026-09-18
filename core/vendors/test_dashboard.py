@@ -121,7 +121,9 @@ class VendorDashboardOrdersAndBestSellersTests(APITestCase):
 
     def test_vendor_only_sees_own_order_line_items(self):
         self.client.force_authenticate(user=self.vendor_a)
-        response = self.client.get(reverse("api:api_v1:vendor-dashboard-orders"))
+        response = self.client.get(
+            reverse("api:api_v1:vendor-dashboard-orders")
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         names = [item["product_name"] for item in response.data["results"]]
         self.assertEqual(names, ["A Milk"])
@@ -134,8 +136,12 @@ class VendorDashboardOrdersAndBestSellersTests(APITestCase):
 
     def test_customer_cannot_access_vendor_orders_or_best_sellers(self):
         self.client.force_authenticate(user=self.customer)
-        orders = self.client.get(reverse("api:api_v1:vendor-dashboard-orders"))
-        best = self.client.get(reverse("api:api_v1:vendor-dashboard-best-sellers"))
+        orders = self.client.get(
+            reverse("api:api_v1:vendor-dashboard-orders")
+        )
+        best = self.client.get(
+            reverse("api:api_v1:vendor-dashboard-best-sellers")
+        )
         self.assertEqual(orders.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(best.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -157,7 +163,9 @@ class VendorDashboardOrdersAndBestSellersTests(APITestCase):
         )
 
         self.client.force_authenticate(user=self.vendor_a)
-        response = self.client.get(reverse("api:api_v1:vendor-dashboard-best-sellers"))
+        response = self.client.get(
+            reverse("api:api_v1:vendor-dashboard-best-sellers")
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["slug"], self.product_a.slug)
@@ -167,7 +175,9 @@ class VendorDashboardOrdersAndBestSellersTests(APITestCase):
             "unverifieddash", role=User.Role.VENDOR, is_verified=False
         )
         self.client.force_authenticate(user=unverified)
-        response = self.client.get(reverse("api:api_v1:vendor-dashboard-products"))
+        response = self.client.get(
+            reverse("api:api_v1:vendor-dashboard-products")
+        )
         self.assertIn(
             response.status_code,
             (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN),

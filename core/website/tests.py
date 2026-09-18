@@ -37,7 +37,9 @@ class HomeSlideAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         titles = [item["title"] for item in response.data]
         self.assertNotIn("Hidden\nSlide", titles)
-        self.assertLess(titles.index("First\nSlide"), titles.index("Second\nSlide"))
+        self.assertLess(
+            titles.index("First\nSlide"), titles.index("Second\nSlide")
+        )
 
     def test_slide_exposes_title_description_and_image(self):
         HomeSlide.objects.create(
@@ -49,8 +51,12 @@ class HomeSlideAPITests(APITestCase):
         response = self.client.get(self.url)
 
         item = response.data[0]
-        self.assertEqual(item["title"], "Don\u2019t miss amazing\ngrocery deals")
-        self.assertEqual(item["description"], "Sign up for the daily newsletter")
+        self.assertEqual(
+            item["title"], "Don\u2019t miss amazing\ngrocery deals"
+        )
+        self.assertEqual(
+            item["description"], "Sign up for the daily newsletter"
+        )
         self.assertIn("slider-1.png", item["image"])
 
 
@@ -82,7 +88,9 @@ class HomeBannerAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         titles = [item["title"] for item in response.data]
         self.assertNotIn("Hidden\nBanner", titles)
-        self.assertLess(titles.index("First\nBanner"), titles.index("Second\nBanner"))
+        self.assertLess(
+            titles.index("First\nBanner"), titles.index("Second\nBanner")
+        )
 
     def test_banner_link_url_is_optional(self):
         HomeBanner.objects.create(title="No link", image="banners/x.png")
@@ -96,7 +104,9 @@ class HomeBannerAPITests(APITestCase):
 
         by_title = {item["title"]: item["link_url"] for item in response.data}
         self.assertEqual(by_title["No link"], "")
-        self.assertEqual(by_title["With link"], "/shop/filter/?category=fruit")
+        self.assertEqual(
+            by_title["With link"], "/shop/filter/?category=fruit"
+        )
 
 
 class ContactMessageAPITests(APITestCase):

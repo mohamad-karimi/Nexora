@@ -98,7 +98,9 @@ class BlogVisibilityTests(BlogAPITestBase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_category_filter_and_post_count_ignore_drafts(self):
-        listed = self.client.get(self.list_url, {"category": self.category.slug})
+        listed = self.client.get(
+            self.list_url, {"category": self.category.slug}
+        )
         slugs = [item["slug"] for item in listed.data["results"]]
         self.assertEqual(slugs, ["published-post"])
 
@@ -176,7 +178,9 @@ class BlogCommentTests(BlogAPITestBase):
 
     def test_authenticated_user_can_create_a_published_comment(self):
         self.client.force_authenticate(user=self.reader)
-        response = self.client.post(self.comments_url, {"content": "  Nice post  "})
+        response = self.client.post(
+            self.comments_url, {"content": "  Nice post  "}
+        )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         comment = Comment.objects.get()
@@ -201,7 +205,9 @@ class BlogCommentTests(BlogAPITestBase):
 
     def test_cannot_comment_on_a_draft_post(self):
         self.client.force_authenticate(user=self.reader)
-        url = reverse("api:api_v1:blog-post-comments", kwargs={"slug": self.draft.slug})
+        url = reverse(
+            "api:api_v1:blog-post-comments", kwargs={"slug": self.draft.slug}
+        )
         response = self.client.post(url, {"content": "Nope"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -234,14 +240,18 @@ class BlogLikeAndBookmarkTests(BlogAPITestBase):
         self.assertTrue(on.data["liked"])
         self.assertEqual(on.data["like_count"], 1)
         self.assertTrue(
-            PostLike.objects.filter(user=self.reader, post=self.published).exists()
+            PostLike.objects.filter(
+                user=self.reader, post=self.published
+            ).exists()
         )
 
         off = self.client.post(self.like_url)
         self.assertFalse(off.data["liked"])
         self.assertEqual(off.data["like_count"], 0)
         self.assertFalse(
-            PostLike.objects.filter(user=self.reader, post=self.published).exists()
+            PostLike.objects.filter(
+                user=self.reader, post=self.published
+            ).exists()
         )
 
     def test_bookmark_toggles_independently_of_like(self):
@@ -250,19 +260,27 @@ class BlogLikeAndBookmarkTests(BlogAPITestBase):
         bookmarked = self.client.post(self.bookmark_url)
         self.assertTrue(bookmarked.data["bookmarked"])
         self.assertTrue(
-            PostLike.objects.filter(user=self.reader, post=self.published).exists()
+            PostLike.objects.filter(
+                user=self.reader, post=self.published
+            ).exists()
         )
         self.assertTrue(
-            PostBookmark.objects.filter(user=self.reader, post=self.published).exists()
+            PostBookmark.objects.filter(
+                user=self.reader, post=self.published
+            ).exists()
         )
 
         unbookmarked = self.client.post(self.bookmark_url)
         self.assertFalse(unbookmarked.data["bookmarked"])
         self.assertTrue(
-            PostLike.objects.filter(user=self.reader, post=self.published).exists()
+            PostLike.objects.filter(
+                user=self.reader, post=self.published
+            ).exists()
         )
         self.assertFalse(
-            PostBookmark.objects.filter(user=self.reader, post=self.published).exists()
+            PostBookmark.objects.filter(
+                user=self.reader, post=self.published
+            ).exists()
         )
 
     def test_like_and_bookmark_flags_are_per_user(self):
@@ -286,7 +304,9 @@ class BlogLikeAndBookmarkTests(BlogAPITestBase):
     def test_cannot_like_or_bookmark_a_draft(self):
         self.client.force_authenticate(user=self.reader)
         like = self.client.post(
-            reverse("api:api_v1:blog-post-like", kwargs={"slug": self.draft.slug})
+            reverse(
+                "api:api_v1:blog-post-like", kwargs={"slug": self.draft.slug}
+            )
         )
         bookmark = self.client.post(
             reverse(

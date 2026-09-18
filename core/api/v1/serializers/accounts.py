@@ -49,13 +49,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
         allow_blank=True,
-        help_text=("Optional; used to seed the new user's profile " "display name."),
+        help_text=(
+            "Optional; used to seed the new user's profile " "display name."
+        ),
     )
     last_name = serializers.CharField(
         write_only=True,
         required=False,
         allow_blank=True,
-        help_text=("Optional; used to seed the new user's profile " "display name."),
+        help_text=(
+            "Optional; used to seed the new user's profile " "display name."
+        ),
     )
     security_code = serializers.CharField(
         write_only=True,
@@ -67,7 +71,8 @@ class RegisterSerializer(serializers.ModelSerializer):
     agree_terms = serializers.BooleanField(
         write_only=True,
         help_text=(
-            "Must be true; the user must accept the Terms & " "Policy to register."
+            "Must be true; the user must accept the Terms & "
+            "Policy to register."
         ),
     )
     account_type = serializers.ChoiceField(
@@ -95,9 +100,15 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate_security_code(self, value):
         request = self.context.get("request")
-        expected = request.session.get(SECURITY_CODE_SESSION_KEY) if request else None
+        expected = (
+            request.session.get(SECURITY_CODE_SESSION_KEY)
+            if request
+            else None
+        )
         if not expected or value.strip() != expected:
-            raise serializers.ValidationError("The security code is incorrect.")
+            raise serializers.ValidationError(
+                "The security code is incorrect."
+            )
         return value
 
     def validate_agree_terms(self, value):
@@ -127,7 +138,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         profile = user.profile
         profile.first_name = first_name
         profile.last_name = last_name
-        profile.display_name = f"{first_name} {last_name}".strip() or user.username
+        profile.display_name = (
+            f"{first_name} {last_name}".strip() or user.username
+        )
         profile.save()
 
         request = self.context.get("request")
@@ -146,17 +159,22 @@ class LoginSerializer(serializers.Serializer):
     security_code = serializers.CharField(
         write_only=True,
         help_text=(
-            "Must match the code shown on the login page for " "the current session."
+            "Must match the code shown on the login page for "
+            "the current session."
         ),
     )
 
     def validate_security_code(self, value):
         request = self.context.get("request")
         expected = (
-            request.session.get(LOGIN_SECURITY_CODE_SESSION_KEY) if request else None
+            request.session.get(LOGIN_SECURITY_CODE_SESSION_KEY)
+            if request
+            else None
         )
         if not expected or value.strip() != expected:
-            raise serializers.ValidationError("The security code is incorrect.")
+            raise serializers.ValidationError(
+                "The security code is incorrect."
+            )
         return value
 
 
@@ -172,7 +190,8 @@ class ChangePasswordSerializer(serializers.Serializer):
 class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField(
         help_text=(
-            "If an account with this email exists, a reset " "link is sent to it."
+            "If an account with this email exists, a reset "
+            "link is sent to it."
         ),
     )
 

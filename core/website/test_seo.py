@@ -50,7 +50,9 @@ class SitemapTests(TestCase):
         self.assertContains(response, f"/shop/product/{product.slug}/")
 
     def test_unpublished_product_is_not_listed(self):
-        category = ShopCategory.objects.create(name="Sitemap Hidden Groceries")
+        category = ShopCategory.objects.create(
+            name="Sitemap Hidden Groceries"
+        )
         vendor_user = make_user("sitemap-vendor-2", role=User.Role.VENDOR)
         vendor = vendor_user.vendor_profile
         product = make_product(

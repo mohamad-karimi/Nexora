@@ -155,7 +155,9 @@ class VendorListSortAPITests(APITestCase):
         # falls back to the declared default (store_name) -- it must
         # NOT silently pretend to sort by something like "featured" that
         # has no backing field.
-        response = self.client.get(self.url, {"page_size": 200, "ordering": "featured"})
+        response = self.client.get(
+            self.url, {"page_size": 200, "ordering": "featured"}
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         names = [v["store_name"] for v in response.data["results"]]
         self.assertEqual(names, sorted(names))

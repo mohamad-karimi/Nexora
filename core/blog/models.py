@@ -75,7 +75,9 @@ class Post(models.Model):
         on_delete=models.PROTECT,
         related_name="posts",
     )
-    tags = models.ManyToManyField("blog.Tag", related_name="posts", blank=True)
+    tags = models.ManyToManyField(
+        "blog.Tag", related_name="posts", blank=True
+    )
 
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=280, unique=True, blank=True)

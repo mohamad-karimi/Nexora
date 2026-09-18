@@ -58,7 +58,9 @@ class Migration(migrations.Migration):
                 ("content", models.TextField(blank=True)),
                 (
                     "image",
-                    models.ImageField(blank=True, null=True, upload_to="blog/"),
+                    models.ImageField(
+                        blank=True, null=True, upload_to="blog/"
+                    ),
                 ),
                 (
                     "status",
@@ -99,7 +101,9 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="post",
-            index=models.Index(fields=["status"], name="blog_post_status_idx"),
+            index=models.Index(
+                fields=["status"], name="blog_post_status_idx"
+            ),
         ),
         migrations.AddIndex(
             model_name="post",

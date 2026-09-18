@@ -22,7 +22,9 @@ def make_user(username, **kwargs):
     }
     defaults.update(kwargs)
     password = defaults.pop("password")
-    return User.objects.create_user(username=username, password=password, **defaults)
+    return User.objects.create_user(
+        username=username, password=password, **defaults
+    )
 
 
 class ChangePasswordAPITests(APITestCase):
@@ -169,7 +171,9 @@ class LoginSecurityCodeTests(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotIn("password", response.data)
-        self.assertEqual(int(self.client.session["_auth_user_id"]), self.user.pk)
+        self.assertEqual(
+            int(self.client.session["_auth_user_id"]), self.user.pk
+        )
 
     def test_unverified_user_is_rejected_after_passing_security_code(self):
         unverified = make_user("unvlogin", is_verified=False)

@@ -57,7 +57,9 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "image",
-                    models.ImageField(blank=True, null=True, upload_to="categories/"),
+                    models.ImageField(
+                        blank=True, null=True, upload_to="categories/"
+                    ),
                 ),
                 ("description", models.TextField(blank=True)),
                 ("created_date", models.DateTimeField(auto_now_add=True)),
@@ -109,7 +111,9 @@ class Migration(migrations.Migration):
                     "discount_percent",
                     models.PositiveSmallIntegerField(
                         default=0,
-                        validators=[django.core.validators.MaxValueValidator(100)],
+                        validators=[
+                            django.core.validators.MaxValueValidator(100)
+                        ],
                     ),
                 ),
                 (
@@ -123,7 +127,9 @@ class Migration(migrations.Migration):
                 ("stock", models.PositiveIntegerField(default=0)),
                 (
                     "image",
-                    models.ImageField(blank=True, null=True, upload_to="products/"),
+                    models.ImageField(
+                        blank=True, null=True, upload_to="products/"
+                    ),
                 ),
                 (
                     "product_type",
@@ -343,11 +349,15 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="product",
-            index=models.Index(fields=["status"], name="shop_produc_status_295d4c_idx"),
+            index=models.Index(
+                fields=["status"], name="shop_produc_status_295d4c_idx"
+            ),
         ),
         migrations.AddIndex(
             model_name="product",
-            index=models.Index(fields=["slug"], name="shop_produc_slug_76971b_idx"),
+            index=models.Index(
+                fields=["slug"], name="shop_produc_slug_76971b_idx"
+            ),
         ),
         migrations.AddConstraint(
             model_name="wishlist",

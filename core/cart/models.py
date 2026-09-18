@@ -17,7 +17,9 @@ class Cart(models.Model):
         null=True,
         blank=True,
     )
-    session_key = models.CharField(max_length=40, null=True, blank=True, unique=True)
+    session_key = models.CharField(
+        max_length=40, null=True, blank=True, unique=True
+    )
     created_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now=True)
 
@@ -52,7 +54,9 @@ class CartItem(models.Model):
     point `orders.OrderItem` takes its own price snapshot.
     """
 
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+    cart = models.ForeignKey(
+        Cart, on_delete=models.CASCADE, related_name="items"
+    )
     product = models.ForeignKey(
         "shop.Product", on_delete=models.CASCADE, related_name="cart_items"
     )

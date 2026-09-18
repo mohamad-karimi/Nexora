@@ -28,7 +28,9 @@ class HomeSlide(models.Model):
         ordering = ["ordering", "id"]
 
     def __str__(self):
-        return self.title.splitlines()[0] if self.title else f"Slide #{self.pk}"
+        return (
+            self.title.splitlines()[0] if self.title else f"Slide #{self.pk}"
+        )
 
 
 class HomeBanner(models.Model):
@@ -58,7 +60,9 @@ class HomeBanner(models.Model):
         ordering = ["ordering", "id"]
 
     def __str__(self):
-        return self.title.splitlines()[0] if self.title else f"Banner #{self.pk}"
+        return (
+            self.title.splitlines()[0] if self.title else f"Banner #{self.pk}"
+        )
 
 
 class ContactMessage(models.Model):
@@ -89,7 +93,8 @@ class ContactMessage(models.Model):
         blank=True,
         related_name="contact_messages",
         help_text=(
-            "Set when the message was submitted by a vendor " "(vendors/guide)."
+            "Set when the message was submitted by a vendor "
+            "(vendors/guide)."
         ),
     )
     user = models.ForeignKey(

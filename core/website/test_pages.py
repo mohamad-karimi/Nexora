@@ -37,8 +37,12 @@ class InactiveHomeContentTests(APITestCase):
         banner_response = self.client.get(
             reverse("api:api_v1:home-banner-detail", kwargs={"pk": banner.pk})
         )
-        self.assertEqual(slide_response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(banner_response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(
+            slide_response.status_code, status.HTTP_404_NOT_FOUND
+        )
+        self.assertEqual(
+            banner_response.status_code, status.HTTP_404_NOT_FOUND
+        )
 
 
 class PublicContactSourceForgeTests(APITestCase):

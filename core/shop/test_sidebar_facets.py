@@ -34,7 +34,9 @@ def make_product(vendor, category, **kwargs):
         "published": True,
     }
     defaults.update(kwargs)
-    return Product.objects.create(vendor=vendor, category=category, **defaults)
+    return Product.objects.create(
+        vendor=vendor, category=category, **defaults
+    )
 
 
 class ProductFacetsAPITests(APITestCase):
@@ -146,7 +148,9 @@ class ProductFacetsAPITests(APITestCase):
 
         response = self.client.get(self.url)
 
-        conditions = {c["value"]: c["count"] for c in response.data["conditions"]}
+        conditions = {
+            c["value"]: c["count"] for c in response.data["conditions"]
+        }
         self.assertEqual(conditions, {"new": 5, "used": 1})
         self.assertNotIn("refurbished", conditions)
 
@@ -174,7 +178,9 @@ class ProductFacetsAPITests(APITestCase):
         )
 
         list_url = reverse("api:api_v1:product-list")
-        response = self.client.get(list_url, {"color": "red", "condition": "new"})
+        response = self.client.get(
+            list_url, {"color": "red", "condition": "new"}
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
@@ -203,7 +209,9 @@ class ProductFacetsAPITests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
-        self.assertEqual(response.data["results"][0]["slug"], expensive_red.slug)
+        self.assertEqual(
+            response.data["results"][0]["slug"], expensive_red.slug
+        )
 
     def test_price_bounds_when_every_published_product_shares_one_price(self):
         # min == max is a real value, not a bug -- the "Fill by price"
@@ -234,7 +242,9 @@ class ShopPriceFilterAPITests(APITestCase):
         self.cheap = make_product(
             self.vendor, self.category, sku="CHEAP", price="10.00"
         )
-        self.mid = make_product(self.vendor, self.category, sku="MID", price="50.00")
+        self.mid = make_product(
+            self.vendor, self.category, sku="MID", price="50.00"
+        )
         self.pricey = make_product(
             self.vendor, self.category, sku="PRICEY", price="90.00"
         )

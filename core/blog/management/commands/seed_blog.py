@@ -230,7 +230,8 @@ POST_DATA = [
         category="Healthy Eating",
         title="Meal Prep Basics for Busy Weeks",
         excerpt=(
-            "A short draft outlining a starter meal-prep routine for hectic " "weeks."
+            "A short draft outlining a starter meal-prep routine for hectic "
+            "weeks."
         ),
         content=(
             "Draft notes: cover a base grain, a roasted vegetable, and a "
@@ -340,7 +341,9 @@ class Command(BaseCommand):
         if options["flush"]:
             self._flush()
 
-        already_seeded = Category.objects.filter(name__in=CATEGORY_DATA).exists()
+        already_seeded = Category.objects.filter(
+            name__in=CATEGORY_DATA
+        ).exists()
         if not options["flush"] and already_seeded:
             self.stdout.write(
                 self.style.WARNING(
@@ -355,14 +358,20 @@ class Command(BaseCommand):
             categories = self._seed_categories()
             self._seed_posts(authors, categories)
 
-        self.stdout.write(self.style.SUCCESS("Blog data seeded successfully."))
+        self.stdout.write(
+            self.style.SUCCESS("Blog data seeded successfully.")
+        )
 
     # -- teardown -----------------------------------------------------
     def _flush(self):
-        Post.objects.filter(title__in=[p["title"] for p in POST_DATA]).delete()
+        Post.objects.filter(
+            title__in=[p["title"] for p in POST_DATA]
+        ).delete()
         Category.objects.filter(name__in=CATEGORY_DATA).delete()
         User.objects.filter(username__in=AUTHOR_USERNAMES).delete()
-        self.stdout.write(self.style.WARNING("Previously-seeded blog data removed."))
+        self.stdout.write(
+            self.style.WARNING("Previously-seeded blog data removed.")
+        )
 
     # -- seeders --------------------------------------------------------
     def _seed_authors(self):
@@ -383,7 +392,9 @@ class Command(BaseCommand):
                 profile = user.profile
                 profile.first_name = data["first_name"]
                 profile.last_name = data["last_name"]
-                profile.display_name = f"{data['first_name']} {data['last_name']}"
+                profile.display_name = (
+                    f"{data['first_name']} {data['last_name']}"
+                )
                 profile.description = data["description"]
                 profile.save()
             authors[data["username"]] = user
@@ -418,4 +429,6 @@ class Command(BaseCommand):
                 # auto_now_add prevents save() from setting created_date, so
                 # back-date it directly for a realistic, varied ordering.
                 created_dt = now - timedelta(days=data["days_ago"])
-                Post.objects.filter(pk=post.pk).update(created_date=created_dt)
+                Post.objects.filter(pk=post.pk).update(
+                    created_date=created_dt
+                )

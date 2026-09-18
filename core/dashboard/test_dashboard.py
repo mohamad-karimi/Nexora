@@ -67,7 +67,9 @@ class VendorProductEditPageAccessTests(TestCase):
             price="5.00",
             published=False,
         )
-        self.url = reverse("dashboard:product-edit", kwargs={"slug": self.product.slug})
+        self.url = reverse(
+            "dashboard:product-edit", kwargs={"slug": self.product.slug}
+        )
 
     def test_anonymous_visitor_is_redirected_to_login(self):
         response = self.client.get(self.url)
@@ -83,7 +85,9 @@ class VendorProductEditPageAccessTests(TestCase):
         self.client.force_login(self.vendor)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "dashboard/vendor-product-edit.html")
+        self.assertTemplateUsed(
+            response, "dashboard/vendor-product-edit.html"
+        )
         self.assertEqual(response.context["product_slug"], self.product.slug)
 
 
@@ -106,13 +110,17 @@ class CustomerAccountPageAccessTests(TestCase):
         self.assertFalse(response.context["is_vendor"])
 
     def test_verified_vendor_can_open_account_page_with_vendor_flag(self):
-        self.client.force_login(make_user("acctvendor", role=User.Role.VENDOR))
+        self.client.force_login(
+            make_user("acctvendor", role=User.Role.VENDOR)
+        )
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["is_vendor"])
 
     def test_unverified_user_is_redirected_to_verification(self):
-        self.client.force_login(make_user("acctunverified", is_verified=False))
+        self.client.force_login(
+            make_user("acctunverified", is_verified=False)
+        )
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 302)
         self.assertIn(
@@ -169,7 +177,9 @@ class VendorDashboardDataOwnershipAPITests(APITestCase):
             self.client.get(self.detail_url).status_code,
             status.HTTP_404_NOT_FOUND,
         )
-        patched = self.client.patch(self.detail_url, {"name": "Stolen"}, format="json")
+        patched = self.client.patch(
+            self.detail_url, {"name": "Stolen"}, format="json"
+        )
         self.assertEqual(patched.status_code, status.HTTP_404_NOT_FOUND)
         self.product_a.refresh_from_db()
         self.assertEqual(self.product_a.name, "A Product")
@@ -188,7 +198,9 @@ class VendorDashboardDataOwnershipAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.product_a.refresh_from_db()
         self.assertFalse(self.product_a.published)
-        self.assertEqual(self.product_a.vendor_id, self.vendor_a.vendor_profile.id)
+        self.assertEqual(
+            self.product_a.vendor_id, self.vendor_a.vendor_profile.id
+        )
         self.assertEqual(self.product_a.name, "Still Mine")
 
     def test_customer_cannot_access_vendor_dashboard_product_detail(self):

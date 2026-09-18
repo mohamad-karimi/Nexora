@@ -67,18 +67,26 @@ class AddressAPITests(APITestCase):
         )
         url = reverse("api:api_v1:address-detail", kwargs={"pk": foreign.pk})
 
-        self.assertEqual(self.client.get(url).status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(
-            self.client.patch(url, {"city": "Hacked"}, format="json").status_code,
+            self.client.get(url).status_code, status.HTTP_404_NOT_FOUND
+        )
+        self.assertEqual(
+            self.client.patch(
+                url, {"city": "Hacked"}, format="json"
+            ).status_code,
             status.HTTP_404_NOT_FOUND,
         )
-        self.assertEqual(self.client.delete(url).status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(
+            self.client.delete(url).status_code, status.HTTP_404_NOT_FOUND
+        )
         foreign.refresh_from_db()
         self.assertEqual(foreign.city, "Shiraz")
 
     def test_cannot_delete_the_only_remaining_address(self):
         created = self.client.post(self.list_url, address_payload())
-        url = reverse("api:api_v1:address-detail", kwargs={"pk": created.data["id"]})
+        url = reverse(
+            "api:api_v1:address-detail", kwargs={"pk": created.data["id"]}
+        )
 
         response = self.client.delete(url)
 
@@ -86,11 +94,15 @@ class AddressAPITests(APITestCase):
         self.assertTrue(Address.objects.filter(user=self.user).exists())
 
     def test_can_delete_an_address_when_another_remains(self):
-        first = self.client.post(self.list_url, address_payload(city="Tehran"))
+        first = self.client.post(
+            self.list_url, address_payload(city="Tehran")
+        )
         self.client.post(
             self.list_url, address_payload(city="Isfahan", postal_code="2")
         )
-        url = reverse("api:api_v1:address-detail", kwargs={"pk": first.data["id"]})
+        url = reverse(
+            "api:api_v1:address-detail", kwargs={"pk": first.data["id"]}
+        )
 
         response = self.client.delete(url)
 

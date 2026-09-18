@@ -44,7 +44,9 @@ class Product(models.Model):
         on_delete=models.PROTECT,
         related_name="products",
     )
-    tags = models.ManyToManyField("shop.Tag", blank=True, related_name="products")
+    tags = models.ManyToManyField(
+        "shop.Tag", blank=True, related_name="products"
+    )
 
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=280, unique=True, blank=True)
