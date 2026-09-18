@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from django.views.generic import TemplateView
@@ -18,6 +19,15 @@ class AboutView(TemplateView):
 
 class ContactView(TemplateView):
     template_name = "website/page-contact.html"
+
+    def get_context_data(self, **kwargs):
+        # Passed to the template so the Leaflet map script can read the
+        # Mapbox token from a server-rendered JS variable instead of a
+        # hardcoded value in static/js/plugins/leaflet.js -- the token
+        # itself lives only in the environment (settings.MAPBOX_ACCESS_TOKEN).
+        context = super().get_context_data(**kwargs)
+        context["mapbox_access_token"] = settings.MAPBOX_ACCESS_TOKEN
+        return context
 
 
 class PrivacyPolicyView(TemplateView):

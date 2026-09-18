@@ -14,6 +14,13 @@
     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
     crossorigin=""
 ></script>
+
+<script>
+    // Read by core/static/js/plugins/leaflet.js instead of a hardcoded
+    // Mapbox token. The real token lives only in the environment
+    // (settings.MAPBOX_ACCESS_TOKEN / MAPBOX_ACCESS_TOKEN in .env).
+    window.MAPBOX_ACCESS_TOKEN = "{{ mapbox_access_token|escapejs }}";
+</script>
 {% endblock %}
 
     {% block content %}

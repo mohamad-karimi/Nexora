@@ -44,6 +44,14 @@ SITE_ID = 1
 SITE_DOMAIN = config("SITE_DOMAIN", default="localhost:8000")
 SITE_DISPLAY_NAME = config("SITE_DISPLAY_NAME", default="Nexora (Local)")
 
+# Mapbox access token used by the Leaflet map on the contact page
+# (core/website/views.py ContactView -> templates/website/page-contact.html
+# -> static/js/plugins/leaflet.js). Read from the environment only --
+# never hardcode a real token in source (see .env.example). Empty by
+# default so a bare checkout with no .env still boots; the map tiles
+# just will not load without a real token configured.
+MAPBOX_ACCESS_TOKEN = config("MAPBOX_ACCESS_TOKEN", default="")
+
 
 # Application definition
 
