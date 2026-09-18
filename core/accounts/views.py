@@ -54,7 +54,9 @@ class VendorRequiredMixin(VerifiedRequiredMixin):
             and user.is_verified
             and user.role != User.Role.VENDOR
         ):
-            raise PermissionDenied("This page is only available to vendor accounts.")
+            raise PermissionDenied(
+                "This page is only available to vendor accounts."
+                )
         # Anonymous -> login redirect, unverified -> verification page,
         # both handled by the mixins above.
         return super().dispatch(request, *args, **kwargs)
