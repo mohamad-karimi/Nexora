@@ -25,6 +25,8 @@ from blog.sitemaps import PostSitemap
 from shop.sitemaps import ProductSitemap
 from website.sitemaps import StaticViewSitemap
 
+from core.health import health
+
 sitemaps = {
     "static": StaticViewSitemap,
     "products": ProductSitemap,
@@ -32,6 +34,7 @@ sitemaps = {
 }
 
 urlpatterns = [
+    path("health/", health, name="health"),
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
     path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
@@ -46,4 +49,6 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(
+        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+    )

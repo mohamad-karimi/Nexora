@@ -1,0 +1,39 @@
+# Used by .github/workflows/deploy.yml on the production server.
+# Unlike docker-compose.yml (local dev: bind-mounted source, runserver),
+# this runs the image built & pushed to GHCR by CI, via gunicorn, with
+# no source bind-mount. The real .env with production secrets must
+# already exist next to this file on the server -- it is never built
+# or copied by CI (see README "Deployment" section).
+#
+# Usage on the server (done by the deploy workflow):
+#   export IMAGE=ghcr.io/<owner>/<repo>
+#   export IMAGE_TAG=<git-sha>
+#   docker compose -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.prod.yml up -d
+
+services:
+  backend:
+    image: ${IMAGE}:${IMAGE_TAG:-latest}
+    container_name: backend
+    working_dir: /usr/src/app
+    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_PATH=/usr/src/app/data/db.sqlite3
+    volumes:
+      - backend_db:/usr/src/app/data
+      - backend_media:/usr/src/app/media
+    restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+volumes:
+  backend_db:
+  backend_media:
