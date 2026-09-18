@@ -1,4 +1,4 @@
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, Max, Min, Q
 from django.http import Http404
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -219,6 +219,51 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         )
         return Response(
             ReviewSerializer(review).data, status=status.HTTP_201_CREATED
+        )
+
+    @extend_schema(
+        tags=["Catalog"],
+        summary="Facet data for the Shop sidebar filters",
+        description=(
+            "Real price bounds plus per-option counts for `color` and "
+            "`condition`, computed from currently published products only. "
+            "An option is omitted entirely when no published product has "
+            "it, so the frontend never has to guess or hardcode a value."
+        ),
+    )
+    @action(detail=False, methods=["get"], url_path="facets")
+    def facets(self, request):
+        base = Product.objects.filter(published=True)
+        bounds = base.aggregate(min_price=Min("price"), max_price=Max("price"))
+
+        def option_counts(field, choices):
+            counts = {
+                row[field]: row["count"]
+                for row in base.values(field).annotate(count=Count("id"))
+            }
+            return [
+                {"value": value, "label": label, "count": counts[value]}
+                for value, label in choices
+                if counts.get(value)
+            ]
+
+        return Response(
+            {
+                "price": {
+                    "min": (
+                        float(bounds["min_price"])
+                        if bounds["min_price"] is not None
+                        else None
+                    ),
+                    "max": (
+                        float(bounds["max_price"])
+                        if bounds["max_price"] is not None
+                        else None
+                    ),
+                },
+                "colors": option_counts("color", Product.Color.choices),
+                "conditions": option_counts("condition", Product.Condition.choices),
+            }
         )
 
 
