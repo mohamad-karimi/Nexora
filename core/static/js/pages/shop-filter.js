@@ -24,7 +24,7 @@
     color: [],
     condition: [],
     q: "",
-    ordering: "name",
+    ordering: "-created_date",
     page: 1,
     page_size: 50,
   };
@@ -40,7 +40,7 @@
     state.color = params.getAll("color");
     state.condition = params.getAll("condition");
     state.q = params.get("q") || "";
-    state.ordering = params.get("ordering") || "name";
+    state.ordering = params.get("ordering") || "-created_date";
     state.page = parseInt(params.get("page"), 10) || 1;
     state.page_size = parseInt(params.get("page_size"), 10) || 50;
   }
@@ -60,7 +60,7 @@
       params.append("condition", value);
     });
     if (state.q) params.set("q", state.q);
-    if (state.ordering && state.ordering !== "name") params.set("ordering", state.ordering);
+    if (state.ordering && state.ordering !== "-created_date") params.set("ordering", state.ordering);
     if (state.page > 1) params.set("page", state.page);
     if (state.page_size !== 50) params.set("page_size", state.page_size);
     var query = params.toString();
