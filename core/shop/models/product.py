@@ -115,7 +115,9 @@ class Product(models.Model):
         indexes = [
             models.Index(fields=["status"]),
             models.Index(fields=["slug"]),
-            models.Index(fields=["published"]),
+            models.Index(
+                fields=["published"], name="shop_product_published_idx"
+            ),
         ]
 
     def __str__(self):
