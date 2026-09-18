@@ -20,7 +20,13 @@ from orders.models import Address, Coupon, Order
     create=extend_schema(summary="Add a new address"),
     update=extend_schema(summary="Replace an address"),
     partial_update=extend_schema(summary="Update an address"),
-    destroy=extend_schema(summary="Delete an address"),
+    destroy=extend_schema(
+        summary="Delete an address",
+        description=(
+            "Rejects the request with 400 if this is the user's only "
+            "remaining address - every user must keep at least one."
+        ),
+    ),
 )
 @extend_schema(tags=["Addresses"])
 class AddressViewSet(viewsets.ModelViewSet):
@@ -31,6 +37,15 @@ class AddressViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Address.objects.filter(user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        self.get_object()  # 404s if this address isn't the current user's
+        if Address.objects.filter(user=request.user).count() <= 1:
+            return Response(
+                {"detail": "Please add another address before deleting your current address."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().destroy(request, *args, **kwargs)
 
 
 @extend_schema(tags=["Coupons"])

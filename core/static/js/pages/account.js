@@ -89,7 +89,11 @@
     var del = e.target.closest(".js-delete-address");
     if (!del) return;
     e.preventDefault();
-    Api.delete("addresses/" + del.getAttribute("data-id") + "/").then(loadAddresses);
+    Api.delete("addresses/" + del.getAttribute("data-id") + "/")
+      .then(loadAddresses)
+      .catch(function (err) {
+        Site.showToast(err.message || "Could not delete this address.", "danger");
+      });
   });
 
   // Dashboard quick links just switch to the relevant sidebar tab
