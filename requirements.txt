@@ -9,6 +9,9 @@ Pillow==12.3.0
 # Configuration
 python-decouple==3.8
 
+# Redis client (used by core/redis_client.py)
+redis==8.1.0
+
 # JWT
 PyJWT==2.9.0
 

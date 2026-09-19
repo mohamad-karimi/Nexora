@@ -202,6 +202,27 @@ EMAIL_USE_SSL = False
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
 
+# Redis
+# Connection details are read from the environment/`.env` only -- never
+# hardcode a host or credential here (see .env.example). Nothing in the
+# app consumes Redis yet (no cache, Celery or rate limiting); these
+# settings are only used by core.redis_client. The defaults suit a bare
+# local checkout with a Redis on localhost; under Docker Compose the
+# backend service sets REDIS_HOST=redis (the Redis service name).
+REDIS_HOST = config("REDIS_HOST", default="localhost")
+REDIS_PORT = config("REDIS_PORT", default=6379, cast=int)
+REDIS_DB = config("REDIS_DB", default=0, cast=int)
+# Empty means "no authentication" -- acceptable for local dev only;
+# docker-compose.prod.yml refuses to start without a password.
+REDIS_PASSWORD = config("REDIS_PASSWORD", default="")
+REDIS_SSL = config("REDIS_SSL", default=False, cast=bool)
+# Short timeouts so an unreachable Redis is reported quickly instead of
+# hanging a request or a health check.
+REDIS_SOCKET_CONNECT_TIMEOUT = config(
+    "REDIS_SOCKET_CONNECT_TIMEOUT", default=2.0, cast=float
+)
+REDIS_SOCKET_TIMEOUT = config("REDIS_SOCKET_TIMEOUT", default=2.0, cast=float)
+
 # Django REST Framework
 # The frontend is a server-rendered site with fetch()-based AJAX calls
 # from the same origin, authenticated with the existing Django

@@ -17,6 +17,7 @@ env:
   ALLOWED_HOSTS: localhost,127.0.0.1
   EMAIL_HOST_USER: ci@example.com
   EMAIL_HOST_PASSWORD: ci-test-password
+  REDIS_PASSWORD: ci-test-redis-password
 
 jobs:
   backend:
@@ -90,6 +91,7 @@ jobs:
           ALLOWED_HOSTS=$ALLOWED_HOSTS
           EMAIL_HOST_USER=$EMAIL_HOST_USER
           EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD
+          REDIS_PASSWORD=$REDIS_PASSWORD
           SITE_DOMAIN=localhost:8000
           SITE_DISPLAY_NAME=Nexora CI
           EOF
@@ -118,6 +120,9 @@ jobs:
 
       - name: Verify /health/ from the host (database connectivity)
         run: curl --fail --silent --show-error http://localhost:8000/health/
+
+      - name: Verify /health/redis/ from the host (Redis connectivity)
+        run: curl --fail --silent --show-error http://localhost:8000/health/redis/
 
       - name: Show logs on failure
         if: failure()
