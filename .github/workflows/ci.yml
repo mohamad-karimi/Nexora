@@ -124,6 +124,16 @@ jobs:
       - name: Verify /health/redis/ from the host (Redis connectivity)
         run: curl --fail --silent --show-error http://localhost:8000/health/redis/
 
+      - name: Verify the public cache stores data in Redis
+        run: |
+          # The seeded home slides are public data: two identical reads
+          # fill and then use the Redis cache (logical DB 2).
+          curl --fail --silent --show-error http://localhost:8000/api/v1/home-slides/ > /dev/null
+          curl --fail --silent --show-error http://localhost:8000/api/v1/home-slides/ > /dev/null
+          keys=$(docker compose exec -T redis sh -c 'if [ -n "$REDIS_PASSWORD" ]; then export REDISCLI_AUTH="$REDIS_PASSWORD"; fi; redis-cli -n 2 --scan --pattern "*pubcache*"')
+          echo "$keys"
+          echo "$keys" | grep -q pubcache
+
       - name: Wait for the Celery worker to report healthy
         run: |
           # The worker's healthcheck is `celery inspect ping`: healthy means

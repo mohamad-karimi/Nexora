@@ -28,6 +28,26 @@ def _locmem_email(settings):
 
 
 @pytest.fixture(autouse=True)
+def _public_cache_off(settings):
+    """The suite never talks to Redis and, unless a test opts in, never
+    serves anything from the public cache (so every test sees the database
+    exactly as before). Tests of the cache itself switch it back on with a
+    local-memory backend (see api/test_public_cache.py)."""
+    from core import public_cache
+
+    settings.CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "nexora-test",
+        }
+    }
+    settings.PUBLIC_CACHE_ENABLED = False
+    public_cache.reset_state()
+    yield
+    public_cache.reset_state()
+
+
+@pytest.fixture(autouse=True)
 def _celery_eager(settings):
     # Celery reads its CELERY_* keys live from Django settings, so this
     # fixture (unlike an environment variable, which would be read too

@@ -13,6 +13,7 @@ from rest_framework.response import Response
 
 from api.v1.filters import ProductFilter
 from api.v1.permissions import IsVerified
+from api.v1.public_cache import PublicDetailCacheMixin, PublicListCacheMixin
 from api.v1.serializers.shop import (
     CategorySerializer,
     ProductDetailSerializer,
@@ -21,6 +22,7 @@ from api.v1.serializers.shop import (
     TagSerializer,
     WishlistSerializer,
 )
+from core import public_cache
 from shop.models import Category, Product, Review, Tag, Wishlist
 
 
@@ -32,13 +34,22 @@ from shop.models import Category, Product, Review, Tag, Wishlist
     ),
 )
 @extend_schema(tags=["Catalog"])
-class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+class CategoryViewSet(PublicListCacheMixin, viewsets.ReadOnlyModelViewSet):
     """Read-only listing/detail of product categories, with a
     live product count.
     """
 
     serializer_class = CategorySerializer
     lookup_field = "slug"
+
+    # Public, user-independent, rarely edited: the list is cached (the
+    # product_count follows product publish changes -- see
+    # core/cache_invalidation.py).
+    public_cache_domain = "catalog"
+    public_cache_ttl = "taxonomy"
+    public_cache_name = "categories"
+    public_cache_params = frozenset({"page", "page_size", "ordering"})
+    public_cache_orderings = frozenset({"name", "-name"})
 
     def get_queryset(self):
         return Category.objects.annotate(
@@ -56,12 +67,18 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     ),
 )
 @extend_schema(tags=["Catalog"])
-class TagViewSet(viewsets.ReadOnlyModelViewSet):
+class TagViewSet(PublicListCacheMixin, viewsets.ReadOnlyModelViewSet):
     """Read-only listing/detail of product tags."""
 
     queryset = Tag.objects.all().order_by("name")
     serializer_class = TagSerializer
     lookup_field = "slug"
+
+    public_cache_domain = "catalog"
+    public_cache_ttl = "taxonomy"
+    public_cache_name = "tags"
+    public_cache_params = frozenset({"page", "page_size", "ordering"})
+    public_cache_orderings = frozenset({"name", "-name"})
 
 
 @extend_schema_view(
@@ -84,7 +101,9 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     ),
 )
 @extend_schema(tags=["Catalog"])
-class ProductViewSet(viewsets.ReadOnlyModelViewSet):
+class ProductViewSet(
+    PublicListCacheMixin, PublicDetailCacheMixin, viewsets.ReadOnlyModelViewSet
+):
     """
     Read-only browsing of products, plus a nested `reviews` action.
 
@@ -97,7 +116,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     `reviews` action) is a little more permissive: the product's own
     vendor and staff/admin can open it even while it's unpublished --
     e.g. right after creating it from the Vendor Dashboard, before an
-    admin has approved it -- via get_object() below. Everyone else
+    admin has approved it -- via get_object_uncached() below. Everyone else
     gets the same 404 a nonexistent slug would, so an unpublished
     product's existence is never revealed to the public or to a
     vendor who doesn't own it.
@@ -114,6 +133,36 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         "discount_percent",
     ]
     ordering = ["-created_date"]
+
+    # Public cache (see core/public_cache.py). The published product list
+    # and a published product's detail are cached as query results; the
+    # serializer still adds the per-user `is_wishlisted` on every request.
+    # An unpublished product is never cached (public_cache_is_public), so
+    # the owner/staff-only visibility rules below are untouched. Search and
+    # price-range requests are not cached (unbounded key space).
+    public_cache_domain = "catalog"
+    public_cache_ttl = "catalog"
+    public_cache_name = "products"
+    public_cache_params = frozenset(
+        {
+            "category",
+            "vendor",
+            "tag",
+            "in_stock",
+            "color",
+            "condition",
+            "ordering",
+            "page",
+            "page_size",
+        }
+    )
+    public_cache_slug_params = frozenset({"category", "vendor", "tag"})
+    public_cache_orderings = frozenset(
+        ordering_fields + [f"-{field}" for field in ordering_fields]
+    )
+
+    def public_cache_is_public(self, product):
+        return product.published
 
     def get_queryset(self):
         queryset = (
@@ -134,7 +183,9 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(published=True)
         return queryset
 
-    def get_object(self):
+    def get_object_uncached(self):
+        # The lookup + visibility rules below; PublicDetailCacheMixin
+        # .get_object() wraps this (and only ever caches a published one).
         queryset = self.filter_queryset(self.get_queryset())
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
         obj = get_object_or_404(queryset, slug=self.kwargs[lookup_url_kwarg])
@@ -246,6 +297,19 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     )
     @action(detail=False, methods=["get"], url_path="facets")
     def facets(self, request):
+        if request.query_params:
+            # The endpoint ignores parameters; don't cache variations.
+            return Response(self._build_facets())
+        return Response(
+            public_cache.cached(
+                "catalog",
+                ("products", "facets"),
+                self._build_facets,
+                "catalog",
+            )
+        )
+
+    def _build_facets(self):
         base = Product.objects.filter(published=True)
         bounds = base.aggregate(
             min_price=Min("price"), max_price=Max("price")
@@ -262,26 +326,24 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
                 if counts.get(value)
             ]
 
-        return Response(
-            {
-                "price": {
-                    "min": (
-                        float(bounds["min_price"])
-                        if bounds["min_price"] is not None
-                        else None
-                    ),
-                    "max": (
-                        float(bounds["max_price"])
-                        if bounds["max_price"] is not None
-                        else None
-                    ),
-                },
-                "colors": option_counts("color", Product.Color.choices),
-                "conditions": option_counts(
-                    "condition", Product.Condition.choices
+        return {
+            "price": {
+                "min": (
+                    float(bounds["min_price"])
+                    if bounds["min_price"] is not None
+                    else None
                 ),
-            }
-        )
+                "max": (
+                    float(bounds["max_price"])
+                    if bounds["max_price"] is not None
+                    else None
+                ),
+            },
+            "colors": option_counts("color", Product.Color.choices),
+            "conditions": option_counts(
+                "condition", Product.Condition.choices
+            ),
+        }
 
 
 @extend_schema_view(

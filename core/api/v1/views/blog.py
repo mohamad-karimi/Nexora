@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from api.v1.filters import PostFilter
+from api.v1.public_cache import PublicDetailCacheMixin, PublicListCacheMixin
 from api.v1.serializers.blog import (
     CategorySerializer,
     CommentSerializer,
@@ -28,11 +29,17 @@ from blog.models import Category, Post, PostBookmark, PostLike, Tag
     ),
 )
 @extend_schema(tags=["Blog"])
-class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+class CategoryViewSet(PublicListCacheMixin, viewsets.ReadOnlyModelViewSet):
     """Read-only listing/detail of blog categories, with a live post count."""
 
     serializer_class = CategorySerializer
     lookup_field = "slug"
+
+    public_cache_domain = "blog"
+    public_cache_ttl = "taxonomy"
+    public_cache_name = "blog-categories"
+    public_cache_params = frozenset({"page", "page_size", "ordering"})
+    public_cache_orderings = frozenset({"name", "-name"})
 
     def get_queryset(self):
         return Category.objects.annotate(
@@ -50,12 +57,18 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     ),
 )
 @extend_schema(tags=["Blog"])
-class TagViewSet(viewsets.ReadOnlyModelViewSet):
+class TagViewSet(PublicListCacheMixin, viewsets.ReadOnlyModelViewSet):
     """Read-only listing/detail of blog tags (mirrors shop.Tag's API shape)."""
 
     queryset = Tag.objects.all().order_by("name")
     serializer_class = TagSerializer
     lookup_field = "slug"
+
+    public_cache_domain = "blog"
+    public_cache_ttl = "taxonomy"
+    public_cache_name = "blog-tags"
+    public_cache_params = frozenset({"page", "page_size", "ordering"})
+    public_cache_orderings = frozenset({"name", "-name"})
 
 
 @extend_schema_view(
@@ -73,7 +86,9 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     ),
 )
 @extend_schema(tags=["Blog"])
-class PostViewSet(viewsets.ReadOnlyModelViewSet):
+class PostViewSet(
+    PublicListCacheMixin, PublicDetailCacheMixin, viewsets.ReadOnlyModelViewSet
+):
     """Read-only browsing of published blog posts."""
 
     lookup_field = "slug"
@@ -81,6 +96,26 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ["title", "excerpt", "content"]
     ordering_fields = ["created_date", "title"]
     ordering = ["-created_date"]
+
+    # Only published posts ever reach the queryset, and only those are
+    # cached. The per-user `is_liked` / `is_bookmarked` are added by the
+    # serializer on every request; the like_count follows PostLike changes
+    # (core/cache_invalidation.py). Searches are not cached. The comments /
+    # bookmark / like actions call get_object() too but always hit the
+    # database (the detail cache only serves `retrieve`).
+    public_cache_domain = "blog"
+    public_cache_ttl = "blog"
+    public_cache_name = "blog-posts"
+    public_cache_params = frozenset(
+        {"category", "tag", "ordering", "page", "page_size"}
+    )
+    public_cache_slug_params = frozenset({"category", "tag"})
+    public_cache_orderings = frozenset(
+        ordering_fields + [f"-{field}" for field in ordering_fields]
+    )
+
+    def public_cache_is_public(self, post):
+        return post.status == Post.Status.PUBLISHED
 
     def get_queryset(self):
         return (

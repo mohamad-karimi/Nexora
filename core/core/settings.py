@@ -232,6 +232,67 @@ REDIS_SOCKET_CONNECT_TIMEOUT = config(
 )
 REDIS_SOCKET_TIMEOUT = config("REDIS_SOCKET_TIMEOUT", default=2.0, cast=float)
 
+# Cache (public storefront data)
+# Django's built-in Redis cache backend (no extra library), on its own
+# logical database (REDIS_CACHE_DB) next to DB 0 (health/markers/locks) and
+# the Celery broker DB. Only PUBLIC, user-independent query results are put
+# in it (see core/public_cache.py); nothing per-user ever is.
+#
+# Tight socket timeouts on purpose: if Redis is down a cache call must fail
+# fast, not hold a request for seconds. core.public_cache additionally
+# stops calling Redis for PUBLIC_CACHE_FAILURE_COOLDOWN seconds after a
+# failure, and every caller falls back to the database.
+REDIS_CACHE_DB = config("REDIS_CACHE_DB", default=2, cast=int)
+REDIS_CACHE_SOCKET_TIMEOUT = config(
+    "REDIS_CACHE_SOCKET_TIMEOUT", default=1.0, cast=float
+)
+_cache_scheme = "rediss" if REDIS_SSL else "redis"
+_cache_auth = f":{quote(REDIS_PASSWORD, safe='')}@" if REDIS_PASSWORD else ""
+_cache_options = {
+    "socket_connect_timeout": REDIS_CACHE_SOCKET_TIMEOUT,
+    "socket_timeout": REDIS_CACHE_SOCKET_TIMEOUT,
+}
+if REDIS_SSL:
+    _cache_options["ssl_cert_reqs"] = ssl.CERT_REQUIRED
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": config(
+            "CACHE_URL",
+            default=(
+                f"{_cache_scheme}://{_cache_auth}{REDIS_HOST}:{REDIS_PORT}"
+                f"/{REDIS_CACHE_DB}"
+            ),
+        ),
+        "KEY_PREFIX": "nexora",
+        # Bump (CACHE_KEY_VERSION) after a deploy that changes the fields of
+        # a cached model, so entries pickled by the old code are never read.
+        "VERSION": config("CACHE_KEY_VERSION", default=1, cast=int),
+        "OPTIONS": _cache_options,
+    }
+}
+
+# Kill switch: PUBLIC_CACHE_ENABLED=False sends every request straight to
+# the database again (no restart of Redis needed, nothing else changes).
+PUBLIC_CACHE_ENABLED = config("PUBLIC_CACHE_ENABLED", default=True, cast=bool)
+# After a Redis error, skip the cache entirely for this many seconds.
+PUBLIC_CACHE_FAILURE_COOLDOWN = config(
+    "PUBLIC_CACHE_FAILURE_COOLDOWN", default=30, cast=int
+)
+# How long a cached result may live (seconds). Invalidation on every change
+# (core/cache_invalidation.py) is what keeps data fresh; the TTL is the
+# backstop for writes that bypass Django signals (QuerySet.update(),
+# bulk_create(), raw SQL, edits made outside the app) and for a Redis
+# outage during an invalidation. Kept short where the data is edited often.
+PUBLIC_CACHE_TTL = {
+    "home": 300,  # slider + banners: edited rarely
+    "taxonomy": 600,  # category / tag / blog category / blog tag lists
+    "catalog": 120,  # products, facets, product detail (stock, ratings...)
+    "vendors": 300,  # public vendor list
+    "blog": 120,  # published posts (like counts, author profile)
+}
+
+
 # Celery (background jobs)
 # The broker is the same Redis service configured above, on its own logical
 # database (REDIS_BROKER_DB) so queue keys never mix with anything else
