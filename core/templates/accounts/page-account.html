@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <main class="main pages">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="{% url 'website:home' %}" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                    <span></span> My Account
+                </div>
+            </div>
+        </div>
+        <div class="page-content pt-150 pb-150">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-10 m-auto">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="dashboard-menu">
+                                    <ul class="nav flex-column" role="tablist">
+                                        {% if is_vendor %}
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="{% url 'dashboard:dashboard' %}"><i class="fi-rs-settings-sliders mr-10"></i>Dashboard</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="add-product-tab" data-bs-toggle="tab" href="{% url 'accounts:account' %}#add-product" role="tab" aria-controls="add-product" aria-selected="false"><i class="fi-rs-shopping-bag-add mr-10"></i>Add Product</a>
+                                        </li>
+                                        {% else %}
+                                        <li class="nav-item">
+                                            <a class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" href="{% url 'accounts:account' %}#dashboard" role="tab" aria-controls="dashboard" aria-selected="false"><i class="fi-rs-settings-sliders mr-10"></i>Dashboard</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="orders-tab" data-bs-toggle="tab" href="{% url 'accounts:account' %}#orders" role="tab" aria-controls="orders" aria-selected="false"><i class="fi-rs-shopping-bag mr-10"></i>Orders</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="track-orders-tab" data-bs-toggle="tab" href="{% url 'accounts:account' %}#track-orders" role="tab" aria-controls="track-orders" aria-selected="false"><i class="fi-rs-shopping-cart-check mr-10"></i>Track Your Order</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="address-tab" data-bs-toggle="tab" href="{% url 'accounts:account' %}#address" role="tab" aria-controls="address" aria-selected="true"><i class="fi-rs-marker mr-10"></i>My Address</a>
+                                        </li>
+                                        {% endif %}
+                                        <li class="nav-item">
+                                            <a class="nav-link{% if is_vendor %} active{% endif %}" id="account-detail-tab" data-bs-toggle="tab" href="{% url 'accounts:account' %}#account-detail" role="tab" aria-controls="account-detail" aria-selected="true"><i class="fi-rs-user mr-10"></i>Account details</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link js-logout-link" href="#"><i class="fi-rs-sign-out mr-10"></i>Logout</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="tab-content account dashboard-content pl-50">
+                                    {% if not is_vendor %}
+                                    <div class="tab-pane fade active show" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="mb-0 js-account-greeting">Hello!</h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <p>
+                                                    From your account dashboard. you can easily check &amp; view your <a href="{% url 'accounts:account' %}#orders" class="js-dashboard-tab-link" data-target="orders-tab">recent orders</a>,<br />
+                                                    manage your <a href="{% url 'accounts:account' %}#address" class="js-dashboard-tab-link" data-target="address-tab">shipping and billing addresses</a> and <a href="{% url 'accounts:account' %}#account-detail" class="js-dashboard-tab-link" data-target="account-detail-tab">edit your password and account details.</a>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="mb-0">Your Orders</h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="table-responsive">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Order</th>
+                                                                <th>Date</th>
+                                                                <th>Status</th>
+                                                                <th>Total</th>
+                                                                <th>Actions</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="js-orders-body">
+                                                            <tr><td colspan="5">Loading…</td></tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="track-orders" role="tabpanel" aria-labelledby="track-orders-tab">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="mb-0">Orders tracking</h3>
+                                            </div>
+                                            <div class="card-body contact-from-area">
+                                                <p>To track your order please enter your OrderID in the box below and press "Track" button. This was given to you on your receipt and in the confirmation email you should have received.</p>
+                                                <div class="row">
+                                                    <div class="col-lg-8">
+                                                        <form class="contact-form-style mt-30 mb-50" action="#" method="post">
+                                                            <div class="input-style mb-20">
+                                                                <label>Order ID</label>
+                                                                <input name="order-id" placeholder="Found in your order confirmation email" type="text" />
+                                                            </div>
+                                                            <div class="input-style mb-20">
+                                                                <label>Billing email</label>
+                                                                <input name="billing-email" placeholder="Email you used during checkout" type="email" />
+                                                            </div>
+                                                            <button class="submit submit-auto-width" type="submit">Track</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
+                                        <div class="row js-addresses-container">
+                                            <div class="col-12"><p>Loading addresses…</p></div>
+                                        </div>
+                                        <div class="card mt-3">
+                                            <div class="card-header">
+                                                <h5 class="mb-0">Add a new address</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <form id="addAddressForm">
+                                                    <div class="row">
+                                                        <div class="form-group col-md-6">
+                                                            <label>Full name</label>
+                                                            <input required class="form-control" id="addr-full-name" type="text" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Phone</label>
+                                                            <input required class="form-control" id="addr-phone" type="text" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Country</label>
+                                                            <input required class="form-control" id="addr-country" type="text" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>City</label>
+                                                            <input required class="form-control" id="addr-city" type="text" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Postal code</label>
+                                                            <input required class="form-control" id="addr-postal" type="text" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Address</label>
+                                                            <input required class="form-control" id="addr-line1" type="text" />
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <button type="submit" class="btn btn-fill-out submit font-weight-bold">Save Address</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if is_vendor %}
+                                    <div class="tab-pane fade" id="add-product" role="tabpanel" aria-labelledby="add-product-tab">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0">Add Product</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="js-add-product-message" style="display:none;"></p>
+                                                <form id="vendorAddProductForm" enctype="multipart/form-data">
+                                                    <div class="row">
+                                                        <div class="form-group col-md-6">
+                                                            <label>Product Name <span class="required">*</span></label>
+                                                            <input required class="form-control" id="product-name" type="text" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Category <span class="required">*</span></label>
+                                                            <select required class="form-control" id="product-category">
+                                                                <option value="">Select a category…</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>SKU <span class="required">*</span></label>
+                                                            <input required class="form-control" id="product-sku" type="text" placeholder="Unique product code" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Price <span class="required">*</span></label>
+                                                            <input required class="form-control" id="product-price" type="number" min="0" step="0.01" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Discount % <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-discount-percent" type="number" min="0" max="100" step="1" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Discount Ends <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-discount-end" type="datetime-local" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Stock</label>
+                                                            <input class="form-control" id="product-stock" type="number" min="0" step="1" value="0" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Condition</label>
+                                                            <select class="form-control" id="product-condition">
+                                                                <option value="new">New</option>
+                                                                <option value="refurbished">Refurbished</option>
+                                                                <option value="used">Used</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Status</label>
+                                                            <select class="form-control" id="product-status">
+                                                                <option value="draft">Draft</option>
+                                                                <option value="published">Published</option>
+                                                                <option value="archived">Archived</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Color <span class="text-muted">(optional)</span></label>
+                                                            <select class="form-control" id="product-color">
+                                                                <option value="">None</option>
+                                                                <option value="red">Red</option>
+                                                                <option value="green">Green</option>
+                                                                <option value="blue">Blue</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="form-group col-md-12">
+                                                            <label>Short Description <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-short-description" type="text" maxlength="500" />
+                                                        </div>
+                                                        <div class="form-group col-md-12">
+                                                            <label>Description <span class="text-muted">(optional)</span></label>
+                                                            <textarea class="form-control" id="product-description" rows="5"></textarea>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Product Type <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-type" type="text" placeholder='e.g. "Organic"' />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Product Image <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-image" type="file" accept="image/*" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Manufacture Date <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-manufacture-date" type="date" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Shelf Life (days) <span class="text-muted">(optional)</span></label>
+                                                            <input class="form-control" id="product-shelf-life-days" type="number" min="0" step="1" />
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <button type="submit" class="btn btn-fill-out submit font-weight-bold">Create Product</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                                <hr class="mt-30 mb-30" />
+                                                <h5>Your Products</h5>
+                                                <div class="table-responsive">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Product</th>
+                                                                <th>Category</th>
+                                                                <th>Price</th>
+                                                                <th>Stock</th>
+                                                                <th>Status</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="js-vendor-products-body">
+                                                            <tr><td colspan="5">Loading…</td></tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    <div class="tab-pane fade{% if is_vendor %} active show{% endif %}" id="account-detail" role="tabpanel" aria-labelledby="account-detail-tab">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5>Account Details</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="js-profile-message text-success" style="display:none;"></p>
+                                                <form method="post" name="enq" id="profileForm">
+                                                    <div class="row">
+                                                        <div class="form-group col-md-6">
+                                                            <label>First Name <span class="required">*</span></label>
+                                                            <input class="form-control" id="profile-first-name" type="text" />
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label>Last Name <span class="required">*</span></label>
+                                                            <input class="form-control" id="profile-last-name" />
+                                                        </div>
+                                                        <div class="form-group col-md-12">
+                                                            <label>Display Name <span class="required">*</span></label>
+                                                            <input class="form-control" id="profile-display-name" type="text" />
+                                                        </div>
+                                                        <div class="form-group col-md-12">
+                                                            <label>Phone</label>
+                                                            <input class="form-control" id="profile-phone" type="text" />
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <button type="submit" class="btn btn-fill-out submit font-weight-bold">Save Change</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                                <hr class="mt-30 mb-30" />
+                                                <h5>Change Password</h5>
+                                                <p class="js-password-message" style="display:none;"></p>
+                                                <form id="passwordForm">
+                                                    <div class="row">
+                                                        <div class="form-group col-md-12">
+                                                            <label>Current Password <span class="required">*</span></label>
+                                                            <input required="" class="form-control" id="password-old" type="password" />
+                                                        </div>
+                                                        <div class="form-group col-md-12">
+                                                            <label>New Password <span class="required">*</span></label>
+                                                            <input required="" class="form-control" id="password-new" type="password" />
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <button type="submit" class="btn btn-fill-out submit font-weight-bold">Change Password</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/pages/account.js' %}"></script>
+    {% if is_vendor %}
+    <script src="{% static 'js/pages/account-vendor-product.js' %}"></script>
+    {% endif %}
+{% endblock %}

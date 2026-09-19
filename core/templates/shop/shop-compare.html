@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="{% url 'website:home' %}" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                    <span></span><a href="{% url 'shop:grid_left' %}">Shop</a>  <span></span> Compare
+                </div>
+            </div>
+        </div>
+        <div class="container mb-80 mt-50">
+            <div class="row">
+                <div class="col-xl-10 col-lg-12 m-auto">
+                    <h1 class="heading-2 mb-10">Products Compare</h1>
+                    <h6 class="text-body mb-40">There are <span class="text-brand js-compare-count">0</span> products to compare</h6>
+                    <div class="table-responsive">
+                        <table class="table text-center table-compare">
+                            <tbody class="js-compare-body">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="js-compare-empty text-center py-5" style="display:none;">
+                        <p class="mb-20">You have no products to compare yet.</p>
+                        <a href="{% url 'shop:filter' %}" class="btn btn-fill-out">Browse Products</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/pages/shop-compare.js' %}"></script>
+{% endblock %}

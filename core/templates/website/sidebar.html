@@ -1,0 +1,33 @@
+{% load static %}
+<div class="col-lg-3 primary-sidebar sticky-sidebar">
+    <div class="widget-area">
+        <div class="sidebar-widget-2 widget_search mb-50">
+            <div class="search-form">
+                <form action="{% url 'shop:grid_left' %}" class="js-search-form">
+                    <input type="text" name="q" class="js-search-input" placeholder="Search…" />
+                    <button type="submit"><i class="fi-rs-search"></i></button>
+                </form>
+            </div>
+        </div>
+        <div class="sidebar-widget widget-category-2 mb-30">
+            <h5 class="section-title style-1 mb-30">Category</h5>
+            <ul class="js-category-list"></ul>
+        </div>
+        <!-- Product sidebar Widget -->
+        <div class="sidebar-widget product-sidebar mb-30 p-30 bg-grey border-radius-10">
+            <h5 class="section-title style-1 mb-30">Trending Now</h5>
+            <div class="js-sidebar-new-products"></div>
+        </div>
+        <div class="banner-img wow fadeIn mb-40 animated d-lg-block d-none">
+            <img src="{% static 'imgs/banner/banner-11.png' %}" alt="" />
+            <div class="banner-text">
+                <span>Oganic</span>
+                <h4>
+                    Save 17% <br />
+                    on <span class="text-brand">Oganic</span><br />
+                    Juice
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+    <style>
+        .otp-boxes {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+        }
+        .otp-boxes input.js-otp-digit {
+            width: 48px;
+            height: 56px;
+            padding: 0;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            background: #fff;
+            border: 1px solid #ececec;
+            border-radius: 6px;
+            box-shadow: none;
+        }
+        .otp-boxes input.js-otp-digit:focus {
+            background: transparent;
+            border-color: #3BB77E;
+            outline: none;
+        }
+        @media (max-width: 420px) {
+            .otp-boxes input.js-otp-digit {
+                width: 40px;
+                height: 48px;
+                font-size: 18px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <main class="main pages">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="{% url 'website:home' %}" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                    <span></span> My Account
+                </div>
+            </div>
+        </div>
+        <div class="page-content pt-150 pb-150">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-6 col-lg-8 col-md-12 m-auto">
+                        <div class="login_wrap widget-taber-content background-white text-center">
+                            <div class="padding_eight_all bg-white">
+                                <div class="heading_s1">
+                                    <h2 class="mb-15 mt-15">Verify Your Email</h2>
+                                    <p class="mb-30">
+                                        We sent a verification code to your email. Enter the
+                                        6-digit code below to verify your account.
+                                    </p>
+                                </div>
+                                <form id="verify-email-form" class="mb-30">
+                                    <div class="form-group otp-boxes mb-20">
+                                        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1"
+                                               autocomplete="one-time-code" class="js-otp-digit" aria-label="Digit 1" />
+                                        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1"
+                                               autocomplete="off" class="js-otp-digit" aria-label="Digit 2" />
+                                        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1"
+                                               autocomplete="off" class="js-otp-digit" aria-label="Digit 3" />
+                                        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1"
+                                               autocomplete="off" class="js-otp-digit" aria-label="Digit 4" />
+                                        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1"
+                                               autocomplete="off" class="js-otp-digit" aria-label="Digit 5" />
+                                        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1"
+                                               autocomplete="off" class="js-otp-digit" aria-label="Digit 6" />
+                                    </div>
+                                    <div class="form-group js-form-success text-success mb-20" style="display:none;"></div>
+                                    <div class="form-group js-form-error text-danger mb-20" style="display:none;"></div>
+                                    <button type="submit" class="btn btn-fill-out btn-block hover-up font-weight-bold">Verify</button>
+                                </form>
+                                <button type="button" id="resend-otp-button" class="btn btn-heading btn-block hover-up">Resend Code</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/pages/auth.js' %}"></script>
+{% endblock %}

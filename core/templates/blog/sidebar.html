@@ -1,0 +1,65 @@
+{% load static %}
+<div class="col-lg-3 primary-sidebar sticky-sidebar">
+    <div class="widget-area">
+        <div class="sidebar-widget-2 widget_search mb-50">
+            <div class="search-form">
+                <form action="{% url 'blog:category_list' %}" class="js-search-form">
+                    <input type="text" name="q" class="js-search-input" placeholder="Search…" />
+                    <button type="submit"><i class="fi-rs-search"></i></button>
+                </form>
+            </div>
+        </div>
+        <div class="sidebar-widget widget-category-2 mb-50">
+            <h5 class="section-title style-1 mb-30">Category</h5>
+            <!--
+                Was a hardcoded list of shop categories (wrong app entirely)
+                linking to shop:grid_left. Populated for real by
+                loadSidebarCategories() in blog-list.js from
+                /api/v1/blog/categories/, with live post counts, matching
+                the js-category-list convention already used by
+                shop/sidebar.html and website/sidebar.html.
+            -->
+            <ul class="js-category-list"></ul>
+        </div>
+        <!-- Product sidebar Widget -->
+        <div class="sidebar-widget product-sidebar mb-50 p-30 bg-grey border-radius-10">
+            <h5 class="section-title style-1 mb-30">Trending Now</h5>
+            <!--
+                Was 4 hardcoded shop products (thumbnails/prices/ratings)
+                linking to an external demo site (nest-frontend-v6.vercel.app) -
+                a dead end inside this Django project, and the wrong content
+                type for a blog sidebar besides. Populated for real by
+                loadSidebarTrendingPosts() in blog-list.js from
+                /api/v1/blog/posts/, showing actual recent posts.
+            -->
+            <div class="js-sidebar-trending-posts"></div>
+        </div>
+        <!--Tags-->
+        <div class="sidebar-widget widget-tags mb-50 pb-10">
+            <h5 class="section-title style-1 mb-30">Popular Tags</h5>
+            <!--
+                Was 6 hardcoded tags (Cabbage, Broccoli, Smoothie, Fruit,
+                Salad, Appetizer) linking to blog-category-grid.html, a
+                page that doesn't exist in this project. Populated for
+                real by loadSidebarTags() in blog-list.js from the new
+                /api/v1/blog/tags/ endpoint (blog.Tag - added because no
+                Tag concept existed yet for the blog app), linking to
+                /blog/?tag=<slug> which blog-list.js already knows how
+                to filter by.
+            -->
+            <ul class="tags-list js-sidebar-tags">
+            </ul>
+        </div>
+        <div class="banner-img wow fadeIn mb-50 animated d-lg-block d-none">
+            <img src="{% static 'imgs/banner/banner-11.png' %}" alt="" />
+            <div class="banner-text">
+                <span>Oganic</span>
+                <h4>
+                    Save 17% <br />
+                    on <span class="text-brand">Oganic</span><br />
+                    Juice
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <main class="main">
+        <div class="page-header mt-30 mb-50">
+            <div class="container">
+                <div class="archive-header">
+                    <div class="row align-items-center">
+                        <div class="col-xl-3">
+                            <h1 class="mb-15 js-page-title">Shop</h1>
+                            <div class="breadcrumb">
+                                <a href="{% url 'website:home' %}" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                                <span></span> Shop
+                            </div>
+                        </div>
+                        <div class="col-xl-9 text-end d-none d-xl-block">
+                            <ul class="tags-list js-tags-list">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container mb-30">
+            <div class="row flex-row-reverse">
+                <div class="col-lg-4-5">
+                    <div class="shop-product-fillter">
+                        <div class="totall-product">
+                            <p>We found <strong class="text-brand js-result-count">0</strong> items for you!</p>
+                        </div>
+                        <div class="sort-by-product-area">
+                            <div class="sort-by-cover mr-10">
+                                <div class="sort-by-product-wrap">
+                                    <div class="sort-by">
+                                        <span><i class="fi-rs-apps"></i>Show:</span>
+                                    </div>
+                                    <div class="sort-by-dropdown-wrap">
+                                        <span class="js-page-size-label"> 12 <i class="fi-rs-angle-small-down"></i></span>
+                                    </div>
+                                </div>
+                                <div class="sort-by-dropdown">
+                                    <ul>
+                                        <li><a class="active js-page-size-option" data-value="12" href="#">12</a></li>
+                                        <li><a class="js-page-size-option" data-value="24" href="#">24</a></li>
+                                        <li><a class="js-page-size-option" data-value="48" href="#">48</a></li>
+                                        <li><a class="js-page-size-option" data-value="96" href="#">96</a></li>
+                                        <li><a class="js-page-size-option" data-value="200" href="#">All</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="sort-by-cover">
+                                <div class="sort-by-product-wrap">
+                                    <div class="sort-by">
+                                        <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
+                                    </div>
+                                    <div class="sort-by-dropdown-wrap">
+                                        <span class="js-sort-label"> Featured <i class="fi-rs-angle-small-down"></i></span>
+                                    </div>
+                                </div>
+                                <div class="sort-by-dropdown">
+                                    <ul>
+                                        <li><a class="active js-sort-option" data-value="-created_date" href="#">Featured</a></li>
+                                        <li><a class="js-sort-option" data-value="price" href="#">Price: Low to High</a></li>
+                                        <li><a class="js-sort-option" data-value="-price" href="#">Price: High to Low</a></li>
+                                        <li><a class="js-sort-option" data-value="-created_date" href="#">Release Date</a></li>
+                                        <li><a class="js-sort-option" data-value="-average_rating" href="#">Avg. Rating</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row product-grid js-product-grid">
+                    </div>
+                    <!--product grid-->
+                    <div class="pagination-area mt-20 mb-20">
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination justify-content-start js-pagination"></ul>
+                        </nav>
+                    </div>
+                    <section class="section-padding pb-5 js-onsale-section" style="display:none;">
+                        <div class="section-title">
+                            <h3 class="">Deals Of The Day</h3>
+                            <a class="show-all" href="{% url 'shop:grid_left' %}?ordering=-discount_percent">
+                                All Deals
+                                <i class="fi-rs-angle-right"></i>
+                            </a>
+                        </div>
+                        <div class="row js-onsale-products">
+                        </div>
+                    </section>
+                    <!--End Deals-->
+                </div>
+                {% include "shop/sidebar.html" %}
+            </div>
+        </div>
+    </main>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/pages/shop-list.js' %}"></script>
+    <script src="{% static 'js/pages/sidebar-price-filter.js' %}"></script>
+{% endblock %}

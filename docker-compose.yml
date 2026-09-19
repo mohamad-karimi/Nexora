@@ -1,8 +1,10 @@
 services:
   backend:
     container_name: backend
-    build: .
-    volumes: 
+    build:
+      context: .
+      dockerfile: dockerfile
+    volumes:
       - ./core:/usr/src/app
     working_dir: /usr/src/app
     command: python manage.py runserver 0.0.0.0:8000
@@ -11,4 +13,9 @@ services:
     env_file:
       - .env
     restart: always
-    
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s

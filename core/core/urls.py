@@ -15,9 +15,40 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.contrib.sitemaps.views import sitemap
+from django.urls import path, include
+
+from blog.sitemaps import PostSitemap
+from shop.sitemaps import ProductSitemap
+from website.sitemaps import StaticViewSitemap
+
+from core.health import health
+
+sitemaps = {
+    "static": StaticViewSitemap,
+    "products": ProductSitemap,
+    "blog": PostSitemap,
+}
 
 urlpatterns = [
+    path("health/", health, name="health"),
     path("admin/", admin.site.urls),
+    path("api/", include("api.urls")),
+    path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
+    path("", include("website.urls")),
+    path("", include("accounts.urls")),
+    path("blog/", include("blog.urls")),
+    path("shop/", include("shop.urls")),
+    path("vendors/", include("vendors.urls")),
+    path("cart/", include("cart.urls")),
+    path("orders/", include("orders.urls")),
+    path("dashboard/", include("dashboard.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+    )

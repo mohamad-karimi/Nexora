@@ -1,0 +1,145 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Nest - Multipurpose eCommerce HTML Template</title>
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'imgs/theme/favicon.svg' %}" />
+    <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+</head>
+
+<body data-order-number="{{ order_number }}">
+    {% csrf_token %}
+    <div class="invoice invoice-content invoice-1">
+        <div class="back-top-home hover-up mt-30 ml-30">
+            <a class="hover-up" href="{% url 'website:home' %}"><i class="fi-rs-home mr-5"></i> Homepage</a>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="invoice-inner">
+                        <div class="invoice-info" id="invoice_wrapper">
+                            <div class="invoice-header">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="invoice-name">
+                                            <div class="logo">
+                                                <a href="{% url 'website:home' %}"><img src="{% static 'imgs/theme/logo-light.svg' %}" alt="logo" /></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="invoice-numb">
+                                            <h6 class="text-end mb-10 mt-20 js-invoice-date">Date: -</h6>
+                                            <h6 class="text-end invoice-header-1">Order No: <span class="js-invoice-number">-</span></h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="invoice-top">
+                                <div class="row">
+                                    <div class="col-lg-9 col-md-6">
+                                        <div class="invoice-number">
+                                            <h4 class="invoice-title-1 mb-10">Invoice To</h4>
+                                            <p class="invoice-addr-1 js-invoice-to">Loading…</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="invoice-number">
+                                            <h4 class="invoice-title-1 mb-10">Bill To</h4>
+                                            <p class="invoice-addr-1">
+                                                <strong>Nexora</strong> <br />
+                                                billing@nexora.example <br />
+                                                Online Marketplace
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-lg-9 col-md-6">
+                                        <h4 class="invoice-title-1 mb-10">Status:</h4>
+                                        <p class="invoice-from-1 js-invoice-status">-</p>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <h4 class="invoice-title-1 mb-10">Payment Method</h4>
+                                        <p class="invoice-from-1 js-invoice-payment-method">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="invoice-center">
+                                <div class="table-responsive">
+                                    <table class="table table-striped invoice-table">
+                                        <thead class="bg-active">
+                                            <tr>
+                                                <th>Item name</th>
+                                                <th class="text-center">Unit Price</th>
+                                                <th class="text-center">Quantity</th>
+                                                <th class="text-right">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="js-invoice-items">
+                                        </tbody>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="3" class="text-end f-w-600">SubTotal</td>
+                                                <td class="text-right js-invoice-subtotal">$0.00</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3" class="text-end f-w-600">Shipping</td>
+                                                <td class="text-right js-invoice-shipping">$0.00</td>
+                                            </tr>
+                                            <tr class="js-invoice-discount-row" style="display:none;">
+                                                <td colspan="3" class="text-end f-w-600">Discount</td>
+                                                <td class="text-right js-invoice-discount">-$0.00</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3" class="text-end f-w-600">Grand Total</td>
+                                                <td class="text-right f-w-600 js-invoice-total">$0.00</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="invoice-bottom">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div>
+                                            <h3 class="invoice-title-1">Important Note</h3>
+                                            <ul class="important-notes-list-1">
+                                                <li>All amounts shown on this invoice are in US dollars</li>
+                                                <li>Once order done, money can't refund</li>
+                                                <li>Delivery might delay due to some external dependency</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 col-offsite">
+                                        <div class="text-end">
+                                            <p class="mb-0 text-13">Thank you for your business</p>
+                                            <p><strong>Nexora</strong></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="invoice-btn-section clearfix d-print-none">
+                            <a href="javascript:window.print()" class="btn btn-lg btn-custom btn-print hover-up"> <img src="{% static 'imgs/theme/icons/icon-print.svg' %}" alt="" /> Print </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Vendor JS-->
+    <script src="{% static 'js/vendor/modernizr-3.6.0.min.js' %}"></script>
+    <script src="{% static 'js/vendor/jquery-3.7.1.min.js' %}"></script>
+    <script src="{% static 'js/api/client.js' %}"></script>
+    <script src="{% static 'js/api/site.js' %}"></script>
+    <script src="{% static 'js/pages/invoice.js' %}"></script>
+</body>
+
+</html>

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 from decouple import config
 
@@ -32,6 +33,25 @@ ALLOWED_HOSTS = config(
     cast=lambda v: [s.strip() for s in v.split(",")],
 )
 
+# django.contrib.sites -- backs the Sitemap/RSS-feed absolute-URL
+# resolution (django.contrib.sitemaps and django.contrib.syndication
+# both build links from the current Site's domain). The domain/display
+# name are read from the environment so nothing is hardcoded here; the
+# defaults below only apply to a bare local dev checkout with no .env
+# override, and are written into the Site row by the
+# website 0005_configure_site data migration.
+SITE_ID = 1
+SITE_DOMAIN = config("SITE_DOMAIN", default="localhost:8000")
+SITE_DISPLAY_NAME = config("SITE_DISPLAY_NAME", default="Nexora (Local)")
+
+# Mapbox access token used by the Leaflet map on the contact page
+# (core/website/views.py ContactView -> templates/website/page-contact.html
+# -> static/js/plugins/leaflet.js). Read from the environment only --
+# never hardcode a real token in source (see .env.example). Empty by
+# default so a bare checkout with no .env still boots; the map tiles
+# just will not load without a real token configured.
+MAPBOX_ACCESS_TOKEN = config("MAPBOX_ACCESS_TOKEN", default="")
+
 
 # Application definition
 
@@ -42,8 +62,23 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
+    "django.contrib.sitemaps",
+    # Third-party
+    "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
+    "django_filters",
+    "drf_spectacular",
     # My app
     "accounts",
+    "website",
+    "blog",
+    "shop",
+    "vendors",
+    "cart",
+    "orders",
+    "dashboard",
+    "api",
 ]
 
 MIDDLEWARE = [
@@ -61,13 +96,14 @@ ROOT_URLCONF = "core.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "core.context_processors.site_locale",
             ],
         },
     },
@@ -82,7 +118,9 @@ WSGI_APPLICATION = "core.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": Path(
+            config("DATABASE_PATH", default=str(BASE_DIR / "db.sqlite3"))
+        ),
     }
 }
 
@@ -117,11 +155,28 @@ USE_I18N = True
 
 USE_TZ = True
 
+# The storefront's only supported currency. Every price in the
+# database (Product.price, cart/order totals, etc.) is a plain
+# DecimalField denominated in this currency -- there is no per-item
+# currency field or conversion table, so this is the single source
+# of truth the header's Currency indicator (see
+# core.context_processors.site_locale) reads from. Introducing a
+# second currency would require a real conversion/rounding source
+# and currency-aware fields on Product/Cart/Order first.
+DEFAULT_CURRENCY = "USD"
+DEFAULT_CURRENCY_SYMBOL = "$"
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
-STATIC_URL = "static/"
+# Media files
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -130,3 +185,128 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # User manage config
 AUTH_USER_MODEL = "accounts.CustomUser"
+
+# Email (used for the account-verification and password-reset links).
+# Credentials are read only from the environment/`.env` -- never hardcoded.
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+
+# Django REST Framework
+# The frontend is a server-rendered site with fetch()-based AJAX calls
+# from the same origin, authenticated with the existing Django
+# session/cookie. Alongside that, a stateless JWT surface (see
+# api.v1.views.auth_jwt / POST /api/v1/auth/token/) is available for
+# the API/other (non-browser) clients -- both authentication schemes
+# are accepted on every endpoint.
+REST_FRAMEWORK = {
+    # JWTAuthentication first: DRF's 401-vs-403 fallback (APIView.
+    # handle_exception) only looks at the *first* configured
+    # authenticator's WWW-Authenticate header when deciding whether an
+    # unauthenticated/invalid request gets 401 or 403.
+    # SessionAuthentication doesn't provide one, so if it were listed
+    # first every unauthenticated request -- JWT or session alike --
+    # would incorrectly get downgraded to 403.
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "api.v1.pagination.StandardPagination",
+    "PAGE_SIZE": 12,
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ]
+    + (["rest_framework.renderers.BrowsableAPIRenderer"] if DEBUG else []),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# djangorestframework-simplejwt -- backs the stateless JWT auth surface
+# (POST /api/v1/auth/token/, .../refresh/, .../verify/). Access tokens
+# are short-lived; refresh tokens rotate on use and the token that was
+# just used is blacklisted, so a leaked/stolen refresh token can't be
+# replayed after its holder (or an attacker who captured it) uses it
+# once. This requires rest_framework_simplejwt.token_blacklist in
+# INSTALLED_APPS (see above) -- without it, RefreshToken.for_user()
+# still tries to record an outstanding-token row internally and blows
+# up with "OutstandingToken has no attribute 'objects'", since that
+# model is only a real (non-abstract) table when the app is installed.
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+# drf-spectacular (OpenAPI / Swagger / Redoc)
+# https://drf-spectacular.readthedocs.io/en/latest/settings.html
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Nexora API",
+    "DESCRIPTION": (
+        "Official REST API for the Nexora multi-vendor grocery marketplace.\n\n"
+        "The API is consumed by Nexora's own server-rendered frontend via "
+        "same-origin fetch() calls, authenticated through the standard Django "
+        "session cookie (see the `sessionid` and `csrftoken` cookies). "
+        "To try authenticated endpoints from this page, log in through the "
+        "site at `/accounts/login/` (or call `POST /api/v1/auth/login/`) in "
+        "the same browser session first, then send the `X-CSRFToken` header "
+        "with unsafe (POST/PATCH/PUT/DELETE) requests."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": r"/api/v[0-9]+",
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayRequestDuration": True,
+    },
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SORT_OPERATIONS": False,
+    "TAGS": [
+        {
+            "name": "Auth",
+            "description": "Registration, session login/logout and the current user's profile.",
+        },
+        {
+            "name": "Catalog",
+            "description": "Browsing categories, tags and products.",
+        },
+        {"name": "Reviews", "description": "Product reviews."},
+        {"name": "Vendors", "description": "Marketplace vendors (sellers)."},
+        {
+            "name": "Wishlist",
+            "description": "The current user's saved/favourite products.",
+        },
+        {
+            "name": "Cart",
+            "description": "The current user's shopping cart and its line items.",
+        },
+        {
+            "name": "Addresses",
+            "description": "The current user's shipping/billing addresses.",
+        },
+        {"name": "Coupons", "description": "Discount coupon validation."},
+        {
+            "name": "Orders",
+            "description": "Checkout and the current user's order history.",
+        },
+    ],
+}

@@ -1,0 +1,13 @@
+.git
+.github
+.env
+.env.example
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+core/db.sqlite3
+core/staticfiles/
+README.md

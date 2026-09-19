@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <main class="main pages">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="{% url 'website:home' %}" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                    <span></span> My Account
+                </div>
+            </div>
+        </div>
+        <div class="page-content pt-150 pb-150">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-8 col-lg-10 col-md-12 m-auto">
+                        <div class="row">
+                            <div class="col-lg-6 pr-30 d-none d-lg-block">
+                                <img class="border-radius-15" src="{% static 'imgs/page/login-1.png' %}" alt="" />
+                            </div>
+                            <div class="col-lg-6 col-md-8">
+                                <div class="login_wrap widget-taber-content background-white">
+                                    <div class="padding_eight_all bg-white">
+                                        <div class="heading_s1">
+                                            <h1 class="mb-5">Login</h1>
+                                            <p class="mb-30">Don't have an account? <a href="{% url 'accounts:register' %}">Create here</a></p>
+                                        </div>
+                                        <form method="post" id="login-form">
+                                            <div class="form-group">
+                                                <input type="text" required="" name="username" id="login-username" placeholder="Username or Email *" />
+                                            </div>
+                                            <div class="form-group">
+                                                <input required="" type="password" name="password" id="login-password" placeholder="Your password *" />
+                                            </div>
+                                            <div class="login_footer form-group">
+                                                <div class="chek-form">
+                                                    <input type="text" required="" autocomplete="off" name="security_code" id="login-security-code" placeholder="Security code *" />
+                                                </div>
+                                                <span class="security-code" id="login-security-code-display">
+                                                    {% for digit in security_code %}
+                                                    <b class="{% cycle 'text-new' 'text-hot' 'text-sale' 'text-best' %}">{{ digit }}</b>
+                                                    {% endfor %}
+                                                </span>
+                                            </div>
+                                            <div class="login_footer form-group mb-50">
+                                                <div class="chek-form">
+                                                    <div class="custome-checkbox">
+                                                        <input class="form-check-input" type="checkbox" name="remember_me" id="login-remember" value="" />
+                                                        <label class="form-check-label" for="login-remember"><span>Remember me</span></label>
+                                                    </div>
+                                                </div>
+                                                <a class="text-muted" href="{% url 'accounts:forgot_password' %}">Forgot password?</a>
+                                            </div>
+                                            <div class="form-group js-form-success text-success mb-20" style="display:none;"></div>
+                                            <div class="form-group js-form-error text-danger mb-20" style="display:none;"></div>
+                                            <div class="form-group">
+                                                <button type="submit" class="btn btn-heading btn-block hover-up" name="login">Log in</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/pages/auth.js' %}"></script>
+    <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get("verified") === "1") {
+                Swal.fire({
+                    icon: "success",
+                    title: "Email verified",
+                    text: "Your email has been verified successfully. You can now log in.",
+                    confirmButtonText: "OK",
+                });
+            } else if (params.get("verify_error") === "1") {
+                Swal.fire({
+                    icon: "error",
+                    title: "Verification failed",
+                    text: "This verification link is invalid or has expired. Please request a new one.",
+                    confirmButtonText: "OK",
+                });
+            } else {
+                return;
+            }
+            // Don't re-show the popup if the page is reloaded/revisited.
+            window.history.replaceState({}, "", window.location.pathname);
+        })();
+    </script>
+{% endblock %}

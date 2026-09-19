@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="{% url 'website:home' %}" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                    <span></span> <a href="{% url 'shop:grid_left' %}">Shop</a>  <span></span> Fillter
+                </div>
+            </div>
+        </div>
+        <div class="container mb-30 mt-30">
+            <div class="row">
+                <div class="col-lg-12">
+                    <a class="shop-filter-toogle" href="{% url 'shop:filter' %}#">
+                        <span class="fi-rs-filter mr-5"></span>
+                        Filters
+                        <i class="fi-rs-angle-small-down angle-down"></i>
+                        <i class="fi-rs-angle-small-up angle-up"></i>
+                    </a>
+                    <div class="shop-product-fillter-header">
+                        <div class="row">
+                            <div class="col-xl-3 col-lg-6 col-md-6 mb-lg-0 mb-md-2 mb-sm-2">
+                                <div class="card">
+                                    <h5 class="mb-30">By Categories</h5>
+                                    <div class="categories-dropdown-wrap font-heading">
+                                        <ul class="js-category-list">
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-lg-6 col-md-6 mb-lg-0 mb-md-2 mb-sm-2">
+                                <div class="card">
+                                    <h5 class="mb-30">By Vendors</h5>
+                                    <div class="categories-dropdown-wrap font-heading">
+                                        <ul class="js-vendor-list">
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-lg-6 col-md-6 mb-lg-0 mb-md-2 mb-sm-2">
+                                <div class="card">
+                                    <h5 class="mb-30">By Tags</h5>
+                                    <div class="sidebar-widget widget-tags">
+                                        <ul class="tags-list js-tag-list">
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-lg-6 col-md-6 mb-lg-0 mb-md-5 mb-sm-5">
+                                <div class="card">
+                                    <h5 class="mb-10">By Price &amp; Stock</h5>
+                                    <div class="sidebar-widget price_range range">
+                                        <div class="price-filter mb-20">
+                                            <div class="price-filter-inner">
+                                                <div id="slider-range" class="mb-20"></div>
+                                                <div class="d-flex justify-content-between">
+                                                    <div class="caption">From: <strong id="slider-range-value1" class="text-brand"></strong></div>
+                                                    <div class="caption">To: <strong id="slider-range-value2" class="text-brand"></strong></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="custome-checkbox js-price-list">
+                                            <input class="form-check-input js-price-option" type="checkbox" name="price-range" id="priceRange1" data-min="0" data-max="20" />
+                                            <label class="form-check-label" for="priceRange1"><span>$0.00 - $20.00</span></label>
+                                            <br />
+                                            <input class="form-check-input js-price-option" type="checkbox" name="price-range" id="priceRange2" data-min="20" data-max="40" />
+                                            <label class="form-check-label" for="priceRange2"><span>$20.00 - $40.00</span></label>
+                                            <br />
+                                            <input class="form-check-input js-price-option" type="checkbox" name="price-range" id="priceRange3" data-min="40" data-max="60" />
+                                            <label class="form-check-label" for="priceRange3"><span>$40.00 - $60.00</span></label>
+                                            <br />
+                                            <input class="form-check-input js-price-option" type="checkbox" name="price-range" id="priceRange4" data-min="60" data-max="80" />
+                                            <label class="form-check-label" for="priceRange4"><span>$60.00 - $80.00</span></label>
+                                            <br />
+                                            <input class="form-check-input js-price-option" type="checkbox" name="price-range" id="priceRange5" data-min="100" data-max="">
+                                            <label class="form-check-label" for="priceRange5"><span>Over $100.00</span></label>
+                                        </div>
+                                        <div class="custome-checkbox mt-15">
+                                            <input class="form-check-input js-stock-option" type="checkbox" id="inStockOnly" />
+                                            <label class="form-check-label" for="inStockOnly"><span>In stock only</span></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="shop-product-fillter">
+                        <div class="totall-product">
+                            <p>We found <strong class="text-brand js-result-count">0</strong> items for you!</p>
+                        </div>
+                        <div class="sort-by-product-area">
+                            <div class="sort-by-cover mr-10">
+                                <div class="sort-by-product-wrap">
+                                    <div class="sort-by">
+                                        <span><i class="fi-rs-apps"></i>Show:</span>
+                                    </div>
+                                    <div class="sort-by-dropdown-wrap">
+                                        <span class="js-page-size-label"> 50 <i class="fi-rs-angle-small-down"></i></span>
+                                    </div>
+                                </div>
+                                <div class="sort-by-dropdown">
+                                    <ul>
+                                        <li><a class="active js-page-size-option" data-value="50" href="#">50</a></li>
+                                        <li><a class="js-page-size-option" data-value="100" href="#">100</a></li>
+                                        <li><a class="js-page-size-option" data-value="150" href="#">150</a></li>
+                                        <li><a class="js-page-size-option" data-value="200" href="#">200</a></li>
+                                        <li><a class="js-page-size-option" data-value="1000" href="#">All</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="sort-by-cover">
+                                <div class="sort-by-product-wrap">
+                                    <div class="sort-by">
+                                        <span><i class="fi-rs-apps-sort"></i>Sort by:</span>
+                                    </div>
+                                    <div class="sort-by-dropdown-wrap">
+                                        <span class="js-sort-label"> Featured <i class="fi-rs-angle-small-down"></i></span>
+                                    </div>
+                                </div>
+                                <div class="sort-by-dropdown">
+                                    <ul>
+                                        <li><a class="active js-sort-option" data-value="-created_date" href="#">Featured</a></li>
+                                        <li><a class="js-sort-option" data-value="price" href="#">Price: Low to High</a></li>
+                                        <li><a class="js-sort-option" data-value="-price" href="#">Price: High to Low</a></li>
+                                        <li><a class="js-sort-option" data-value="-created_date" href="#">Release Date</a></li>
+                                        <li><a class="js-sort-option" data-value="-average_rating" href="#">Avg. Rating</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row product-grid js-product-grid">
+                    </div>
+                    <!--product grid-->
+                    <div class="pagination-area mt-20 mb-20">
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination justify-content-start js-pagination"></ul>
+                        </nav>
+                    </div>
+                    <section class="section-padding pb-5 js-onsale-section" style="display:none;">
+                        <div class="section-title">
+                            <h3 class="">Deals Of The Day</h3>
+                            <a class="show-all" href="{% url 'shop:filter' %}?ordering=-price">
+                                All Deals
+                                <i class="fi-rs-angle-right"></i>
+                            </a>
+                        </div>
+                        <div class="row js-onsale-products">
+                        </div>
+                    </section>
+                    <!--End Deals-->
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/pages/shop-filter.js' %}"></script>
+{% endblock %}

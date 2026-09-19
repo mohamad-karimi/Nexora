@@ -1,5 +1,6 @@
 # Django
 Django==5.2.14
+djangorestframework==3.16.1
 django-filter==26.1
 
 # Image Processing
@@ -8,6 +9,24 @@ Pillow==12.3.0
 # Configuration
 python-decouple==3.8
 
+# JWT
+PyJWT==2.9.0
+
 # Code Quality / Formatting
 black
 flake8==6.1.0
+
+# API Documentation
+drf-spectacular==0.30.0
+
+# jwt
+djangorestframework-simplejwt==5.5.0
+
+# Testing (used by pytest.ini / conftest.py, required for CI)
+pytest==8.3.4
+pytest-django==4.9.0
+pytest-cov==6.0.0
+coverage==7.6.9
+
+# Production WSGI server (used by docker-compose.prod.yml)
+gunicorn==23.0.0
