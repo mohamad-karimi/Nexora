@@ -10,8 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import ssl
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import quote
+
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -198,17 +201,22 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
+# Seconds before an SMTP connection/command gives up. Django's default is
+# "no timeout", which lets a stalled mail server pin a Celery worker slot
+# forever; with a timeout the task fails fast and is retried (see
+# accounts.tasks).
+EMAIL_TIMEOUT = config("EMAIL_TIMEOUT", default=10, cast=int)
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
 
 # Redis
 # Connection details are read from the environment/`.env` only -- never
-# hardcode a host or credential here (see .env.example). Nothing in the
-# app consumes Redis yet (no cache, Celery or rate limiting); these
-# settings are only used by core.redis_client. The defaults suit a bare
-# local checkout with a Redis on localhost; under Docker Compose the
-# backend service sets REDIS_HOST=redis (the Redis service name).
+# hardcode a host or credential here (see .env.example). They are used by
+# core.redis_client (health check, email-task idempotency markers) and to
+# build the Celery broker URL below. The defaults suit a bare local
+# checkout with a Redis on localhost; under Docker Compose the backend and
+# worker services set REDIS_HOST=redis (the Redis service name).
 REDIS_HOST = config("REDIS_HOST", default="localhost")
 REDIS_PORT = config("REDIS_PORT", default=6379, cast=int)
 REDIS_DB = config("REDIS_DB", default=0, cast=int)
@@ -222,6 +230,69 @@ REDIS_SOCKET_CONNECT_TIMEOUT = config(
     "REDIS_SOCKET_CONNECT_TIMEOUT", default=2.0, cast=float
 )
 REDIS_SOCKET_TIMEOUT = config("REDIS_SOCKET_TIMEOUT", default=2.0, cast=float)
+
+# Celery (background jobs)
+# The broker is the same Redis service configured above, on its own logical
+# database (REDIS_BROKER_DB) so queue keys never mix with anything else
+# stored in DB 0. CELERY_BROKER_URL can be set to override the derived URL.
+# There is deliberately NO result backend and results are ignored: tasks
+# return None, so no password / OTP / reset token is ever kept as a result.
+REDIS_BROKER_DB = config("REDIS_BROKER_DB", default=1, cast=int)
+_redis_scheme = "rediss" if REDIS_SSL else "redis"
+_redis_auth = f":{quote(REDIS_PASSWORD, safe='')}@" if REDIS_PASSWORD else ""
+CELERY_BROKER_URL = config(
+    "CELERY_BROKER_URL",
+    default=(
+        f"{_redis_scheme}://{_redis_auth}{REDIS_HOST}:{REDIS_PORT}"
+        f"/{REDIS_BROKER_DB}"
+    ),
+)
+if REDIS_SSL:
+    CELERY_BROKER_USE_SSL = {"ssl_cert_reqs": ssl.CERT_REQUIRED}
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TASK_IGNORE_RESULT = True
+
+# At-least-once delivery: a task is acknowledged only after it finishes, so
+# a worker that dies mid-task hands it back to the queue. Every task must
+# therefore be idempotent (see accounts.tasks).
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_REJECT_ON_WORKER_LOST = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+# Hard stops for a task stuck on the network (soft raises inside the task
+# first so it can be retried; the hard limit kills it).
+CELERY_TASK_SOFT_TIME_LIMIT = 60
+CELERY_TASK_TIME_LIMIT = 90
+
+# Start the worker even if Redis is not accepting connections yet; it
+# keeps retrying instead of exiting.
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+# Publishing (done by the web process) must never hang a request: keep the
+# connect timeout short and give up after a couple of quick retries. The
+# caller decides what to do when the enqueue fails (see accounts.otp).
+CELERY_BROKER_CONNECTION_TIMEOUT = REDIS_SOCKET_CONNECT_TIMEOUT
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    "visibility_timeout": 3600,
+    "socket_connect_timeout": REDIS_SOCKET_CONNECT_TIMEOUT,
+}
+CELERY_TASK_PUBLISH_RETRY = True
+CELERY_TASK_PUBLISH_RETRY_POLICY = {
+    "max_retries": 2,
+    "interval_start": 0,
+    "interval_step": 0.2,
+    "interval_max": 0.5,
+}
+
+# Run tasks inline in the calling process instead of sending them to the
+# broker. The test suite turns this on itself (core/conftest.py); it can
+# also be handy for a local run without Redis/worker. Never enable it in
+# production: it puts SMTP back inside the request.
+CELERY_TASK_ALWAYS_EAGER = config(
+    "CELERY_TASK_ALWAYS_EAGER", default=False, cast=bool
+)
+CELERY_TASK_EAGER_PROPAGATES = True
 
 # Django REST Framework
 # The frontend is a server-rendered site with fetch()-based AJAX calls

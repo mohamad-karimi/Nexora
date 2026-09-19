@@ -38,6 +38,33 @@ services:
       retries: 10
       start_period: 15s
 
+  # Celery worker: same image as `backend`, separate process. Runs the
+  # background jobs (account emails) that the web process enqueues in
+  # Redis, so a slow or down SMTP server never blocks a request. It only
+  # reads the database (SQLite file on the shared volume below).
+  worker:
+    image: ${IMAGE}:${IMAGE_TAG:-latest}
+    container_name: celery_worker
+    working_dir: /usr/src/app
+    command: celery -A core worker --loglevel=INFO --concurrency=2 --hostname=worker@%h
+    env_file:
+      - .env
+    environment:
+      - DATABASE_PATH=/usr/src/app/data/db.sqlite3
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - backend_db:/usr/src/app/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A core inspect ping -d worker@$$HOSTNAME"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 20s
+
   redis:
     image: redis:7.4-alpine
     container_name: redis

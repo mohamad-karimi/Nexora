@@ -1,3 +1,10 @@
+"""Composes and sends the account emails.
+
+These functions talk to SMTP synchronously, so they must only be called
+from the Celery worker (see accounts.tasks) -- never from a request.
+The wording of both emails is unchanged from before the move to Celery.
+"""
+
 from django.core.mail import send_mail
 from django.urls import reverse
 
@@ -25,10 +32,17 @@ def send_verification_email(user, code):
     )
 
 
-def send_password_reset_email(request, user):
+def send_password_reset_email(user, origin):
+    """Emails the password-reset link.
+
+    `origin` is the scheme + host the user reached the site on (for
+    example "https://shop.example.com", no trailing slash), captured from
+    the request when the email was queued. The reset token is created here,
+    at send time, so it never has to travel through the task queue.
+    """
     token = make_password_reset_token(user)
     path = reverse("accounts:reset_password")
-    reset_url = request.build_absolute_uri(f"{path}?token={token}")
+    reset_url = f"{origin}{path}?token={token}"
 
     send_mail(
         subject="Reset your Nexora password",

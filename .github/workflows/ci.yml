@@ -124,6 +124,22 @@ jobs:
       - name: Verify /health/redis/ from the host (Redis connectivity)
         run: curl --fail --silent --show-error http://localhost:8000/health/redis/
 
+      - name: Wait for the Celery worker to report healthy
+        run: |
+          # The worker's healthcheck is `celery inspect ping`: healthy means
+          # it is running, connected to the Redis broker and answering.
+          for i in $(seq 1 30); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' celery_worker 2>/dev/null || echo "starting")
+            echo "attempt $i: $status"
+            if [ "$status" = "healthy" ]; then
+              exit 0
+            fi
+            sleep 4
+          done
+          echo "Celery worker did not become healthy in time"
+          docker compose logs worker
+          exit 1
+
       - name: Show logs on failure
         if: failure()
         run: docker compose logs

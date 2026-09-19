@@ -18,13 +18,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.constants import LOGIN_SECURITY_CODE_SESSION_KEY
-from accounts.emails import send_password_reset_email
 from accounts.otp import (
     OTPError,
     resend_email_verification,
     start_email_verification,
     verify_email_code,
 )
+from accounts.tasks import queue_password_reset_email
 from api.v1.permissions import IsVerified
 from api.v1.serializers.accounts import (
     ChangePasswordSerializer,
@@ -70,11 +70,11 @@ class RegisterView(APIView):
         try:
             start_email_verification(request, user)
         except Exception:
-            # Registration must still succeed even if the mail server is
-            # unreachable/misconfigured -- the user can request the code
-            # again later via Resend Code. (See accounts.otp.)
+            # Registration must still succeed even if the email could not
+            # be queued (e.g. Redis is down) -- the user can request the
+            # code again later via Resend Code. (See accounts.otp.)
             logger.exception(
-                "Failed to send verification code to user %s", user.pk
+                "Failed to queue verification email for user %s", user.pk
             )
         return Response(
             UserSerializer(user).data, status=status.HTTP_201_CREATED
@@ -172,7 +172,7 @@ class ResendVerificationEmailView(APIView):
                 {"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST
             )
         except Exception:
-            logger.exception("Failed to resend verification code")
+            logger.exception("Failed to queue the resent verification email")
             return Response(
                 {
                     "detail": (
@@ -397,10 +397,11 @@ class ForgotPasswordView(APIView):
         ).first()
         if user is not None:
             try:
-                send_password_reset_email(request, user)
+                queue_password_reset_email(request, user)
             except Exception:
                 logger.exception(
-                    "Failed to send password reset email to user %s", user.pk
+                    "Failed to queue password reset email for user %s",
+                    user.pk,
                 )
 
         return Response(

@@ -1,8 +1,10 @@
 """Redis connection helpers.
 
-Nothing in the app uses Redis yet (no cache, Celery or rate limiting).
-This module only provides a configured client plus a connectivity check
-so that a Redis outage or misconfiguration is easy to detect.
+Provides a configured Redis client plus a connectivity check so that a
+Redis outage or misconfiguration is easy to detect. Redis is the Celery
+broker for background jobs (see core/celery.py) and also holds the small
+"email already sent" markers of accounts.tasks; nothing else in the app
+depends on it (no cache, no rate limiting).
 
 All connection details come from Django settings, which read them from
 the environment via python-decouple -- no host, port or password is
