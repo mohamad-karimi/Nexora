@@ -65,6 +65,34 @@ services:
       retries: 5
       start_period: 20s
 
+  # Celery Beat: the scheduler. A clock only -- it dispatches the scheduled
+  # cleanup tasks (CELERY_BEAT_SCHEDULE) to Redis and the `worker` runs
+  # them. Run exactly ONE beat, never scale this service: a second beat
+  # would dispatch every job twice. It touches neither the database nor
+  # any volume; its bookkeeping file is in /tmp, so after a restart it just
+  # waits for the next scheduled time.
+  beat:
+    image: ${IMAGE}:${IMAGE_TAG:-latest}
+    container_name: celery_beat
+    working_dir: /usr/src/app
+    command: celery -A core beat --loglevel=INFO --schedule=/tmp/celerybeat-schedule
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      # Beat answers no remote-control pings; it is PID 1, so "PID 1 is
+      # still the beat process" is the liveness signal.
+      test: ["CMD-SHELL", "grep -q beat /proc/1/cmdline"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
   redis:
     image: redis:7.4-alpine
     container_name: redis

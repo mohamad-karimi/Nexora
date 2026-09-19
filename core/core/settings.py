@@ -15,6 +15,7 @@ from datetime import timedelta
 from pathlib import Path
 from urllib.parse import quote
 
+from celery.schedules import crontab
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -293,6 +294,42 @@ CELERY_TASK_ALWAYS_EAGER = config(
     "CELERY_TASK_ALWAYS_EAGER", default=False, cast=bool
 )
 CELERY_TASK_EAGER_PROPAGATES = True
+
+# Celery Beat (scheduled jobs)
+# Beat is a separate process (`celery -A core beat`, the `beat` service in
+# docker-compose*.yml); exactly ONE must run, otherwise every job would be
+# dispatched once per beat. Crontab times are read in CELERY_TIMEZONE, which
+# follows the project's TIME_ZONE.
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = True
+# Without a result backend there is nothing to expire. Celery would still
+# add its own daily "celery.backend_cleanup" entry to the schedule when
+# result_expires is set (it is by default); None keeps the schedule to
+# exactly the jobs listed below.
+CELERY_RESULT_EXPIRES = None
+# Only clean-ups of data that would otherwise pile up forever -- see
+# accounts/maintenance.py for what each one removes and why. Once a day,
+# off-peak, staggered so they never overlap. `expires` drops a dispatched
+# run that no worker picked up within 6 hours (e.g. the worker was down),
+# so a backlog of stale runs cannot pile up and fire all at once later;
+# the next day's run simply takes over.
+CELERY_BEAT_SCHEDULE = {
+    "cleanup-expired-otp-codes": {
+        "task": "accounts.cleanup_expired_otp_codes",
+        "schedule": crontab(hour=3, minute=15),
+        "options": {"expires": 6 * 60 * 60},
+    },
+    "cleanup-expired-sessions": {
+        "task": "accounts.cleanup_expired_sessions",
+        "schedule": crontab(hour=3, minute=30),
+        "options": {"expires": 6 * 60 * 60},
+    },
+    "cleanup-expired-jwt-tokens": {
+        "task": "accounts.cleanup_expired_jwt_tokens",
+        "schedule": crontab(hour=3, minute=45),
+        "options": {"expires": 6 * 60 * 60},
+    },
+}
 
 # Django REST Framework
 # The frontend is a server-rendered site with fetch()-based AJAX calls

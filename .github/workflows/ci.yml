@@ -140,6 +140,37 @@ jobs:
           docker compose logs worker
           exit 1
 
+      - name: Wait for Celery Beat to report healthy
+        run: |
+          # Beat is the scheduler process (separate from web and worker).
+          for i in $(seq 1 30); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' celery_beat 2>/dev/null || echo "starting")
+            echo "attempt $i: $status"
+            if [ "$status" = "healthy" ]; then
+              exit 0
+            fi
+            sleep 4
+          done
+          echo "Celery beat did not become healthy in time"
+          docker compose logs beat
+          exit 1
+
+      - name: Verify the scheduled tasks are registered with the worker
+        run: |
+          # Every task named in CELERY_BEAT_SCHEDULE must exist on the worker,
+          # otherwise beat would dispatch messages nobody can run.
+          docker compose exec -T worker python - <<'PY'
+          import os
+          import django
+          os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
+          django.setup()
+          from core.celery import app
+          app.loader.import_default_modules()
+          missing = [e["task"] for e in app.conf.beat_schedule.values() if e["task"] not in app.tasks]
+          assert app.conf.beat_schedule and not missing, missing
+          print("scheduled tasks registered:", sorted(e["task"] for e in app.conf.beat_schedule.values()))
+          PY
+
       - name: Show logs on failure
         if: failure()
         run: docker compose logs

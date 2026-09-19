@@ -35,9 +35,26 @@ def _celery_eager(settings):
     settings.CELERY_TASK_ALWAYS_EAGER = True
 
 
+class FakeLock:
+    """Non-blocking lock like redis-py's `client.lock(...)`."""
+
+    def __init__(self, store, name):
+        self.store, self.name = store, name
+
+    def acquire(self, blocking=True):
+        if self.name in self.store:
+            return False
+        self.store[self.name] = "locked"
+        return True
+
+    def release(self):
+        self.store.pop(self.name, None)
+
+
 class FakeRedis:
-    """Just enough of redis-py for the email tasks' "already sent" markers,
-    so the suite never touches a real Redis."""
+    """Just enough of redis-py for the email tasks' "already sent" markers
+    and the cleanup tasks' run locks, so the suite never touches a real
+    Redis."""
 
     def __init__(self):
         self.store = {}
@@ -49,9 +66,13 @@ class FakeRedis:
         self.store[key] = value
         return True
 
+    def lock(self, name, timeout=None):
+        return FakeLock(self.store, name)
+
 
 @pytest.fixture(autouse=True)
 def fake_redis(monkeypatch):
     fake = FakeRedis()
     monkeypatch.setattr("accounts.tasks.get_redis_client", lambda: fake)
+    monkeypatch.setattr("accounts.maintenance.get_redis_client", lambda: fake)
     return fake
