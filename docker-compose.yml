@@ -12,6 +12,11 @@ services:
       - 8000:8000
     env_file:
       - .env
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: always
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/', timeout=3)"]
@@ -19,3 +24,82 @@ services:
       timeout: 5s
       retries: 10
       start_period: 15s
+
+  # Celery worker: same image/code as `backend`, but a separate process
+  # that runs the background jobs (account emails). The web process only
+  # enqueues them in Redis. Source is bind-mounted, so restart this service
+  # after changing task code (`docker compose restart worker`).
+  worker:
+    container_name: celery_worker
+    build:
+      context: .
+      dockerfile: dockerfile
+    volumes:
+      - ./core:/usr/src/app
+    working_dir: /usr/src/app
+    command: celery -A core worker --loglevel=INFO --concurrency=2 --hostname=worker@%h
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A core inspect ping -d worker@$$HOSTNAME"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 20s
+
+  # Celery Beat: the scheduler. A clock only -- at the times in
+  # CELERY_BEAT_SCHEDULE (core/settings.py) it puts the scheduled cleanup
+  # tasks on the Redis queue and the `worker` above runs them. Run exactly
+  # ONE beat: a second one would dispatch every job twice. Its bookkeeping
+  # file lives in /tmp (not the bind-mounted source); after a restart it
+  # simply waits for the next scheduled time.
+  beat:
+    container_name: celery_beat
+    build:
+      context: .
+      dockerfile: dockerfile
+    volumes:
+      - ./core:/usr/src/app
+    working_dir: /usr/src/app
+    command: celery -A core beat --loglevel=INFO --schedule=/tmp/celerybeat-schedule
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      # Beat answers no remote-control pings; it is PID 1, so "PID 1 is
+      # still the beat process" is the liveness signal (if it dies the
+      # container exits and `restart: always` brings it back).
+      test: ["CMD-SHELL", "grep -q beat /proc/1/cmdline"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: redis
+    # Not published to the host: only reachable from other services on
+    # the compose network (as redis:6379). Use
+    # `docker compose exec redis redis-cli` for a shell.
+    # The password comes from .env (REDIS_PASSWORD); empty = no auth.
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-}"]
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", 'if [ -n "$$REDIS_PASSWORD" ]; then export REDISCLI_AUTH="$$REDIS_PASSWORD"; fi; redis-cli ping | grep -q PONG']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s

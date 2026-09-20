@@ -23,6 +23,10 @@ services:
       - .env
     environment:
       - DATABASE_PATH=/usr/src/app/data/db.sqlite3
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
     volumes:
       - backend_db:/usr/src/app/data
       - backend_media:/usr/src/app/media
@@ -34,6 +38,87 @@ services:
       retries: 10
       start_period: 15s
 
+  # Celery worker: same image as `backend`, separate process. Runs the
+  # background jobs (account emails) that the web process enqueues in
+  # Redis, so a slow or down SMTP server never blocks a request. It only
+  # reads the database (SQLite file on the shared volume below).
+  worker:
+    image: ${IMAGE}:${IMAGE_TAG:-latest}
+    container_name: celery_worker
+    working_dir: /usr/src/app
+    command: celery -A core worker --loglevel=INFO --concurrency=2 --hostname=worker@%h
+    env_file:
+      - .env
+    environment:
+      - DATABASE_PATH=/usr/src/app/data/db.sqlite3
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - backend_db:/usr/src/app/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A core inspect ping -d worker@$$HOSTNAME"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 20s
+
+  # Celery Beat: the scheduler. A clock only -- it dispatches the scheduled
+  # cleanup tasks (CELERY_BEAT_SCHEDULE) to Redis and the `worker` runs
+  # them. Run exactly ONE beat, never scale this service: a second beat
+  # would dispatch every job twice. It touches neither the database nor
+  # any volume; its bookkeeping file is in /tmp, so after a restart it just
+  # waits for the next scheduled time.
+  beat:
+    image: ${IMAGE}:${IMAGE_TAG:-latest}
+    container_name: celery_beat
+    working_dir: /usr/src/app
+    command: celery -A core beat --loglevel=INFO --schedule=/tmp/celerybeat-schedule
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      # Beat answers no remote-control pings; it is PID 1, so "PID 1 is
+      # still the beat process" is the liveness signal.
+      test: ["CMD-SHELL", "grep -q beat /proc/1/cmdline"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: redis
+    # Not published to the host. REDIS_PASSWORD must be set in the
+    # server's .env (next to this file) -- Compose aborts with the
+    # message below if it is missing, rather than running Redis
+    # unauthenticated. AOF persistence keeps data across restarts.
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --requirepass
+      - "${REDIS_PASSWORD:?Set REDIS_PASSWORD in the server .env}"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:?Set REDIS_PASSWORD in the server .env}
+    volumes:
+      - redis_data:/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", 'if [ -n "$$REDIS_PASSWORD" ]; then export REDISCLI_AUTH="$$REDIS_PASSWORD"; fi; redis-cli ping | grep -q PONG']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
 volumes:
   backend_db:
   backend_media:
+  redis_data:

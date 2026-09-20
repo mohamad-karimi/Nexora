@@ -25,7 +25,7 @@ from blog.sitemaps import PostSitemap
 from shop.sitemaps import ProductSitemap
 from website.sitemaps import StaticViewSitemap
 
-from core.health import health
+from core.health import health, redis_health
 
 sitemaps = {
     "static": StaticViewSitemap,
@@ -35,6 +35,7 @@ sitemaps = {
 
 urlpatterns = [
     path("health/", health, name="health"),
+    path("health/redis/", redis_health, name="health-redis"),
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
     path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),

@@ -17,6 +17,7 @@ env:
   ALLOWED_HOSTS: localhost,127.0.0.1
   EMAIL_HOST_USER: ci@example.com
   EMAIL_HOST_PASSWORD: ci-test-password
+  REDIS_PASSWORD: ci-test-redis-password
 
 jobs:
   backend:
@@ -90,6 +91,7 @@ jobs:
           ALLOWED_HOSTS=$ALLOWED_HOSTS
           EMAIL_HOST_USER=$EMAIL_HOST_USER
           EMAIL_HOST_PASSWORD=$EMAIL_HOST_PASSWORD
+          REDIS_PASSWORD=$REDIS_PASSWORD
           SITE_DOMAIN=localhost:8000
           SITE_DISPLAY_NAME=Nexora CI
           EOF
@@ -116,8 +118,78 @@ jobs:
           docker compose logs backend
           exit 1
 
+      - name: Apply database migrations inside the backend container
+        run: |
+          # The compose stack starts on an empty SQLite file, and nothing in
+          # docker-compose.yml runs `migrate`. /health/ only opens a DB
+          # connection, so it passes on an unmigrated database, but every
+          # endpoint that reads a table (e.g. /api/v1/home-slides/) would
+          # return 500 and the migration-seeded home slides would not exist.
+          # Same command the CD workflow runs after `up -d` in production.
+          docker compose exec -T backend python manage.py migrate --noinput
+
       - name: Verify /health/ from the host (database connectivity)
         run: curl --fail --silent --show-error http://localhost:8000/health/
+
+      - name: Verify /health/redis/ from the host (Redis connectivity)
+        run: curl --fail --silent --show-error http://localhost:8000/health/redis/
+
+      - name: Verify the public cache stores data in Redis
+        run: |
+          # The seeded home slides are public data: two identical reads
+          # fill and then use the Redis cache (logical DB 2).
+          curl --fail --silent --show-error http://localhost:8000/api/v1/home-slides/ > /dev/null
+          curl --fail --silent --show-error http://localhost:8000/api/v1/home-slides/ > /dev/null
+          keys=$(docker compose exec -T redis sh -c 'if [ -n "$REDIS_PASSWORD" ]; then export REDISCLI_AUTH="$REDIS_PASSWORD"; fi; redis-cli -n 2 --scan --pattern "*pubcache*"')
+          echo "$keys"
+          echo "$keys" | grep -q pubcache
+
+      - name: Wait for the Celery worker to report healthy
+        run: |
+          # The worker's healthcheck is `celery inspect ping`: healthy means
+          # it is running, connected to the Redis broker and answering.
+          for i in $(seq 1 30); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' celery_worker 2>/dev/null || echo "starting")
+            echo "attempt $i: $status"
+            if [ "$status" = "healthy" ]; then
+              exit 0
+            fi
+            sleep 4
+          done
+          echo "Celery worker did not become healthy in time"
+          docker compose logs worker
+          exit 1
+
+      - name: Wait for Celery Beat to report healthy
+        run: |
+          # Beat is the scheduler process (separate from web and worker).
+          for i in $(seq 1 30); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' celery_beat 2>/dev/null || echo "starting")
+            echo "attempt $i: $status"
+            if [ "$status" = "healthy" ]; then
+              exit 0
+            fi
+            sleep 4
+          done
+          echo "Celery beat did not become healthy in time"
+          docker compose logs beat
+          exit 1
+
+      - name: Verify the scheduled tasks are registered with the worker
+        run: |
+          # Every task named in CELERY_BEAT_SCHEDULE must exist on the worker,
+          # otherwise beat would dispatch messages nobody can run.
+          docker compose exec -T worker python - <<'PY'
+          import os
+          import django
+          os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
+          django.setup()
+          from core.celery import app
+          app.loader.import_default_modules()
+          missing = [e["task"] for e in app.conf.beat_schedule.values() if e["task"] not in app.tasks]
+          assert app.conf.beat_schedule and not missing, missing
+          print("scheduled tasks registered:", sorted(e["task"] for e in app.conf.beat_schedule.values()))
+          PY
 
       - name: Show logs on failure
         if: failure()

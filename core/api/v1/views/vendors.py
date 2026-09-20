@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 from api.v1.pagination import StandardPagination
 from api.v1.permissions import IsVendor, IsVerified
+from api.v1.public_cache import PublicListCacheMixin
 from api.v1.serializers.shop import (
     ProductCreateSerializer,
     ProductDetailSerializer,
@@ -37,7 +38,7 @@ from vendors.models import Vendor
     ),
 )
 @extend_schema(tags=["Vendors"])
-class VendorViewSet(viewsets.ReadOnlyModelViewSet):
+class VendorViewSet(PublicListCacheMixin, viewsets.ReadOnlyModelViewSet):
     """Read-only listing/detail of approved marketplace vendors."""
 
     serializer_class = VendorSerializer
@@ -45,6 +46,17 @@ class VendorViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ["store_name", "description"]
     ordering_fields = ["store_name", "created_date", "product_count"]
     ordering = ["store_name"]
+
+    # The approved-vendor list is public and user-independent, so it is
+    # cached (its product_count follows product publish changes -- see
+    # core/cache_invalidation.py). Searches are not cached.
+    public_cache_domain = "catalog"
+    public_cache_ttl = "vendors"
+    public_cache_name = "vendors"
+    public_cache_params = frozenset({"page", "page_size", "ordering"})
+    public_cache_orderings = frozenset(
+        ordering_fields + [f"-{field}" for field in ordering_fields]
+    )
 
     def get_queryset(self):
         return Vendor.objects.filter(is_approved=True).annotate(

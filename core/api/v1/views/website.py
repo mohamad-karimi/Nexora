@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.v1.permissions import IsVendor, IsVerified
+from api.v1.public_cache import PublicListCacheMixin
 from api.v1.serializers.website import (
     ContactMessageSerializer,
     HomeBannerSerializer,
@@ -19,13 +20,19 @@ from website.models import ContactMessage, HomeBanner, HomeSlide
     retrieve=extend_schema(summary="Get a homepage slider slide"),
 )
 @extend_schema(tags=["Website"])
-class HomeSlideViewSet(viewsets.ReadOnlyModelViewSet):
+class HomeSlideViewSet(PublicListCacheMixin, viewsets.ReadOnlyModelViewSet):
     """Read-only listing of the homepage hero slider's active
     slides, in display order.
     """
 
     serializer_class = HomeSlideSerializer
     pagination_class = None
+
+    # Same slides for every visitor and edited rarely: cached, and emptied
+    # as soon as a slide is saved/deleted (core/cache_invalidation.py).
+    public_cache_domain = "home"
+    public_cache_ttl = "home"
+    public_cache_name = "home-slides"
 
     def get_queryset(self):
         return HomeSlide.objects.filter(is_active=True).order_by(
@@ -38,13 +45,17 @@ class HomeSlideViewSet(viewsets.ReadOnlyModelViewSet):
     retrieve=extend_schema(summary="Get a homepage banner"),
 )
 @extend_schema(tags=["Website"])
-class HomeBannerViewSet(viewsets.ReadOnlyModelViewSet):
+class HomeBannerViewSet(PublicListCacheMixin, viewsets.ReadOnlyModelViewSet):
     """Read-only listing of the homepage 3-up banners section's
     active tiles, in display order.
     """
 
     serializer_class = HomeBannerSerializer
     pagination_class = None
+
+    public_cache_domain = "home"
+    public_cache_ttl = "home"
+    public_cache_name = "home-banners"
 
     def get_queryset(self):
         return HomeBanner.objects.filter(is_active=True).order_by(

@@ -7,6 +7,10 @@ request body -- only from this *server-side* session key
 (EMAIL_VERIFICATION_SESSION_KEY) -- so a visitor can never verify or
 resend a code for an account that isn't the one they just registered
 in this browser session.
+
+The email itself is sent by a Celery worker (accounts.tasks), not by the
+request. Because task arguments are stored in Redis in clear text, the
+plaintext code is never passed to the task: see `derive_email_code`.
 """
 
 import secrets
@@ -15,6 +19,7 @@ from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password, make_password
 from django.utils import timezone
+from django.utils.crypto import salted_hmac
 
 from accounts.constants import (
     EMAIL_OTP_EXP_MINUTES,
@@ -23,8 +28,8 @@ from accounts.constants import (
     EMAIL_OTP_RESEND_COOLDOWN_SECONDS,
     EMAIL_VERIFICATION_SESSION_KEY,
 )
-from accounts.emails import send_verification_email
 from accounts.models import EmailVerificationCode
+from accounts.tasks import queue_verification_email
 
 
 class OTPError(Exception):
@@ -32,20 +37,37 @@ class OTPError(Exception):
     exhausted/rate-limited verification or resend attempt."""
 
 
-def _generate_code():
-    # secrets.randbelow is a CSPRNG (unlike `random`), so the code is not
-    # guessable; zero-padded so e.g. 483 -> "000483".
-    upper = 10**EMAIL_OTP_LENGTH
-    return str(secrets.randbelow(upper)).zfill(EMAIL_OTP_LENGTH)
+def derive_email_code(user_id, nonce):
+    """The 6-digit code for (`user_id`, `nonce`).
+
+    `nonce` is 128 random bits from a CSPRNG (see start_email_verification),
+    and the code is an HMAC-SHA256 of it keyed by SECRET_KEY, so it is as
+    unguessable as a directly generated random code. Being deterministic is
+    the point: the web process stores only the code's hash, the email is
+    sent later by a Celery worker, and the worker can rebuild the very same
+    code from the task's (user_id, nonce) -- which are useless without
+    SECRET_KEY -- so the plaintext code never has to be put in the queue,
+    the database, a result or a log. Zero-padded, e.g. 483 -> "000483".
+    """
+    digest = salted_hmac(
+        "accounts.otp.email_code", f"{user_id}:{nonce}", algorithm="sha256"
+    ).digest()
+    number = int.from_bytes(digest[:8], "big") % 10**EMAIL_OTP_LENGTH
+    return str(number).zfill(EMAIL_OTP_LENGTH)
 
 
 def start_email_verification(request, user):
     """
     Generates a fresh code for `user`, replacing any previous one,
     points this session at `user` for the verify/resend endpoints, and
-    emails the code. Used by both Register and "Resend Code".
+    queues the email carrying the code (a Celery worker sends it -- the
+    request never waits on SMTP). Used by both Register and "Resend Code".
+
+    Raises if the task cannot be queued (broker unreachable); the callers
+    in api.v1.views.accounts already handle that.
     """
-    code = _generate_code()
+    nonce = secrets.token_urlsafe(16)
+    code = derive_email_code(user.pk, nonce)
     now = timezone.now()
     EmailVerificationCode.objects.update_or_create(
         user=user,
@@ -60,7 +82,7 @@ def start_email_verification(request, user):
     # cookie's identity but not its signed, server-side contents.
     request.session[EMAIL_VERIFICATION_SESSION_KEY] = user.pk
     request.session.set_expiry(EMAIL_OTP_EXP_MINUTES * 60)
-    send_verification_email(user, code)
+    queue_verification_email(user.pk, nonce, now)
 
 
 def get_pending_verification_user(request):

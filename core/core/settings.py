@@ -10,8 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import ssl
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import quote
+
+from celery.schedules import crontab
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -198,9 +202,195 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
+# Seconds before an SMTP connection/command gives up. Django's default is
+# "no timeout", which lets a stalled mail server pin a Celery worker slot
+# forever; with a timeout the task fails fast and is retried (see
+# accounts.tasks).
+EMAIL_TIMEOUT = config("EMAIL_TIMEOUT", default=10, cast=int)
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
+
+# Redis
+# Connection details are read from the environment/`.env` only -- never
+# hardcode a host or credential here (see .env.example). They are used by
+# core.redis_client (health check, email-task idempotency markers) and to
+# build the Celery broker URL below. The defaults suit a bare local
+# checkout with a Redis on localhost; under Docker Compose the backend and
+# worker services set REDIS_HOST=redis (the Redis service name).
+REDIS_HOST = config("REDIS_HOST", default="localhost")
+REDIS_PORT = config("REDIS_PORT", default=6379, cast=int)
+REDIS_DB = config("REDIS_DB", default=0, cast=int)
+# Empty means "no authentication" -- acceptable for local dev only;
+# docker-compose.prod.yml refuses to start without a password.
+REDIS_PASSWORD = config("REDIS_PASSWORD", default="")
+REDIS_SSL = config("REDIS_SSL", default=False, cast=bool)
+# Short timeouts so an unreachable Redis is reported quickly instead of
+# hanging a request or a health check.
+REDIS_SOCKET_CONNECT_TIMEOUT = config(
+    "REDIS_SOCKET_CONNECT_TIMEOUT", default=2.0, cast=float
+)
+REDIS_SOCKET_TIMEOUT = config("REDIS_SOCKET_TIMEOUT", default=2.0, cast=float)
+
+# Cache (public storefront data)
+# Django's built-in Redis cache backend (no extra library), on its own
+# logical database (REDIS_CACHE_DB) next to DB 0 (health/markers/locks) and
+# the Celery broker DB. Only PUBLIC, user-independent query results are put
+# in it (see core/public_cache.py); nothing per-user ever is.
+#
+# Tight socket timeouts on purpose: if Redis is down a cache call must fail
+# fast, not hold a request for seconds. core.public_cache additionally
+# stops calling Redis for PUBLIC_CACHE_FAILURE_COOLDOWN seconds after a
+# failure, and every caller falls back to the database.
+REDIS_CACHE_DB = config("REDIS_CACHE_DB", default=2, cast=int)
+REDIS_CACHE_SOCKET_TIMEOUT = config(
+    "REDIS_CACHE_SOCKET_TIMEOUT", default=1.0, cast=float
+)
+_cache_scheme = "rediss" if REDIS_SSL else "redis"
+_cache_auth = f":{quote(REDIS_PASSWORD, safe='')}@" if REDIS_PASSWORD else ""
+_cache_options = {
+    "socket_connect_timeout": REDIS_CACHE_SOCKET_TIMEOUT,
+    "socket_timeout": REDIS_CACHE_SOCKET_TIMEOUT,
+}
+if REDIS_SSL:
+    _cache_options["ssl_cert_reqs"] = ssl.CERT_REQUIRED
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": config(
+            "CACHE_URL",
+            default=(
+                f"{_cache_scheme}://{_cache_auth}{REDIS_HOST}:{REDIS_PORT}"
+                f"/{REDIS_CACHE_DB}"
+            ),
+        ),
+        "KEY_PREFIX": "nexora",
+        # Bump (CACHE_KEY_VERSION) after a deploy that changes the fields of
+        # a cached model, so entries pickled by the old code are never read.
+        "VERSION": config("CACHE_KEY_VERSION", default=1, cast=int),
+        "OPTIONS": _cache_options,
+    }
+}
+
+# Kill switch: PUBLIC_CACHE_ENABLED=False sends every request straight to
+# the database again (no restart of Redis needed, nothing else changes).
+PUBLIC_CACHE_ENABLED = config("PUBLIC_CACHE_ENABLED", default=True, cast=bool)
+# After a Redis error, skip the cache entirely for this many seconds.
+PUBLIC_CACHE_FAILURE_COOLDOWN = config(
+    "PUBLIC_CACHE_FAILURE_COOLDOWN", default=30, cast=int
+)
+# How long a cached result may live (seconds). Invalidation on every change
+# (core/cache_invalidation.py) is what keeps data fresh; the TTL is the
+# backstop for writes that bypass Django signals (QuerySet.update(),
+# bulk_create(), raw SQL, edits made outside the app) and for a Redis
+# outage during an invalidation. Kept short where the data is edited often.
+PUBLIC_CACHE_TTL = {
+    "home": 300,  # slider + banners: edited rarely
+    "taxonomy": 600,  # category / tag / blog category / blog tag lists
+    "catalog": 120,  # products, facets, product detail (stock, ratings...)
+    "vendors": 300,  # public vendor list
+    "blog": 120,  # published posts (like counts, author profile)
+}
+
+
+# Celery (background jobs)
+# The broker is the same Redis service configured above, on its own logical
+# database (REDIS_BROKER_DB) so queue keys never mix with anything else
+# stored in DB 0. CELERY_BROKER_URL can be set to override the derived URL.
+# There is deliberately NO result backend and results are ignored: tasks
+# return None, so no password / OTP / reset token is ever kept as a result.
+REDIS_BROKER_DB = config("REDIS_BROKER_DB", default=1, cast=int)
+_redis_scheme = "rediss" if REDIS_SSL else "redis"
+_redis_auth = f":{quote(REDIS_PASSWORD, safe='')}@" if REDIS_PASSWORD else ""
+CELERY_BROKER_URL = config(
+    "CELERY_BROKER_URL",
+    default=(
+        f"{_redis_scheme}://{_redis_auth}{REDIS_HOST}:{REDIS_PORT}"
+        f"/{REDIS_BROKER_DB}"
+    ),
+)
+if REDIS_SSL:
+    CELERY_BROKER_USE_SSL = {"ssl_cert_reqs": ssl.CERT_REQUIRED}
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TASK_IGNORE_RESULT = True
+
+# At-least-once delivery: a task is acknowledged only after it finishes, so
+# a worker that dies mid-task hands it back to the queue. Every task must
+# therefore be idempotent (see accounts.tasks).
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_REJECT_ON_WORKER_LOST = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+# Hard stops for a task stuck on the network (soft raises inside the task
+# first so it can be retried; the hard limit kills it).
+CELERY_TASK_SOFT_TIME_LIMIT = 60
+CELERY_TASK_TIME_LIMIT = 90
+
+# Start the worker even if Redis is not accepting connections yet; it
+# keeps retrying instead of exiting.
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+# Publishing (done by the web process) must never hang a request: keep the
+# connect timeout short and give up after a couple of quick retries. The
+# caller decides what to do when the enqueue fails (see accounts.otp).
+CELERY_BROKER_CONNECTION_TIMEOUT = REDIS_SOCKET_CONNECT_TIMEOUT
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    "visibility_timeout": 3600,
+    "socket_connect_timeout": REDIS_SOCKET_CONNECT_TIMEOUT,
+}
+CELERY_TASK_PUBLISH_RETRY = True
+CELERY_TASK_PUBLISH_RETRY_POLICY = {
+    "max_retries": 2,
+    "interval_start": 0,
+    "interval_step": 0.2,
+    "interval_max": 0.5,
+}
+
+# Run tasks inline in the calling process instead of sending them to the
+# broker. The test suite turns this on itself (core/conftest.py); it can
+# also be handy for a local run without Redis/worker. Never enable it in
+# production: it puts SMTP back inside the request.
+CELERY_TASK_ALWAYS_EAGER = config(
+    "CELERY_TASK_ALWAYS_EAGER", default=False, cast=bool
+)
+CELERY_TASK_EAGER_PROPAGATES = True
+
+# Celery Beat (scheduled jobs)
+# Beat is a separate process (`celery -A core beat`, the `beat` service in
+# docker-compose*.yml); exactly ONE must run, otherwise every job would be
+# dispatched once per beat. Crontab times are read in CELERY_TIMEZONE, which
+# follows the project's TIME_ZONE.
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = True
+# Without a result backend there is nothing to expire. Celery would still
+# add its own daily "celery.backend_cleanup" entry to the schedule when
+# result_expires is set (it is by default); None keeps the schedule to
+# exactly the jobs listed below.
+CELERY_RESULT_EXPIRES = None
+# Only clean-ups of data that would otherwise pile up forever -- see
+# accounts/maintenance.py for what each one removes and why. Once a day,
+# off-peak, staggered so they never overlap. `expires` drops a dispatched
+# run that no worker picked up within 6 hours (e.g. the worker was down),
+# so a backlog of stale runs cannot pile up and fire all at once later;
+# the next day's run simply takes over.
+CELERY_BEAT_SCHEDULE = {
+    "cleanup-expired-otp-codes": {
+        "task": "accounts.cleanup_expired_otp_codes",
+        "schedule": crontab(hour=3, minute=15),
+        "options": {"expires": 6 * 60 * 60},
+    },
+    "cleanup-expired-sessions": {
+        "task": "accounts.cleanup_expired_sessions",
+        "schedule": crontab(hour=3, minute=30),
+        "options": {"expires": 6 * 60 * 60},
+    },
+    "cleanup-expired-jwt-tokens": {
+        "task": "accounts.cleanup_expired_jwt_tokens",
+        "schedule": crontab(hour=3, minute=45),
+        "options": {"expires": 6 * 60 * 60},
+    },
+}
 
 # Django REST Framework
 # The frontend is a server-rendered site with fetch()-based AJAX calls

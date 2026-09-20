@@ -9,6 +9,15 @@ Pillow==12.3.0
 # Configuration
 python-decouple==3.8
 
+# Redis client (used by core/redis_client.py)
+redis==8.1.0
+
+# Background jobs (core/celery.py; broker = the Redis above).
+# Deliberately NOT "celery[redis]": that extra caps redis<6.5 and would
+# downgrade the redis==8.1.0 pinned above. kombu's Redis transport runs on
+# it fine (task round trip verified against a real Redis).
+celery==5.6.3
+
 # JWT
 PyJWT==2.9.0
 
