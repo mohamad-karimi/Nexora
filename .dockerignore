@@ -11,3 +11,6 @@ htmlcov/
 core/db.sqlite3
 core/staticfiles/
 README.md
+backups/
+.last-deployed-image-tag*
+docs/

@@ -1,0 +1,44 @@
+# Production image for the `backend` / `worker` / `beat` services in
+# docker-compose.prod.yml. Built and pushed to GHCR by .github/workflows/
+# deploy.yml. The existing `dockerfile` (used by docker-compose.yml for
+# local dev, and by the CI "docker" job) is untouched.
+#
+# Differences from `dockerfile`:
+#   - installs from requirements-prod.txt (no black/flake8/pytest/coverage)
+#   - runs as a non-root user
+#   - collects static files at build time (Nginx serves them from a
+#     volume populated by the "collectstatic" deploy step, but baking them
+#     in too means the image is self-consistent even before that step
+#     runs)
+FROM python:3.11-slim
+
+LABEL maintainer="mohamadkarimi.dev@gmail.com"
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /usr/src/app
+
+# libpq5: runtime library psycopg2-binary needs to talk to PostgreSQL.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY ./requirements-prod.txt ./requirements-prod.txt
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements-prod.txt
+
+COPY ./core .
+
+# Non-root: create the user after the source is in place so it can own it.
+# media/ and staticfiles/ are overlaid by named volumes at runtime
+# (docker-compose.prod.yml) -- these mkdirs just guarantee the mount
+# points exist and are writable even before the first `up`.
+RUN addgroup --system app \
+    && adduser --system --ingroup app --no-create-home app \
+    && mkdir -p /usr/src/app/staticfiles /usr/src/app/media \
+    && chown -R app:app /usr/src/app
+
+USER app
+
+EXPOSE 8000

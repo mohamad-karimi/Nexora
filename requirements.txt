@@ -39,3 +39,9 @@ coverage==7.6.9
 
 # Production WSGI server (used by docker-compose.prod.yml)
 gunicorn==23.0.0
+
+# PostgreSQL client (used when POSTGRES_DB is set -- see core/core/settings.py
+# and docker-compose.prod.yml). Kept in the main requirements file too so
+# the existing dev/CI image and test suite can run against Postgres if
+# needed; requirements-prod.txt (production image) also pins it.
+psycopg2-binary==2.9.10

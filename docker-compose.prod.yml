@@ -1,105 +1,55 @@
-# Used by .github/workflows/deploy.yml on the production server.
-# Unlike docker-compose.yml (local dev: bind-mounted source, runserver),
-# this runs the image built & pushed to GHCR by CI, via gunicorn, with
-# no source bind-mount. The real .env with production secrets must
-# already exist next to this file on the server -- it is never built
-# or copied by CI (see README "Deployment" section).
+# Production stack, deployed by scripts/deploy.sh (invoked from
+# .github/workflows/deploy.yml on the production server only -- this
+# branch/CI never deploys it, see docs/production-deployment.md).
 #
-# Usage on the server (done by the deploy workflow):
-#   export IMAGE=ghcr.io/<owner>/<repo>
-#   export IMAGE_TAG=<git-sha>
-#   docker compose -f docker-compose.prod.yml pull
-#   docker compose -f docker-compose.prod.yml up -d
+# Architecture:
+#   Internet -> Nginx (:80/:443, the only published ports)
+#            -> Gunicorn/Django (backend, no published port)
+#   Django   -> PostgreSQL, Redis
+#   Celery Worker -> Redis, PostgreSQL
+#   Celery Beat   -> Redis (dispatch only)
+#
+# Unlike docker-compose.yml (local dev: bind-mounted source, `runserver`,
+# SQLite), this uses the image built from dockerfile.prod & pushed to GHCR
+# by CI, runs Gunicorn, requires PostgreSQL, and puts only Nginx on the
+# host network. The real .env with production secrets must already exist
+# next to this file on the server -- it is never built or copied by CI.
+#
+# First-time setup on a new host: see docs/production-deployment.md and
+# run scripts/init-letsencrypt.sh once before the very first `deploy.sh`.
 
 services:
-  backend:
-    image: ${IMAGE}:${IMAGE_TAG:-latest}
-    container_name: backend
-    working_dir: /usr/src/app
-    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    # Not published to the host: only reachable from other services on
+    # the compose network (as postgres:5432).
     environment:
-      - DATABASE_PATH=/usr/src/app/data/db.sqlite3
-      - REDIS_HOST=redis
-    depends_on:
-      redis:
-        condition: service_healthy
+      - POSTGRES_DB=${POSTGRES_DB:?Set POSTGRES_DB in the server .env}
+      - POSTGRES_USER=${POSTGRES_USER:?Set POSTGRES_USER in the server .env}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the server .env}
     volumes:
-      - backend_db:/usr/src/app/data
-      - backend_media:/usr/src/app/media
+      - postgres_data:/var/lib/postgresql/data
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/', timeout=3)"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 15s
-
-  # Celery worker: same image as `backend`, separate process. Runs the
-  # background jobs (account emails) that the web process enqueues in
-  # Redis, so a slow or down SMTP server never blocks a request. It only
-  # reads the database (SQLite file on the shared volume below).
-  worker:
-    image: ${IMAGE}:${IMAGE_TAG:-latest}
-    container_name: celery_worker
-    working_dir: /usr/src/app
-    command: celery -A core worker --loglevel=INFO --concurrency=2 --hostname=worker@%h
-    env_file:
-      - .env
-    environment:
-      - DATABASE_PATH=/usr/src/app/data/db.sqlite3
-      - REDIS_HOST=redis
-    depends_on:
-      redis:
-        condition: service_healthy
-    volumes:
-      - backend_db:/usr/src/app/data
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "celery -A core inspect ping -d worker@$$HOSTNAME"]
-      interval: 30s
-      timeout: 15s
-      retries: 5
-      start_period: 20s
-
-  # Celery Beat: the scheduler. A clock only -- it dispatches the scheduled
-  # cleanup tasks (CELERY_BEAT_SCHEDULE) to Redis and the `worker` runs
-  # them. Run exactly ONE beat, never scale this service: a second beat
-  # would dispatch every job twice. It touches neither the database nor
-  # any volume; its bookkeeping file is in /tmp, so after a restart it just
-  # waits for the next scheduled time.
-  beat:
-    image: ${IMAGE}:${IMAGE_TAG:-latest}
-    container_name: celery_beat
-    working_dir: /usr/src/app
-    command: celery -A core beat --loglevel=INFO --schedule=/tmp/celerybeat-schedule
-    env_file:
-      - .env
-    environment:
-      - REDIS_HOST=redis
-    depends_on:
-      redis:
-        condition: service_healthy
-    restart: always
-    healthcheck:
-      # Beat answers no remote-control pings; it is PID 1, so "PID 1 is
-      # still the beat process" is the liveness signal.
-      test: ["CMD-SHELL", "grep -q beat /proc/1/cmdline"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 15s
+      start_period: 10s
 
   redis:
     image: redis:7.4-alpine
     container_name: redis
     # Not published to the host. REDIS_PASSWORD must be set in the
-    # server's .env (next to this file) -- Compose aborts with the
-    # message below if it is missing, rather than running Redis
-    # unauthenticated. AOF persistence keeps data across restarts.
+    # server's .env -- Compose aborts with the message below if it is
+    # missing, rather than running Redis unauthenticated. AOF persistence
+    # keeps data across restarts.
     command:
       - redis-server
       - --appendonly
@@ -111,6 +61,11 @@ services:
     volumes:
       - redis_data:/data
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     healthcheck:
       test: ["CMD-SHELL", 'if [ -n "$$REDIS_PASSWORD" ]; then export REDISCLI_AUTH="$$REDIS_PASSWORD"; fi; redis-cli ping | grep -q PONG']
       interval: 10s
@@ -118,7 +73,153 @@ services:
       retries: 10
       start_period: 5s
 
+  backend:
+    image: ${IMAGE}:${IMAGE_TAG:-latest}
+    container_name: backend
+    working_dir: /usr/src/app
+    command: gunicorn core.wsgi:application -c gunicorn.conf.py
+    # No `ports:` -- only Nginx is published to the host (see below).
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - media_data:/usr/src/app/media
+      - static_data:/usr/src/app/staticfiles
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  # Celery worker: same image as `backend`, separate process. Runs the
+  # background jobs (account emails, scheduled cleanups) enqueued by the
+  # web process and by `beat`, so a slow/down SMTP server or a cleanup job
+  # never blocks a request.
+  worker:
+    image: ${IMAGE}:${IMAGE_TAG:-latest}
+    container_name: celery_worker
+    working_dir: /usr/src/app
+    command: celery -A core worker --loglevel=INFO --concurrency=2 --hostname=worker@%h
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - media_data:/usr/src/app/media
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A core inspect ping -d worker@$$HOSTNAME"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 20s
+
+  # Celery Beat: the scheduler. A clock only -- it dispatches the
+  # scheduled cleanup tasks (CELERY_BEAT_SCHEDULE) to Redis and `worker`
+  # runs them. Run exactly ONE beat, never scale this service: a second
+  # beat would dispatch every job twice. Its bookkeeping file is in /tmp,
+  # so after a restart it just waits for the next scheduled time.
+  beat:
+    image: ${IMAGE}:${IMAGE_TAG:-latest}
+    container_name: celery_beat
+    working_dir: /usr/src/app
+    command: celery -A core beat --loglevel=INFO --schedule=/tmp/celerybeat-schedule
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    healthcheck:
+      # Beat answers no remote-control pings; it is PID 1, so "PID 1 is
+      # still the beat process" is the liveness signal.
+      test: ["CMD-SHELL", "grep -q beat /proc/1/cmdline"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: nginx
+    environment:
+      - DOMAIN=${SITE_DOMAIN:?Set SITE_DOMAIN in the server .env (bare domain, e.g. example.com)}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/templates:/etc/nginx/templates:ro
+      - static_data:/usr/src/app/staticfiles:ro
+      - media_data:/usr/src/app/media:ro
+      - certbot_conf:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/nginx-health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ACME client for Let's Encrypt. Not started as a long-running service
+  # by default -- scripts/init-letsencrypt.sh and scripts/renew-certs.sh
+  # invoke it with `docker compose run`. certbot_conf/certbot_www are
+  # shared with `nginx` (read-only there) so a renewed certificate and
+  # the ACME challenge files are visible to it.
+  certbot:
+    image: certbot/certbot:latest
+    container_name: certbot
+    volumes:
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+
 volumes:
-  backend_db:
-  backend_media:
+  postgres_data:
   redis_data:
+  media_data:
+  static_data:
+  certbot_conf:
+  certbot_www:

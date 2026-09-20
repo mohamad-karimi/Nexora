@@ -198,3 +198,158 @@ jobs:
       - name: Tear down
         if: always()
         run: docker compose down -v
+
+  prod-validate:
+    name: Production image & stack validation (Postgres, Nginx, gunicorn)
+    runs-on: ubuntu-latest
+    needs: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: nexora_ci
+          POSTGRES_USER: nexora
+          POSTGRES_PASSWORD: ci-test-postgres-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U nexora -d nexora_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      SECRET_KEY: ci-prod-validate-secret-key
+      DEBUG: "False"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      CSRF_TRUSTED_ORIGINS: http://localhost
+      EMAIL_HOST_USER: ci@example.com
+      EMAIL_HOST_PASSWORD: ci-test-password
+      SITE_DOMAIN: localhost
+      SITE_DISPLAY_NAME: Nexora CI
+      POSTGRES_DB: nexora_ci
+      POSTGRES_USER: nexora
+      POSTGRES_PASSWORD: ci-test-postgres-password
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: localhost
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ""
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build the production image (dockerfile.prod)
+        run: docker build -f dockerfile.prod -t nexora-backend:prod-ci .
+
+      - name: Validate docker-compose.prod.yml (syntax + variable interpolation)
+        run: |
+          IMAGE=nexora-backend IMAGE_TAG=prod-ci REDIS_PASSWORD=ci-dummy-redis-password \
+            docker compose -f docker-compose.prod.yml config -q
+
+      - name: Run migrations against real PostgreSQL (production image)
+        run: |
+          docker run --rm --network host \
+            -e SECRET_KEY -e DEBUG -e ALLOWED_HOSTS -e CSRF_TRUSTED_ORIGINS \
+            -e EMAIL_HOST_USER -e EMAIL_HOST_PASSWORD -e SITE_DOMAIN -e SITE_DISPLAY_NAME \
+            -e POSTGRES_DB -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_HOST -e POSTGRES_PORT \
+            -e REDIS_HOST -e REDIS_PORT -e REDIS_PASSWORD \
+            nexora-backend:prod-ci python manage.py migrate --noinput
+
+      - name: Sync the Site row (idempotent management command)
+        run: |
+          docker run --rm --network host \
+            -e SECRET_KEY -e DEBUG -e ALLOWED_HOSTS -e CSRF_TRUSTED_ORIGINS \
+            -e EMAIL_HOST_USER -e EMAIL_HOST_PASSWORD -e SITE_DOMAIN -e SITE_DISPLAY_NAME \
+            -e POSTGRES_DB -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_HOST -e POSTGRES_PORT \
+            -e REDIS_HOST -e REDIS_PORT -e REDIS_PASSWORD \
+            nexora-backend:prod-ci python manage.py sync_site
+
+      - name: Collect static files
+        run: |
+          docker run --rm --network host \
+            -e SECRET_KEY -e DEBUG -e ALLOWED_HOSTS -e CSRF_TRUSTED_ORIGINS \
+            -e EMAIL_HOST_USER -e EMAIL_HOST_PASSWORD -e SITE_DOMAIN -e SITE_DISPLAY_NAME \
+            -e POSTGRES_DB -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_HOST -e POSTGRES_PORT \
+            -e REDIS_HOST -e REDIS_PORT -e REDIS_PASSWORD \
+            nexora-backend:prod-ci python manage.py collectstatic --noinput
+
+      - name: Django deployment checklist (manage.py check --deploy)
+        run: |
+          docker run --rm --network host \
+            -e SECRET_KEY -e DEBUG -e ALLOWED_HOSTS -e CSRF_TRUSTED_ORIGINS \
+            -e EMAIL_HOST_USER -e EMAIL_HOST_PASSWORD -e SITE_DOMAIN -e SITE_DISPLAY_NAME \
+            -e POSTGRES_DB -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_HOST -e POSTGRES_PORT \
+            -e REDIS_HOST -e REDIS_PORT -e REDIS_PASSWORD \
+            -e SECURE_SSL_REDIRECT=True -e SESSION_COOKIE_SECURE=True -e CSRF_COOKIE_SECURE=True \
+            nexora-backend:prod-ci python manage.py check --deploy --database default
+
+      - name: Start Gunicorn (production image) and verify /health/ + /health/redis/
+        run: |
+          docker run -d --name backend-ci --network host \
+            -e SECRET_KEY -e DEBUG -e ALLOWED_HOSTS -e CSRF_TRUSTED_ORIGINS \
+            -e EMAIL_HOST_USER -e EMAIL_HOST_PASSWORD -e SITE_DOMAIN -e SITE_DISPLAY_NAME \
+            -e POSTGRES_DB -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_HOST -e POSTGRES_PORT \
+            -e REDIS_HOST -e REDIS_PORT -e REDIS_PASSWORD \
+            nexora-backend:prod-ci gunicorn core.wsgi:application -c gunicorn.conf.py
+          for i in $(seq 1 20); do
+            curl --fail --silent http://localhost:8000/health/ && break
+            echo "waiting for gunicorn... ($i)"; sleep 2
+          done
+          curl --fail --silent --show-error http://localhost:8000/health/
+          curl --fail --silent --show-error http://localhost:8000/health/redis/
+
+      - name: Celery worker health (production image)
+        run: |
+          docker run -d --name worker-ci --network host \
+            -e SECRET_KEY -e DEBUG -e ALLOWED_HOSTS -e EMAIL_HOST_USER -e EMAIL_HOST_PASSWORD \
+            -e SITE_DOMAIN -e SITE_DISPLAY_NAME \
+            -e POSTGRES_DB -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_HOST -e POSTGRES_PORT \
+            -e REDIS_HOST -e REDIS_PORT -e REDIS_PASSWORD \
+            nexora-backend:prod-ci celery -A core worker --loglevel=INFO --concurrency=2 --hostname=worker-ci@%h
+          sleep 8
+          docker exec worker-ci celery -A core inspect ping -d worker-ci@$(docker exec worker-ci hostname)
+
+      - name: Celery beat starts and registers the scheduled tasks (production image)
+        run: |
+          docker run -d --name beat-ci --network host \
+            -e SECRET_KEY -e DEBUG -e ALLOWED_HOSTS -e EMAIL_HOST_USER -e EMAIL_HOST_PASSWORD \
+            -e SITE_DOMAIN -e SITE_DISPLAY_NAME \
+            -e POSTGRES_DB -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_HOST -e POSTGRES_PORT \
+            -e REDIS_HOST -e REDIS_PORT -e REDIS_PASSWORD \
+            nexora-backend:prod-ci celery -A core beat --loglevel=INFO --schedule=/tmp/celerybeat-schedule
+          sleep 5
+          docker exec beat-ci grep -q beat /proc/1/cmdline
+
+      - name: Nginx config syntax check (real template, dummy self-signed cert)
+        run: |
+          # Same shape as scripts/init-letsencrypt.sh's temporary certificate,
+          # only used here to validate that Nginx accepts the rendered
+          # config -- no real domain/ACME challenge is involved in CI.
+          mkdir -p .ci-certs/live/localhost
+          openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+            -keyout .ci-certs/live/localhost/privkey.pem \
+            -out .ci-certs/live/localhost/fullchain.pem \
+            -subj /CN=localhost
+          docker run --rm \
+            -e DOMAIN=localhost \
+            -v "$PWD/docker/nginx/templates:/etc/nginx/templates:ro" \
+            -v "$PWD/.ci-certs:/etc/letsencrypt:ro" \
+            nginx:1.27-alpine nginx -t
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          docker logs backend-ci || true
+          docker logs worker-ci || true
+          docker logs beat-ci || true
+
+      - name: Tear down
+        if: always()
+        run: |
+          docker rm -f backend-ci worker-ci beat-ci 2>/dev/null || true
+          rm -rf .ci-certs

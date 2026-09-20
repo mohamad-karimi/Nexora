@@ -37,6 +37,67 @@ ALLOWED_HOSTS = config(
     cast=lambda v: [s.strip() for s in v.split(",")],
 )
 
+# Extra origins allowed to pass Django's CSRF check (e.g. the production
+# domain over https). Empty by default so a bare local checkout is
+# unaffected; production sets this in `.env` (see .env.example).
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="",
+    cast=lambda v: [s.strip() for s in v.split(",") if s.strip()],
+)
+
+# Production security (Nginx + HTTPS)
+# ------------------------------------
+# All of this is environment-driven so nothing here is hardcoded for one
+# domain, and every flag defaults to whatever is safe for DEBUG=True local
+# dev. In production (.env sets DEBUG=False) the *_SECURE / SSL_REDIRECT
+# flags default to True automatically; nothing extra needs to be set
+# unless you want to override a default.
+#
+# Nginx (docker/nginx) always sends X-Forwarded-Proto, so Django can tell
+# whether the original request was HTTPS even though Gunicorn itself only
+# ever sees plain HTTP from the reverse proxy. This is what makes
+# request.build_absolute_uri() / request.is_secure() (used by the
+# password-reset email links) return "https://..." correctly behind Nginx.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Redirect http:// to https://. Off by default under DEBUG so local dev
+# (plain http://localhost:8000) keeps working; on by default otherwise.
+# Leave this off (SECURE_SSL_REDIRECT=False in .env) until the very first
+# TLS certificate has been issued and verified working end-to-end (see
+# docs/production-deployment.md) -- Nginx serves plain HTTP for the ACME
+# challenge until then.
+SECURE_SSL_REDIRECT = config(
+    "SECURE_SSL_REDIRECT", default=not DEBUG, cast=bool
+)
+
+SESSION_COOKIE_SECURE = config(
+    "SESSION_COOKIE_SECURE", default=not DEBUG, cast=bool
+)
+CSRF_COOKIE_SECURE = config(
+    "CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool
+)
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False  # the frontend's fetch() calls read this cookie
+SESSION_COOKIE_SAMESITE = config("SESSION_COOKIE_SAMESITE", default="Lax")
+CSRF_COOKIE_SAMESITE = config("CSRF_COOKIE_SAMESITE", default="Lax")
+
+# HSTS: kept at 0 (disabled) until explicitly turned on via .env, per the
+# rollout order in docs/production-deployment.md -- enabling it before
+# HTTPS is fully verified would make the domain unreachable over HTTP for
+# the duration of the max-age with no way to undo it client-side.
+SECURE_HSTS_SECONDS = config("SECURE_HSTS_SECONDS", default=0, cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config(
+    "SECURE_HSTS_INCLUDE_SUBDOMAINS", default=False, cast=bool
+)
+SECURE_HSTS_PRELOAD = config("SECURE_HSTS_PRELOAD", default=False, cast=bool)
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = config("X_FRAME_OPTIONS", default="DENY")
+SECURE_REFERRER_POLICY = config(
+    "SECURE_REFERRER_POLICY", default="strict-origin-when-cross-origin"
+)
+
 # django.contrib.sites -- backs the Sitemap/RSS-feed absolute-URL
 # resolution (django.contrib.sitemaps and django.contrib.syndication
 # both build links from the current Site's domain). The domain/display
@@ -118,15 +179,40 @@ WSGI_APPLICATION = "core.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+#
+# PostgreSQL is used whenever POSTGRES_DB is set in the environment (this is
+# how production/docker-compose.prod.yml selects it -- see .env.example).
+# With no POSTGRES_DB, development/CI keep using the existing SQLite file
+# unchanged, so nothing about the local workflow changes.
+POSTGRES_DB = config("POSTGRES_DB", default="")
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": Path(
-            config("DATABASE_PATH", default=str(BASE_DIR / "db.sqlite3"))
-        ),
+if POSTGRES_DB:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": POSTGRES_DB,
+            "USER": config("POSTGRES_USER", default="nexora"),
+            "PASSWORD": config("POSTGRES_PASSWORD", default=""),
+            "HOST": config("POSTGRES_HOST", default="postgres"),
+            "PORT": config("POSTGRES_PORT", default="5432"),
+            # Reuses a connection across requests instead of reconnecting
+            # every time (safe with Gunicorn's sync workers).
+            "CONN_MAX_AGE": config(
+                "POSTGRES_CONN_MAX_AGE", default=60, cast=int
+            ),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": Path(
+                config(
+                    "DATABASE_PATH", default=str(BASE_DIR / "db.sqlite3")
+                )
+            ),
+        }
+    }
 
 
 # Password validation
@@ -180,6 +266,53 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 # Media files
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+
+# Logging
+# Everything goes to stdout/stderr so `docker logs` / Docker's own log
+# driver (see docker-compose.prod.yml logging: options) captures it --
+# nothing is written to a file inside the container. Django's own request
+# logger already avoids echoing request bodies/headers, so passwords,
+# OTP codes, JWTs, reset tokens and SMTP credentials are never logged by
+# this configuration; application code must keep avoiding logging them
+# directly (see accounts/otp.py, accounts/tasks.py).
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{asctime}] {levelname} {name}: {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": config("DJANGO_LOG_LEVEL", default="WARNING"),
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": config("DJANGO_LOG_LEVEL", default="INFO"),
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "celery": {
+            "handlers": ["console"],
+            "level": config("CELERY_LOG_LEVEL", default="INFO"),
+            "propagate": False,
+        },
+    },
+}
 
 
 # Default primary key field type
