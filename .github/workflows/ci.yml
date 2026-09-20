@@ -118,6 +118,16 @@ jobs:
           docker compose logs backend
           exit 1
 
+      - name: Apply database migrations inside the backend container
+        run: |
+          # The compose stack starts on an empty SQLite file, and nothing in
+          # docker-compose.yml runs `migrate`. /health/ only opens a DB
+          # connection, so it passes on an unmigrated database, but every
+          # endpoint that reads a table (e.g. /api/v1/home-slides/) would
+          # return 500 and the migration-seeded home slides would not exist.
+          # Same command the CD workflow runs after `up -d` in production.
+          docker compose exec -T backend python manage.py migrate --noinput
+
       - name: Verify /health/ from the host (database connectivity)
         run: curl --fail --silent --show-error http://localhost:8000/health/
 
