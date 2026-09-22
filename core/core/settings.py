@@ -148,6 +148,13 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Serves STATIC_ROOT directly from the WSGI app. Required on Render
+    # (no separate static-file server sits in front of Gunicorn there).
+    # On the existing self-hosted stack this is effectively a no-op:
+    # Nginx (docker/nginx/templates/default.conf.template) already
+    # answers every /static/ request from the static_data volume before
+    # it ever reaches Django/Gunicorn.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -262,6 +269,26 @@ DEFAULT_CURRENCY_SYMBOL = "$"
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# WhiteNoise storage backend (Django 4.2+ STORAGES setting). Deliberately
+# the *non-manifest* whitenoise.storage.CompressedStaticFilesStorage, not
+# CompressedManifestStaticFilesStorage: the manifest variant renames every
+# file to a content-hashed name (main.<hash>.css), which would also change
+# what {% static %} renders on the existing self-hosted stack and break
+# the Nginx static location's "filenames are content-stable" assumption
+# (docker/nginx/templates/default.conf.template) -- unrelated to the
+# Render fix this is for. Compression alone (gzip, served by WhiteNoise
+# when the client sends Accept-Encoding: gzip) is enough to fix Render's
+# 404s without touching filenames or the Nginx-served deployment's
+# behaviour.
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 # Media files
 MEDIA_URL = "/media/"

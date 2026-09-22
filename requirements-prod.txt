@@ -40,3 +40,9 @@ gunicorn==23.0.0
 
 # PostgreSQL client
 psycopg2-binary==2.9.10
+
+# Serves static files directly from the WSGI app -- required so the same
+# settings.py (MIDDLEWARE / STORAGES) that now unconditionally references
+# whitenoise keeps working on THIS image too (self-hosted Docker/Nginx
+# stack), even though Nginx is what actually serves /static/ there.
+whitenoise==6.12.0

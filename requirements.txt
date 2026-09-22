@@ -45,3 +45,11 @@ gunicorn==23.0.0
 # the existing dev/CI image and test suite can run against Postgres if
 # needed; requirements-prod.txt (production image) also pins it.
 psycopg2-binary==2.9.10
+
+# Serves static files directly from the WSGI app (core/core/settings.py
+# MIDDLEWARE / STORAGES). Needed on platforms with no separate static-file
+# server in front of Gunicorn (e.g. Render) -- see docs/production-
+# deployment.md. Harmless on the existing self-hosted stack: there, Nginx
+# already serves /static/ from a volume before a request ever reaches
+# Django, so this middleware never actually gets exercised.
+whitenoise==6.12.0
