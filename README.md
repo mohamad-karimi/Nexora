@@ -1,14 +1,19 @@
 # Nexora — Django E-Commerce
 
-A modern multi-vendor e-commerce platform built with **Django** and **Django REST Framework**.
+<p align="center">
+  A modern multi-vendor e-commerce platform built with Django.
+</p>
 
-[image](https://img.shields.io/badge/Python-3.11-blue?logo=python)
-[image](https://img.shields.io/badge/Django-5.2-green?logo=django)
-[image](https://img.shields.io/badge/DRF-3.16-red?logo=django)
-[image](https://img.shields.io/badge/Redis-7-red?logo=redis)
-[image](https://img.shields.io/badge/Celery-5-green?logo=celery)
-[image](https://img.shields.io/badge/Docker-blue?logo=docker)
-[image](https://img.shields.io/badge/License-MIT-yellow)
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11-blue?logo=python" />
+  <img src="https://img.shields.io/badge/Django-5.2-green?logo=django" />
+  <img src="https://img.shields.io/badge/Django%20REST%20Framework-3.18-red?logo=django" />
+  <img src="https://img.shields.io/badge/Redis-supported-red?logo=redis" />
+  <img src="https://img.shields.io/badge/Celery-supported-brightgreen?logo=celery" />
+  <img src="https://img.shields.io/badge/Docker-supported-blue?logo=docker" />
+  <img src="https://img.shields.io/badge/License-MIT-yellow" />
+</p>
+
 
 ## 📖 About
 
