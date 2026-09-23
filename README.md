@@ -36,6 +36,44 @@
 * 🧪 Pytest, Coverage, Flake8, and Black
 * 🚀 GitHub Actions CI/CD
 
+## 📸 Screenshots
+
+### Homepage
+
+<p align="center">
+  <img src="screenshots/Homepage.png" width="900" />
+</p>
+
+### Shop
+
+<p align="center">
+  <img src="screenshots/Shop%20Page.png" width="900" />
+</p>
+
+### Product Detail
+
+<p align="center">
+  <img src="screenshots/Product%20Detail%20Page.png" width="900" />
+</p>
+
+### Shopping Cart
+
+<p align="center">
+  <img src="screenshots/Cart%20Page.png" width="900" />
+</p>
+
+### Vendor Dashboard
+
+<p align="center">
+  <img src="screenshots/Vendor%20Dashboard%20%E2%80%93%20Overview.png" width="900" />
+</p>
+
+### Add Product
+
+<p align="center">
+  <img src="screenshots/Vendor%20Dashboard%20%E2%80%93%20Add%20Product.png" width="900" />
+</p>
+
 ## 🛠️ Tech Stack
 
 | Technology            | Purpose          |
