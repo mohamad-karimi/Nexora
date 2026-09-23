@@ -1,243 +1,80 @@
-# Coders Site — Django LMS
+# Nexora — Django E-Commerce
 
-<p align="center">
-  A modern Learning Management System built with Django.
-</p>
+A modern multi-vendor e-commerce platform built with **Django** and **Django REST Framework**.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.x-blue?logo=python" alt="Python">
-  <img src="https://img.shields.io/badge/Django-5.2-green?logo=django" alt="Django">
-  <img src="https://img.shields.io/badge/Bootstrap-5-purple?logo=bootstrap" alt="Bootstrap">
-  <img src="https://img.shields.io/badge/PostgreSQL-Supported-blue?logo=postgresql" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License">
-</p>
+[image](https://img.shields.io/badge/Python-3.11-blue?logo=python)
+[image](https://img.shields.io/badge/Django-5.2-green?logo=django)
+[image](https://img.shields.io/badge/DRF-3.16-red?logo=django)
+[image](https://img.shields.io/badge/Redis-7-red?logo=redis)
+[image](https://img.shields.io/badge/Celery-5-green?logo=celery)
+[image](https://img.shields.io/badge/Docker-blue?logo=docker)
+[image](https://img.shields.io/badge/License-MIT-yellow)
 
 ## 📖 About
 
-**Coders Site** is a full-featured Learning Management System built with **Django** for managing online courses, instructors, students, learning content, reviews, and educational articles.
-
-The platform provides separate experiences for **students and instructors**, with role-based access, course management, instructor dashboards, student dashboards, progress tracking, blogging, and community Q&A features.
+**Nexora** is a Django-based multi-vendor e-commerce platform with customer and vendor functionality, product management, shopping cart, checkout, orders, wishlist, reviews, authentication, and REST APIs.
 
 ## ✨ Features
 
-### 🔐 Authentication & Users
-
-* Custom Django user model
-* Student, instructor, and admin roles
-* User registration and login
-* Logout and password reset
-* Profile and avatar management
-* Remember-me session support
-* Role-based access control
-
-### 🎓 Course Management
-
-* Course categories
-* Course sections and lessons
-* MP4 lesson video uploads
-* Course pricing and discounts
-* Free and paid courses
-* Skill levels
-* Course tags
-* Course certification flag
-* Course views and publishing status
-* Instructor-specific course management
-
-### 📚 Learning & Progress
-
-* Course enrollment model
-* Lesson progress tracking
-* Course progress tracking
-* Completed lessons and completed courses
-* Certificate tracking
-* Student course dashboard
-* Personal course list
-* Learning progress calculation
-
-### 👨‍🏫 Instructor Dashboard
-
-* Instructor profile
-* Instructor courses
-* Course creation
-* Section and lesson creation
-* Student statistics
-* Course sales statistics
-* Monthly revenue analytics
-* Course pagination
-* Instructor education and skills
-
-### ⭐ Reviews & Discussions
-
-* Course ratings from 1 to 5
-* Course comments
-* Comment replies
-* Comment likes
-* One rating per user for each course
-* Moderation support through published status
-
-### 📝 Blog System
-
-* Blog posts and categories
-* Tags with `django-taggit`
-* Rich text content with CKEditor
-* Post search
-* Author, category, and tag filtering
-* Post comments and replies
-* Post view counter
-* Post likes
-* Jalali date formatting
-
-### 💬 Community & Support
-
-* Frequently asked questions
-* User questions and answers
-* Question categories
-* Question likes
-* Contact form
-* Instructor and mentor sections
-* Course and website search
-
-### 🔎 Search & Navigation
-
-* Course search
-* Blog search
-* Instructor search
-* Category filtering
-* Tag filtering
-* Skill-level filtering
-* Free/paid filtering
-* Sorting by newest, rating, and views
-* Pagination
-
-### 🛡️ Security & SEO
-
-* Django CSRF protection
-* Password validation
-* Authentication controls
-* reCAPTCHA v3 for authentication
-* Cloudflare Turnstile for contact forms
-* Clickjacking protection
-* Content-type protection
-* Security middleware
-* Environment-based configuration
-* `robots.txt`
-* XML sitemap
-* RSS feeds for courses and blog posts
-* Open Graph and Twitter metadata
-
-### 📱 Frontend
-
-* Bootstrap 5
-* Responsive layout
-* RTL interface
-* Persian localization
-* Light and dark mode
-* Responsive navigation
-* Rich UI components and dashboards
+* 🔐 User authentication with JWT and email verification
+* 🛍️ Product, category, tag, and stock management
+* 🏪 Multi-vendor marketplace
+* 🛒 Shopping cart and checkout
+* 📦 Order and coupon management
+* ❤️ Wishlist and product reviews
+* 📊 Customer and vendor dashboards
+* 📝 Blog system
+* 🔎 Search, filtering, sorting, and pagination
+* ⚡ Redis caching and Celery background tasks
+* 📚 Swagger / ReDoc API documentation
+* 🐳 Docker and Docker Compose
+* 🧪 Pytest, Coverage, Flake8, and Black
+* 🚀 GitHub Actions CI/CD
 
 ## 🛠️ Tech Stack
 
-| Technology      | Purpose                         |
-| --------------- | ------------------------------- |
-| Python          | Backend                         |
-| Django 5.2      | Web framework                   |
-| Bootstrap 5     | Frontend                        |
-| SQLite          | Development database            |
-| PostgreSQL      | Production database support     |
-| CKEditor        | Rich text editing               |
-| django-taggit   | Course and blog tags            |
-| django-ckeditor | Rich content management         |
-| WhiteNoise      | Static file serving             |
-| Gunicorn        | WSGI server                     |
-| django-csp      | Security middleware             |
-| django-robots   | Robots configuration            |
-| Django Sitemap  | SEO sitemap                     |
-| Cloudinary      | Cloud media package integration |
+| Technology            | Purpose          |
+| --------------------- | ---------------- |
+| Python 3.11           | Backend          |
+| Django 5.2            | Web Framework    |
+| Django REST Framework | REST API         |
+| SimpleJWT             | Authentication   |
+| Redis                 | Cache & Broker   |
+| Celery                | Background Tasks |
+| SQLite                | Database         |
+| Docker                | Containerization |
+| Gunicorn              | WSGI Server      |
+| Pytest                | Testing          |
 
 ## 📁 Project Structure
 
 ```text
-Coders-Site-Django/
-├── authentication/      # Authentication and custom user model
-├── blog/                # Blog posts, comments and tags
-├── course/              # Courses, lessons, enrollment and progress
-├── dashboard/           # Student dashboard
-├── instructor/          # Instructor profiles and dashboard
-├── website/             # Homepage, FAQ, search and contact
-├── coders/              # Django project configuration
-├── templates/           # HTML templates
-├── static/              # Static assets
-├── media/               # Uploaded media files
-├── manage.py
-└── requirements.txt
+Nexora/
+├── core/
+│   ├── accounts/
+│   ├── api/
+│   ├── blog/
+│   ├── cart/
+│   ├── dashboard/
+│   ├── orders/
+│   ├── shop/
+│   ├── vendors/
+│   ├── website/
+│   └── core/
+├── .github/
+├── docker-compose.yml
+├── docker-compose.prod.yml
+├── dockerfile
+├── requirements.txt
+└── LICENSE
 ```
 
-## 🗄️ Main Data Models
-
-The main learning domain is built around the following models:
-
-```text
-CustomUser
-    │
-    ├── Instructor
-    │      ├── Education
-    │      └── Skill
-    │
-    └── Student
-           │
-           ├── Enrollment
-           ├── Purchase
-           ├── LessonProgress
-           ├── CourseProgress
-           ├── Score
-           └── Comments
-
-Course
-    ├── Category
-    ├── Section
-    │     └── Lesson
-    ├── Score
-    ├── Comment
-    ├── FAQ
-    └── Purchase
-```
-
-## 🔄 Learning Flow
-
-```text
-Register
-   ↓
-Login
-   ↓
-Browse Courses
-   ↓
-Filter / Search Courses
-   ↓
-View Course Details
-   ↓
-Enrollment / Purchase Record
-   ↓
-Access Course Content
-   ↓
-Track Lesson Progress
-   ↓
-Complete Course
-   ↓
-Certificate / Review
-```
-
-## ⚙️ Installation
-
-### 1. Clone the repository
+## 🚀 Installation
 
 ```bash
-git clone https://github.com/TwoOfWands/Coders-Site-Django.git
-cd Coders-Site-Django
-```
+git clone https://github.com/mohamad-karimi/Nexora.git
+cd Nexora
 
-### 2. Create a virtual environment
-
-```bash
 python -m venv venv
 ```
 
@@ -253,49 +90,26 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-### 3. Install dependencies
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
+cd core
 ```
 
-### 4. Configure environment variables
-
-Create a `.env` file in the project root:
-
-```env
-SECRET_KEY=your-secret-key
-DEBUG=True
-
-DATABASE_URL=
-
-EMAIL_HOST_USER=your-email
-EMAIL_HOST_PASSWORD=your-email-password
-
-TURNSTILE_SITE_KEY=your-turnstile-site-key
-TURNSTILE_SECRET_KEY=your-turnstile-secret-key
-
-RECAPTCHA_SITE_KEY=your-recaptcha-site-key
-RECAPTCHA_SECRET_KEY=your-recaptcha-secret-key
-```
-
-When `DATABASE_URL` is not provided, the project falls back to SQLite.
-
-For PostgreSQL, configure `DATABASE_URL` with your PostgreSQL connection string.
-
-### 5. Apply migrations
+Run migrations:
 
 ```bash
 python manage.py migrate
 ```
 
-### 6. Create an admin account
+Create admin:
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### 7. Run the development server
+Start the server:
 
 ```bash
 python manage.py runserver
@@ -307,57 +121,45 @@ Open:
 http://127.0.0.1:8000/
 ```
 
-## 🔧 Useful URLs
+## 📚 API Documentation
 
 ```text
-/                       Homepage
-/course/list/           Course list
-/course/categories/     Course categories
-/instructor/list/       Instructor list
-/instructor/dashboard/  Instructor dashboard
-/dashboard/             Student dashboard
-/blog/                  Blog
-/faq/                   FAQ and community questions
-/contact/               Contact form
-/admin-1389/            Django admin
-/sitemap.xml            XML sitemap
-/robots.txt             Robots file
-/rss/blog/              Blog RSS feed
-/rss/course/            Course RSS feed
+/api/docs/
+/api/redoc/
+/api/schema/
 ```
 
-## 🔒 Production Notes
-
-Before deploying to production:
-
-* Set `DEBUG=False`
-* Use a strong `SECRET_KEY`
-* Configure `DATABASE_URL`
-* Configure email credentials
-* Configure reCAPTCHA and Turnstile keys
-* Run:
+## 🐳 Docker
 
 ```bash
-python manage.py collectstatic
+docker compose up --build
 ```
 
-* Use Gunicorn or another production WSGI server
-* Never commit secrets or credentials to Git
+The Docker environment includes Django, Redis, Celery Worker, and Celery Beat.
 
-## 📜 License
+## ⚙️ Environment Variables
+
+Create a `.env` file:
+
+```env
+SECRET_KEY=your-secret-key
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+EMAIL_HOST_USER=your-email
+EMAIL_HOST_PASSWORD=your-password
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+Never commit real credentials or secret keys.
+
+## 📄 License
 
 This project is licensed under the **MIT License**.
 
 ## 👨‍💻 Author
 
-**TwoOfWands**
+**Mohamad Karimi**
 
 GitHub:
-
-https://github.com/TwoOfWands/Coders-Site-Django
-
----
-
-<p align="center">
-  Built with ❤️ using Django
-</p>
+https://github.com/mohamad-karimi/Nexora
